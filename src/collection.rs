@@ -1,6 +1,5 @@
 use std::rc::Rc;
 use session::Session;
-use ss;
 use dbus::{Connection, Path};
 
 

@@ -12,17 +12,6 @@
 // to_unicode, don't need!
 
 use std::rc::Rc;
-use ss::{
-    DEFAULT_COLLECTION,
-    SESSION_COLLECTION,
-    SS_DBUS_NAME,
-    SS_INTERFACE_COLLECTION,
-    SS_INTERFACE_ITEM,
-    SS_INTERFACE_SERVICE,
-    SS_INTERFACE_PROMPT,
-    SS_PATH,
-};
-
 
 use dbus::{
     BusName,

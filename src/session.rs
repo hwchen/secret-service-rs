@@ -52,7 +52,6 @@ impl Session {
         .append(Variant(Box::new(Str("".to_owned()))));
 
         let r = try!(bus.send_with_reply_and_block(m, 2000));
-        println!("{:?}", r.get_items());
 
         let items = r.get_items();
 

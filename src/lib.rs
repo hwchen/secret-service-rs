@@ -38,12 +38,8 @@ use collection::Collection;
 use util::Interface;
 use session::Session;
 use ss::{
-    DEFAULT_COLLECTION,
-    SESSION_COLLECTION,
     SS_DBUS_NAME,
-    SS_INTERFACE_COLLECTION,
     SS_INTERFACE_SERVICE,
-    SS_INTERFACE_PROMPT,
     SS_PATH,
 };
 
@@ -52,9 +48,7 @@ use dbus::{
     BusType,
     Connection,
     Error,
-    Message,
     Path,
-    Props,
 };
 use dbus::Interface as InterfaceName;
 use dbus::MessageItem::{
@@ -183,26 +177,30 @@ mod test {
     #[test]
     fn should_get_collection_by_alias() {
         let ss = SecretService::new().unwrap();
-        let collection = ss.get_collection_by_alias("session");
+        let _ = ss.get_collection_by_alias("session");
     }
 
     #[test]
     fn should_get_default_collection() {
         let ss = SecretService::new().unwrap();
-        let default = ss.get_default_collection();
+        let _ = ss.get_default_collection();
     }
 
     #[test]
     fn should_get_any_collection() {
         let ss = SecretService::new().unwrap();
-        let collection = ss.get_any_collection().unwrap();
-        println!("{:?}", collection);
-        assert!(false);
+        let _ = ss.get_any_collection().unwrap();
     }
 
     #[test]
     fn should_create_default_collection() {
         let ss = SecretService::new().unwrap();
-        ss.create_collection("Default", "default");
+        let _ = ss.create_collection("Default", "default");
+    }
+
+    #[test]
+    fn should_search_items() {
+        let ss = SecretService::new().unwrap();
+        let _ = ss.search_items();
     }
 }
