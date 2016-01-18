@@ -8,20 +8,13 @@
 // new collections directly and pass a reference to the bus.
 // (I like the second better, seems more consistent).
 //
-// Plan is to implement all dbus and session basics first
-// (definitions for ss, session, util, error)
-// Then finally implement Colletion and Item on top
-
-// Consider abstracting bus_get_object?
-//
 // Tried passing bus Connection using & and lifetimes, but Connection
 // didn't live long enough if in two nested structs.
 // Rc imposes some cost, is it ok? Or overkill? or inappropriate?
 
-// Monday: Implement Collection struct
-// add items
-// And then crypto
-// create_collection needs to implement prompt to work
+// Prompt, then finish collections,
+// then Items/crypto
+
 extern crate crypto;
 extern crate dbus;
 extern crate rand;

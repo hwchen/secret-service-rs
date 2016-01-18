@@ -13,6 +13,11 @@
 
 use std::rc::Rc;
 
+use ss::{
+    SS_DBUS_NAME,
+    SS_INTERFACE_PROMPT,
+};
+
 use dbus::{
     BusName,
     Connection,
@@ -22,9 +27,14 @@ use dbus::{
     Path,
     Props,
 };
+use dbus::ConnectionItem::Signal;
 use dbus::Interface as InterfaceName;
+use dbus::MessageItem::{
+    Bool,
+    Str,
+};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Interface {
     bus: Rc<Connection>,
     name: BusName,
@@ -77,3 +87,34 @@ impl Interface {
     }
 }
 
+pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<(), Error> {
+    let prompt_interface = Interface::new(
+        bus.clone(),
+        BusName::new(SS_DBUS_NAME).unwrap(),
+        prompt,
+        InterfaceName::new(SS_INTERFACE_PROMPT).unwrap()
+    );
+    try!(prompt_interface.method("Prompt", vec![Str("".to_owned())]));
+
+    // check to see if prompt is dismissed or accepted
+    // TODO: Find a better way to do this.
+    // Also, should I return the paths in the result?
+    for event in bus.iter(5000) {
+        match event {
+            Signal(message) => {
+                println!("Incoming Signal {:?}", message);
+                let items = message.get_items();
+                if let Some(&Bool(dismissed)) = items.get(0) {
+                    println!("Was prompt dismissed? {:?}", dismissed);
+                    if !dismissed {
+                        return Ok(());
+                    } else {
+                        return Err(Error::new_custom("SSError", "Prompt was dismissed"));
+                    }
+                }
+            },
+            _ => (),
+        }
+    }
+    Err(Error::new_custom("SSError", "Prompt was dismissed"))
+}
