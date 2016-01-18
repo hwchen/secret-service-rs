@@ -1,0 +1,9 @@
+[package]
+authors = ["Walther Chen <walther.chen@gmail.com>"]
+name = "secret-service"
+version = "0.1.0"
+
+[dependencies]
+dbus = "0.2.1"
+rand = "0.3.13"
+rust-crypto = "0.2.34"
