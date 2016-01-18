@@ -1,17 +1,18 @@
-
+use std::rc::Rc;
 use session::Session;
 use ss;
 use dbus::{Connection, Path};
 
 
-struct Collection<'a> {
-    bus: &'a Connection,
+#[derive(Debug, Clone)]
+pub struct Collection<'a> {
+    bus: Rc<Connection>,
     session: &'a Session,
     collection_path: Path,
 }
 
 impl<'a> Collection<'a> {
-    pub fn new(bus: &'a Connection, session: &'a Session, collection_path: Path) -> Self {
+    pub fn new(bus: Rc<Connection>, session: &'a Session, collection_path: Path) -> Self {
         Collection {
             bus: bus,
             session: session,
@@ -19,3 +20,13 @@ impl<'a> Collection<'a> {
         }
     }
 }
+// for items
+//        let collection_interface = Interface::new(
+//            self.bus.clone(),
+//            BusName::new(SS_DBUS_NAME).unwrap(),
+//            Path::new(DEFAULT_COLLECTION).unwrap(),
+//            InterfaceName::new(SS_INTERFACE_COLLECTION).unwrap()
+//        );
+//
+//        let items = try!(collection_interface.get_props("Items"));
+//        println!("{:?}", items);

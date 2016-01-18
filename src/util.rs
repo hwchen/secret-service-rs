@@ -11,6 +11,7 @@
 //
 // to_unicode, don't need!
 
+use std::rc::Rc;
 use ss::{
     DEFAULT_COLLECTION,
     SESSION_COLLECTION,
@@ -35,15 +36,15 @@ use dbus::{
 use dbus::Interface as InterfaceName;
 
 #[derive(Debug)]
-pub struct Interface<'a> {
-    bus: &'a Connection,
+pub struct Interface {
+    bus: Rc<Connection>,
     name: BusName,
     path: Path,
     interface: InterfaceName,
 }
 
-impl<'a> Interface<'a> {
-    pub fn new(bus: &'a Connection,
+impl Interface {
+    pub fn new(bus: Rc<Connection>,
                name: BusName,
                path: Path,
                interface: InterfaceName) -> Self {
