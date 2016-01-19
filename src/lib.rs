@@ -1,3 +1,4 @@
+#![feature(box_patterns)]
 #![allow(dead_code)]
 // requires ldbus dev library
 // on ubuntu, libdbus-1-dev
@@ -12,7 +13,10 @@
 // didn't live long enough if in two nested structs.
 // Rc imposes some cost, is it ok? Or overkill? or inappropriate?
 
-// Prompt, then finish collections,
+// fix create collections,
+// Fix tests for collections (can now create collection!)
+// Search items and Create Item
+// Item API
 // then Items/crypto
 
 extern crate crypto;
@@ -28,7 +32,7 @@ pub mod error;
 use std::rc::Rc;
 
 use collection::Collection;
-use util::Interface;
+use util::{Interface, exec_prompt};
 use session::Session;
 use ss::{
     SS_DBUS_NAME,
@@ -129,8 +133,10 @@ impl SecretService {
             })
     }
 
-    pub fn create_collection(&self, label: &str, alias: &str) {
-        unimplemented!();
+    // Eventually should return the collection
+    // doesn't work?
+    pub fn create_collection(&self, label: &str, alias: &str) -> Result<Path, Error> {
+        println!("hit");
         let label = DictEntry(
             Box::new(Str("org.freedesktop.Secret.Collection.Label".to_owned())),
             Box::new(Variant(Box::new(Str(label.to_owned()))))
@@ -139,9 +145,28 @@ impl SecretService {
         let properties = Array(vec![label], label_type_sig);
         let alias = Str(alias.to_owned());
 
-        let res = self.service_interface.method("CreateCollection", vec![properties, alias]);
-
+        let res = try!(self.service_interface.method("CreateCollection", vec![properties, alias]));
+        println!("hit1");
         println!("{:?}", res);
+        // check if prompt is needed
+        if let Some(&ObjectPath(ref created_path)) = res.get(0) {
+            if &**created_path == "/" {
+                if let Some(&ObjectPath(ref path)) = res.get(1) {
+                    let obj_path = try!(exec_prompt(self.bus.clone(), path.clone()));
+                    println!("obj_path {:?}", obj_path);
+                    // Have to use box syntax
+                    if let Variant(box ObjectPath(ref path)) = obj_path {
+                        return Ok(path.clone());
+                    }
+                }
+            } else {
+                // returning the first path.
+                return Ok(created_path.clone());
+            }
+        }
+        println!("hit4");
+        // If for some reason the patterns don't match, return error
+        Err(Error::new_custom("SSError", "Could not create Collection"))
     }
 
     pub fn search_items(&self) {
@@ -165,6 +190,9 @@ mod test {
         let ss = SecretService::new().unwrap();
         let collections = ss.get_all_collections().unwrap();
         assert!(collections.len() >= 1);
+        println!("{:?}", collections);
+        println!("# of collections {:?}", collections.len());
+        assert!(false);
     }
 
     #[test]
@@ -186,9 +214,13 @@ mod test {
     }
 
     #[test]
-    fn should_create_default_collection() {
+    #[ignore]
+    fn should_create_collection() {
+        assert!(false);
         let ss = SecretService::new().unwrap();
-        let _ = ss.create_collection("Default", "default");
+        // Shoul also return object path eventually
+        let test_collection = ss.create_collection("Test", "").unwrap();
+        println!("{:?}", test_collection);
     }
 
     #[test]

@@ -87,7 +87,7 @@ impl Interface {
     }
 }
 
-pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<(), Error> {
+pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<MessageItem, Error> {
     let prompt_interface = Interface::new(
         bus.clone(),
         BusName::new(SS_DBUS_NAME).unwrap(),
@@ -106,11 +106,12 @@ pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<(), Error> {
                 let items = message.get_items();
                 if let Some(&Bool(dismissed)) = items.get(0) {
                     println!("Was prompt dismissed? {:?}", dismissed);
-                    if !dismissed {
-                        return Ok(());
-                    } else {
+                    if dismissed {
                         return Err(Error::new_custom("SSError", "Prompt was dismissed"));
                     }
+                }
+                if let Some(&ref result) = items.get(1) {
+                    return Ok(result.clone());
                 }
             },
             _ => (),
