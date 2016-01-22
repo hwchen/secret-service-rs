@@ -181,6 +181,8 @@ impl<'a> Collection<'a> {
     }
 
     // TODO: return Item
+    // TODO: change from properties to two spcific properties:
+    // Label and Attributes
     pub fn create_item(&self,
                        properties:Vec<(String, MessageItem)>,
                        secret: &str,

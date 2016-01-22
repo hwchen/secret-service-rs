@@ -14,26 +14,28 @@
 // Rc imposes some cost, is it ok? Or overkill? or inappropriate?
 
 // TODO:
-// Abstract prompts for creating items. Can I abstract other prompts?
-// Create Item and Search items
-// Item API
+// Item struct and API
+// Reorg imports, format function params to be consistent
 // Then check that all functions return Collection or Item instead
 // of Path or MessageItem
+// Also change createItem to take label and attributes instad of props
 // then Items/crypto
 // Refactor Dict
 // Refactor to make str and String function params consistent
 // Redo tests now that full range of api is implemented
 // Return using map when possible instead of matching
+// Abstract prompts for creating items. Can I abstract other prompts?
 
 extern crate crypto;
 extern crate dbus;
 extern crate rand;
 
-mod collection;
+pub mod collection;
+pub mod error;
+pub mod item;
 mod util;
 mod ss;
 mod session;
-pub mod error;
 
 use std::rc::Rc;
 
