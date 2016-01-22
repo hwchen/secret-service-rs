@@ -13,6 +13,7 @@
 
 use std::rc::Rc;
 
+use session::Session;
 use ss::{
     SS_DBUS_NAME,
     SS_INTERFACE_PROMPT,
@@ -30,8 +31,12 @@ use dbus::{
 use dbus::ConnectionItem::Signal;
 use dbus::Interface as InterfaceName;
 use dbus::MessageItem::{
+    Array,
     Bool,
+    Byte,
+    ObjectPath,
     Str,
+    Struct,
 };
 
 #[derive(Debug, Clone)]
@@ -74,7 +79,7 @@ impl Interface {
         Ok(r.get_items())
     }
 
-    pub fn get_props(&self, props: &str) -> Result<MessageItem, Error> {
+    pub fn get_props(&self, prop_name: &str) -> Result<MessageItem, Error> {
         let p = Props::new(
             &self.bus,
             self.name.clone(),
@@ -83,8 +88,40 @@ impl Interface {
             2000
         );
 
-        p.get(props)
+        p.get(prop_name)
     }
+
+    pub fn set_props(&self, prop_name: &str, value: MessageItem) -> Result<(), Error> {
+        let p = Props::new(
+            &self.bus,
+            self.name.clone(),
+            self.path.clone(),
+            self.interface.clone(),
+            2000
+        );
+
+        p.set(prop_name, value)
+    }
+}
+
+pub fn format_secret(session: &Session,
+                     secret: &str,
+                     content_type: &str
+                    ) -> MessageItem {
+
+    // just Plain for now
+    let object_path = ObjectPath(session.object_path.clone());
+    let parameters = Array(vec![], Byte(0u8).type_sig());
+    let value_array: Vec<_> = secret.as_bytes().iter().map(|&byte| Byte(byte)).collect();
+    let value_dbus = Array(value_array, Byte(0u8).type_sig());
+    let content_type = Str(content_type.to_owned());
+
+    Struct(vec![
+        object_path,
+        parameters,
+        value_dbus,
+        content_type
+        ])
 }
 
 pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<MessageItem, Error> {
@@ -102,10 +139,10 @@ pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<MessageItem, Err
     for event in bus.iter(5000) {
         match event {
             Signal(message) => {
-                println!("Incoming Signal {:?}", message);
+                //println!("Incoming Signal {:?}", message);
                 let items = message.get_items();
                 if let Some(&Bool(dismissed)) = items.get(0) {
-                    println!("Was prompt dismissed? {:?}", dismissed);
+                    //println!("Was prompt dismissed? {:?}", dismissed);
                     if dismissed {
                         return Err(Error::new_custom("SSError", "Prompt was dismissed"));
                     }
@@ -119,3 +156,4 @@ pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<MessageItem, Err
     }
     Err(Error::new_custom("SSError", "Prompt was dismissed"))
 }
+

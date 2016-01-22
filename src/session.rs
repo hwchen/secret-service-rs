@@ -29,7 +29,7 @@ use dbus::MessageItem::{
 
 #[derive(Debug)]
 pub struct Session {
-    object_path: Path,
+    pub object_path: Path,
     server_public_key: Option<Vec<u8>>,
     aes_key: Option<Vec<u8>>,
     encrypted: bool,

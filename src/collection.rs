@@ -7,7 +7,11 @@ use ss::{
     SS_INTERFACE_SERVICE,
     SS_PATH,
 };
-use util::{Interface, exec_prompt};
+use util::{
+    exec_prompt,
+    format_secret,
+    Interface,
+};
 
 use dbus::{
     BusName,
@@ -19,8 +23,11 @@ use dbus::{
 use dbus::Interface as InterfaceName;
 use dbus::MessageItem::{
     Array,
+    Bool,
+    DictEntry,
     ObjectPath,
     Str,
+    Variant,
 };
 
 // Helper enum
@@ -87,7 +94,7 @@ impl<'a> Collection<'a> {
         };
 
         let res = try!(self.service_interface.method(lock_action_str, vec![objects]));
-        println!("Locking paths: {:?}", res);
+        //println!("Locking or unlocking paths: {:?}", res);
         if let Some(&Array(ref unlocked, _)) = res.get(0) {
             if unlocked.len() == 0 {
                 if let Some(&ObjectPath(ref path)) = res.get(1) {
@@ -126,6 +133,7 @@ impl<'a> Collection<'a> {
         Err(Error::new_custom("SSError", "Could not delete Collection"))
     }
 
+    // TODO: return Item
     pub fn get_all_items(&self) -> Result<Vec<MessageItem>, Error> {
         let items = try!(self.collection_interface.get_props("Items"));
         if let Array(item_array, _) = items {
@@ -135,8 +143,28 @@ impl<'a> Collection<'a> {
         }
     }
 
-    pub fn search_items() {
-        unimplemented!();
+    // TODO: return Item
+    pub fn search_items(&self, attributes: Vec<(String, String)>) -> Result<Vec<MessageItem>, Error> {
+        let attr_as_dict_entries: Vec<_> = attributes
+            .iter()
+            .map(|&(ref key, ref value)| {
+                DictEntry(
+                    Box::new(Str((*key).to_owned())),
+                    Box::new(Str((*value).to_owned()))
+                )
+            }).collect();
+        let attr_type_sig = DictEntry(
+            Box::new(Str("".to_owned())),
+            Box::new(Str("".to_owned()))
+        ).type_sig();
+        let attr_dbus_dict = Array(
+            attr_as_dict_entries,
+            attr_type_sig
+        );
+
+        // Method call to CreateItem
+        self.collection_interface.method("SearchItems", vec![attr_dbus_dict])
+            .map(|items| items)
     }
 
     pub fn get_label(&self) -> Result<String, Error> {
@@ -148,20 +176,69 @@ impl<'a> Collection<'a> {
         }
     }
 
-    pub fn set_label(&self) -> Result<String, Error> {
-        // wait to finish create_collection to make it easier to test
-        unimplemented!();
+    pub fn set_label(&self, new_label: &str) -> Result<(), Error> {
+        self.collection_interface.set_props("Label", Str(new_label.to_owned()))
     }
 
-    pub fn create_item(&self) {
-        unimplemented!()
+    // TODO: return Item
+    pub fn create_item(&self,
+                       properties:Vec<(String, MessageItem)>,
+                       secret: &str,
+                       replace: bool,
+                       content_type: &str,
+                       ) -> Result<Path, Error> {
+
+        let secret_struct = format_secret(&self.session, secret, content_type);
+
+        // build dbus dict
+        let props_as_dict_entries: Vec<_> = properties
+            .iter()
+            .map(|&(ref key, ref value)| {
+                DictEntry(
+                    Box::new(Str((*key).to_owned())),
+                    Box::new(Variant(Box::new(value.clone())))
+                )
+            }).collect();
+        let props_type_sig = DictEntry(
+            Box::new(Str("".to_owned())),
+            Box::new(Variant(Box::new(Str("".to_owned()))))
+        ).type_sig();
+        let properties_dbus_dict = Array(
+            props_as_dict_entries,
+            props_type_sig
+        );
+
+        // Method call to CreateItem
+        let res = try!(self.collection_interface.method("CreateItem", vec![
+            properties_dbus_dict,
+            secret_struct,
+            Bool(replace)
+        ]));
+
+        // handle prompt if necessary
+        // So far just cut and paste below, make sure to check
+        if let Some(&ObjectPath(ref created_path)) = res.get(0) {
+            if &**created_path == "/" {
+                if let Some(&ObjectPath(ref path)) = res.get(1) {
+                    let obj_path = try!(exec_prompt(self.bus.clone(), path.clone()));
+                    println!("obj_path {:?}", obj_path);
+                    // Have to use box syntax
+                    if let Variant(box ObjectPath(ref path)) = obj_path {
+                        return Ok(path.clone());
+                    }
+                }
+            } else {
+                // returning the first path.
+                return Ok(created_path.clone());
+            }
+        }
+        // If for some reason the patterns don't match, return error
+        Err(Error::new_custom("SSError", "Could not create Item"))
     }
 }
 
 #[cfg(test)]
 mod test{
-    use std::str;
-    use super::*;
     use super::super::*;
 
     #[test]
@@ -225,17 +302,63 @@ mod test{
     fn should_get_all_items() {
         let ss = SecretService::new().unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let items = collection.get_all_items();
+        let items = collection.get_all_items().unwrap();
         println!("{:?}", items);
     }
 
     #[test]
-    fn should_get_collection_label() {
+    fn should_search_items() {
+        let ss = SecretService::new().unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        let items = collection.search_items(Vec::new()).unwrap();
+        println!("{:?}", items);
+        //assert!(false);
+    }
+
+    #[test]
+    #[ignore]
+    fn should_get_and_set_collection_label() {
         let ss = SecretService::new().unwrap();
         let collection = ss.get_default_collection().unwrap();
         let label = collection.get_label().unwrap();
         assert_eq!(label, "Login");
         println!("{:?}", label);
+
+        // Set label to test and check
+        collection.unlock().unwrap();
+        collection.set_label("Test").unwrap();
+        let label = collection.get_label().unwrap();
+        assert_eq!(label, "Test");
+        println!("{:?}", label);
+
+        // Reset label to original and test
+        collection.unlock().unwrap();
+        collection.set_label("Login").unwrap();
+        let label = collection.get_label().unwrap();
+        assert_eq!(label, "Login");
+        println!("{:?}", label);
+
+        collection.lock().unwrap();
+        //assert!(false);
+    }
+
+    #[test]
+    #[ignore]
+    // TODO: delete extraneous items
+    fn should_create_item() {
+        let ss = SecretService::new().unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        collection.unlock().unwrap();
+        let item = collection.create_item(
+            Vec::new(), // properties
+            "test_secret", // secret
+            false, // replace
+            "text/plain; charset=utf8" // content_type
+        ).unwrap();
+        println!("Created Item: {:?}", item);
+        let items = collection.get_all_items().unwrap();
+        println!("Items: {:?}", items);
+        assert!(false);
     }
 
 }

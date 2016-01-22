@@ -13,11 +13,17 @@
 // didn't live long enough if in two nested structs.
 // Rc imposes some cost, is it ok? Or overkill? or inappropriate?
 
-// fix create collections,
-// Fix tests for collections (can now create collection!)
-// Search items and Create Item
+// TODO:
+// Abstract prompts for creating items. Can I abstract other prompts?
+// Create Item and Search items
 // Item API
+// Then check that all functions return Collection or Item instead
+// of Path or MessageItem
 // then Items/crypto
+// Refactor Dict
+// Refactor to make str and String function params consistent
+// Redo tests now that full range of api is implemented
+// Return using map when possible instead of matching
 
 extern crate crypto;
 extern crate dbus;
@@ -133,7 +139,7 @@ impl SecretService {
             })
     }
 
-    // Eventually should return the collection
+    // TODO: Eventually should return the collection
     // doesn't work?
     pub fn create_collection(&self, label: &str, alias: &str) -> Result<Path, Error> {
         println!("hit");
@@ -192,7 +198,7 @@ mod test {
         assert!(collections.len() >= 1);
         println!("{:?}", collections);
         println!("# of collections {:?}", collections.len());
-        assert!(false);
+        //assert!(false);
     }
 
     #[test]
@@ -224,7 +230,7 @@ mod test {
     }
 
     #[test]
-    fn should_search_items() {
+    fn should_search_all_items() {
         let ss = SecretService::new().unwrap();
         let _ = ss.search_items();
     }
