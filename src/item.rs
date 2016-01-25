@@ -164,12 +164,18 @@ impl<'a> Item<'a> {
         unimplemented!();
     }
 
-    pub fn get_created() -> Result<usize, Error> {
-        unimplemented!();
+    pub fn get_created(&self) -> Result<u64, Error> {
+        self.item_interface.get_props("Created")
+            .map(|locked| {
+                locked.inner::<u64>().unwrap()
+            })
     }
 
-    pub fn get_modified() -> Result<usize, Error> {
-        unimplemented!();
+    pub fn get_modified(&self) -> Result<u64, Error> {
+        self.item_interface.get_props("Modified")
+            .map(|locked| {
+                locked.inner::<u64>().unwrap()
+            })
     }
 }
 
@@ -189,7 +195,6 @@ mod test{
     fn should_create_and_delete_item() {
         let ss = SecretService::new().unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let items_len_before = collection.get_all_items().unwrap().len();
         let item = collection.create_item(
             "Test",
             Vec::new(),
@@ -197,11 +202,13 @@ mod test{
             false, // replace
             "text/plain; charset=utf8" // content_type
         ).unwrap();
-        println!("Created Item: {:?}", item);
+        let _ = item.item_path.clone(); // to prepare for future drop for delete?
         item.delete().unwrap();
-        let items_len_after = collection.get_all_items().unwrap().len();
-        assert!(items_len_before == items_len_after);
-        //assert!(false);
+        // Random operation to prove that path no longer exists
+        match item.get_label() {
+            Ok(_) => panic!(),
+            Err(_) => (),
+        }
     }
 
     #[test]
@@ -269,7 +276,9 @@ mod test{
         //assert!(false);
     }
 
+    //TODO: rewrite test after fixing attributes!
     #[test]
+    #[ignore]
     fn should_create_get_and_set_item_attributes() {
         let ss = SecretService::new().unwrap();
         let collection = ss.get_default_collection().unwrap();
@@ -282,7 +291,27 @@ mod test{
         ).unwrap();
         let attributes = item.get_attributes().unwrap();
         println!("Attributes: {:?}", attributes);
+        item.delete().unwrap();
         assert!(false);
+    }
+
+    #[test]
+    fn should_get_modified_created_props() {
+        let ss = SecretService::new().unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        let item = collection.create_item(
+            "Test",
+            Vec::new(),
+            b"test",
+            false, // replace
+            "text/plain; charset=utf8" // content_type
+        ).unwrap();
+        item.set_label("Tester");
+        let created = item.get_created().unwrap();
+        let modified = item.get_modified().unwrap();
+        println!("Created {:?}, Modified {:?}", created, modified);
+        item.delete().unwrap();
+        //assert!(false);
     }
 }
 

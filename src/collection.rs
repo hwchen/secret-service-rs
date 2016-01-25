@@ -209,8 +209,6 @@ impl<'a> Collection<'a> {
         self.collection_interface.set_props("Label", Str(new_label.to_owned()))
     }
 
-    // TODO: change from properties to two spcific properties:
-    // Label and Attributes
     pub fn create_item(&self,
                        label: &str,
                        attributes:Vec<(&str, &str)>,
