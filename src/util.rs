@@ -105,14 +105,14 @@ impl Interface {
 }
 
 pub fn format_secret(session: &Session,
-                     secret: &str,
+                     secret: &[u8],
                      content_type: &str
                     ) -> MessageItem {
 
     // just Plain for now
     let object_path = ObjectPath(session.object_path.clone());
     let parameters = Array(vec![], Byte(0u8).type_sig());
-    let value_array: Vec<_> = secret.as_bytes().iter().map(|&byte| Byte(byte)).collect();
+    let value_array: Vec<_> = secret.iter().map(|&byte| Byte(byte)).collect();
     let value_dbus = Array(value_array, Byte(0u8).type_sig());
     let content_type = Str(content_type.to_owned());
 

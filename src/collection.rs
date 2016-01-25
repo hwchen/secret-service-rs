@@ -1,10 +1,13 @@
 use std::rc::Rc;
 
+use item::Item;
 use session::Session;
 use ss::{
     SS_DBUS_NAME,
     SS_INTERFACE_COLLECTION,
     SS_INTERFACE_SERVICE,
+    SS_ITEM_LABEL,
+    SS_ITEM_ATTRIBUTES,
     SS_PATH,
 };
 use util::{
@@ -133,18 +136,28 @@ impl<'a> Collection<'a> {
         Err(Error::new_custom("SSError", "Could not delete Collection"))
     }
 
-    // TODO: return Item
-    pub fn get_all_items(&self) -> Result<Vec<MessageItem>, Error> {
+    pub fn get_all_items(&self) -> Result<Vec<Item>, Error> {
         let items = try!(self.collection_interface.get_props("Items"));
         if let Array(item_array, _) = items {
-            Ok(item_array)
+            Ok(item_array.iter().filter_map(|ref item| {
+                match **item {
+                    ObjectPath(ref path) => {
+                        Some(Item::new(
+                            self.bus.clone(),
+                            self.session.clone(),
+                            path.clone()
+                        ))
+                    },
+                    _ => None,
+                }
+            }).collect::<Vec<_>>()
+            )
         } else {
             Err(Error::new_custom("SSError", "Could not get items"))
         }
     }
 
-    // TODO: return Item
-    pub fn search_items(&self, attributes: Vec<(String, String)>) -> Result<Vec<MessageItem>, Error> {
+    pub fn search_items(&self, attributes: Vec<(String, String)>) -> Result<Vec<Item>, Error> {
         let attr_as_dict_entries: Vec<_> = attributes
             .iter()
             .map(|&(ref key, ref value)| {
@@ -162,9 +175,25 @@ impl<'a> Collection<'a> {
             attr_type_sig
         );
 
-        // Method call to CreateItem
-        self.collection_interface.method("SearchItems", vec![attr_dbus_dict])
-            .map(|items| items)
+        // Method call to SearchItem
+        let items = try!(self.collection_interface.method("SearchItems", vec![attr_dbus_dict]));
+        if let &Array(ref item_array, _) = items.get(0).unwrap() {
+            Ok(item_array.iter().filter_map(|ref item| {
+                match **item {
+                    ObjectPath(ref path) => {
+                        Some(Item::new(
+                            self.bus.clone(),
+                            self.session.clone(),
+                            path.clone()
+                        ))
+                    },
+                    _ => None,
+                }
+            }).collect::<Vec<_>>()
+            )
+        } else {
+            Err(Error::new_custom("SSError", "Could not get items"))
+        }
     }
 
     pub fn get_label(&self) -> Result<String, Error> {
@@ -180,35 +209,50 @@ impl<'a> Collection<'a> {
         self.collection_interface.set_props("Label", Str(new_label.to_owned()))
     }
 
-    // TODO: return Item
     // TODO: change from properties to two spcific properties:
     // Label and Attributes
     pub fn create_item(&self,
-                       properties:Vec<(String, MessageItem)>,
-                       secret: &str,
+                       label: &str,
+                       attributes:Vec<(&str, &str)>,
+                       secret: &[u8],
                        replace: bool,
                        content_type: &str,
-                       ) -> Result<Path, Error> {
+                       ) -> Result<Item, Error> {
 
         let secret_struct = format_secret(&self.session, secret, content_type);
 
         // build dbus dict
-        let props_as_dict_entries: Vec<_> = properties
-            .iter()
-            .map(|&(ref key, ref value)| {
-                DictEntry(
-                    Box::new(Str((*key).to_owned())),
-                    Box::new(Variant(Box::new(value.clone())))
-                )
-            }).collect();
-        let props_type_sig = DictEntry(
-            Box::new(Str("".to_owned())),
+
+        // label
+        let label_dbus = DictEntry(
+            Box::new(Str(SS_ITEM_LABEL.to_owned())),
             Box::new(Variant(Box::new(Str("".to_owned()))))
-        ).type_sig();
-        let properties_dbus_dict = Array(
-            props_as_dict_entries,
-            props_type_sig
         );
+
+        // initializing properties vector, preparing to push
+        // attributes if available
+        let mut properties = vec![label_dbus];
+
+        // attributes dict
+        if !attributes.is_empty() {
+            let attributes_dbus: Vec<_> = attributes
+                .iter()
+                .map(|&(ref key, ref value)| {
+                    DictEntry(
+                        Box::new(Str((*key).to_owned())),
+                        Box::new(Str((*value).to_owned()))
+                    )
+                }).collect();
+            let attributes_dbus_dict = MessageItem::new_array(attributes_dbus).unwrap();
+            let attributes_dict_entry = DictEntry(
+                Box::new(Str(SS_ITEM_ATTRIBUTES.to_owned())),
+                Box::new(Variant(Box::new(attributes_dbus_dict)))
+            );
+            properties.push(attributes_dict_entry);
+        }
+
+        // properties dict (label and attributes)
+        let properties_dbus_dict = MessageItem::new_array(properties).unwrap();
 
         // Method call to CreateItem
         let res = try!(self.collection_interface.method("CreateItem", vec![
@@ -226,12 +270,20 @@ impl<'a> Collection<'a> {
                     println!("obj_path {:?}", obj_path);
                     // Have to use box syntax
                     if let Variant(box ObjectPath(ref path)) = obj_path {
-                        return Ok(path.clone());
+                        return Ok(Item::new(
+                            self.bus.clone(),
+                            self.session.clone(),
+                            path.clone()
+                        ));
                     }
                 }
             } else {
                 // returning the first path.
-                return Ok(created_path.clone());
+                return Ok(Item::new(
+                    self.bus.clone(),
+                    self.session.clone(),
+                    created_path.clone()
+                ));
             }
         }
         // If for some reason the patterns don't match, return error
@@ -345,22 +397,10 @@ mod test{
     }
 
     #[test]
-    #[ignore]
-    // TODO: delete extraneous items
     fn should_create_item() {
-        let ss = SecretService::new().unwrap();
-        let collection = ss.get_default_collection().unwrap();
-        collection.unlock().unwrap();
-        let item = collection.create_item(
-            Vec::new(), // properties
-            "test_secret", // secret
-            false, // replace
-            "text/plain; charset=utf8" // content_type
-        ).unwrap();
-        println!("Created Item: {:?}", item);
-        let items = collection.get_all_items().unwrap();
-        println!("Items: {:?}", items);
-        assert!(false);
+        ()
+        // See item module
+        // for creation of new item
     }
 
 }

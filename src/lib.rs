@@ -14,12 +14,14 @@
 // Rc imposes some cost, is it ok? Or overkill? or inappropriate?
 
 // TODO:
-// Item struct and API
+// Item label and attributes, then created/modified, then secrets, then crypto
+// factor out handling mapping paths to Item
+// Remove all matches for option and result!
+// properly return path for delete actions?
+// Move similar methods to common interface: locking, attributes, del, label?
 // Reorg imports, format function params to be consistent
 // Then check that all functions return Collection or Item instead
 // of Path or MessageItem
-// Also change createItem to take label and attributes instad of props
-// then Items/crypto
 // Refactor Dict
 // Refactor to make str and String function params consistent
 // Redo tests now that full range of api is implemented
@@ -53,6 +55,7 @@ use dbus::{
     BusType,
     Connection,
     Error,
+    MessageItem,
     Path,
 };
 use dbus::Interface as InterfaceName;
@@ -144,7 +147,6 @@ impl SecretService {
     // TODO: Eventually should return the collection
     // doesn't work?
     pub fn create_collection(&self, label: &str, alias: &str) -> Result<Path, Error> {
-        println!("hit");
         let label = DictEntry(
             Box::new(Str("org.freedesktop.Secret.Collection.Label".to_owned())),
             Box::new(Variant(Box::new(Str(label.to_owned()))))
@@ -154,14 +156,12 @@ impl SecretService {
         let alias = Str(alias.to_owned());
 
         let res = try!(self.service_interface.method("CreateCollection", vec![properties, alias]));
-        println!("hit1");
-        println!("{:?}", res);
         // check if prompt is needed
         if let Some(&ObjectPath(ref created_path)) = res.get(0) {
             if &**created_path == "/" {
                 if let Some(&ObjectPath(ref path)) = res.get(1) {
                     let obj_path = try!(exec_prompt(self.bus.clone(), path.clone()));
-                    println!("obj_path {:?}", obj_path);
+                    //println!("obj_path {:?}", obj_path);
                     // Have to use box syntax
                     if let Variant(box ObjectPath(ref path)) = obj_path {
                         return Ok(path.clone());
@@ -172,13 +172,50 @@ impl SecretService {
                 return Ok(created_path.clone());
             }
         }
-        println!("hit4");
         // If for some reason the patterns don't match, return error
         Err(Error::new_custom("SSError", "Could not create Collection"))
     }
 
-    pub fn search_items(&self) {
-        unimplemented!();
+    pub fn search_items(&self, attributes: Vec<(String, String)>) -> Result<Vec<MessageItem>, Error> {
+        let attr_as_dict_entries: Vec<_> = attributes
+            .iter()
+            .map(|&(ref key, ref value)| {
+                DictEntry(
+                    Box::new(Str((*key).to_owned())),
+                    Box::new(Str((*value).to_owned()))
+                )
+            }).collect();
+        let attr_type_sig = DictEntry(
+            Box::new(Str("".to_owned())),
+            Box::new(Str("".to_owned()))
+        ).type_sig();
+        let attr_dbus_dict = Array(
+            attr_as_dict_entries,
+            attr_type_sig
+        );
+
+        // Method call to SearchItem
+        let res = try!(self.service_interface.method("SearchItems", vec![attr_dbus_dict]));
+        let mut unlocked = match res.get(0) {
+            Some(ref array) => {
+                match **array {
+                    Array(ref v, _) => v.clone(),
+                    _ => Vec::new(),
+                }
+            }
+            _ => Vec::new(),
+        };
+        let locked = match res.get(1) {
+            Some(ref array) => {
+                match **array {
+                    Array(ref v, _) => v.clone(),
+                    _ => Vec::new(),
+                }
+            }
+            _ => Vec::new(),
+        };
+        unlocked.extend(locked);
+        Ok(unlocked)
     }
 }
 
@@ -232,8 +269,10 @@ mod test {
     }
 
     #[test]
-    fn should_search_all_items() {
+    fn should_search_items() {
         let ss = SecretService::new().unwrap();
-        let _ = ss.search_items();
+        let items = ss.search_items(Vec::new()).unwrap();
+        println!("{:?}", items);
+        //assert!(false);
     }
 }
