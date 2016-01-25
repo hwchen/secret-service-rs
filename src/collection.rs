@@ -226,7 +226,7 @@ impl<'a> Collection<'a> {
         // label
         let label_dbus = DictEntry(
             Box::new(Str(SS_ITEM_LABEL.to_owned())),
-            Box::new(Variant(Box::new(Str("".to_owned()))))
+            Box::new(Variant(Box::new(Str(label.to_owned()))))
         );
 
         // initializing properties vector, preparing to push

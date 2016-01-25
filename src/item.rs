@@ -271,9 +271,18 @@ mod test{
 
     #[test]
     fn should_create_get_and_set_item_attributes() {
+        let ss = SecretService::new().unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        let item = collection.create_item(
+            "Test",
+            vec![("one", "one")],
+            b"test",
+            false, // replace
+            "text/plain; charset=utf8" // content_type
+        ).unwrap();
+        let attributes = item.get_attributes().unwrap();
+        println!("Attributes: {:?}", attributes);
         assert!(false);
-        // requires rewrite of create_item in collections module
-        // to specify a label attribute
     }
 }
 

@@ -27,6 +27,7 @@
 // Redo tests now that full range of api is implemented
 // Return using map when possible instead of matching
 // Abstract prompts for creating items. Can I abstract other prompts?
+// in all tests, make sure that check for structs
 
 extern crate crypto;
 extern crate dbus;
