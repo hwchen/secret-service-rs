@@ -179,20 +179,16 @@ impl SecretService {
     }
 
     pub fn search_items(&self, attributes: Vec<(String, String)>) -> Result<Vec<MessageItem>, Error> {
-        let attr_as_dict_entries: Vec<_> = attributes
-            .iter()
-            .map(|&(ref key, ref value)| {
-                DictEntry(
-                    Box::new(Str((*key).to_owned())),
-                    Box::new(Str((*value).to_owned()))
-                )
-            }).collect();
+        let attr_dict_entries: Vec<_> = attributes.iter().map(|&(ref key, ref value)| {
+            let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
+            MessageItem::from(dict_entry)
+        }).collect();
         let attr_type_sig = DictEntry(
             Box::new(Str("".to_owned())),
             Box::new(Str("".to_owned()))
         ).type_sig();
         let attr_dbus_dict = Array(
-            attr_as_dict_entries,
+            attr_dict_entries,
             attr_type_sig
         );
 
@@ -274,6 +270,8 @@ mod test {
     fn should_search_items() {
         let ss = SecretService::new().unwrap();
         let items = ss.search_items(Vec::new()).unwrap();
+        println!("{:?}", items);
+        let items = ss.search_items(vec![("test".into(), "test".into())]).unwrap();
         println!("{:?}", items);
         //assert!(false);
     }

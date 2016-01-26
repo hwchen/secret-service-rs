@@ -129,13 +129,17 @@ impl<'a> Item<'a> {
     }
 
     pub fn set_attributes(&self, attributes: Vec<(String, String)>) -> Result<(), Error> {
-        let attributes_dict_entries: Vec<_> = attributes.iter().map(|&(ref key, ref value)| {
-            let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
-            MessageItem::from(dict_entry)
-        }).collect();
-        let attributes_dict = MessageItem::new_array(attributes_dict_entries).unwrap();
-        //println!("{:?}", attributes_dict);
-        self.item_interface.set_props("Attributes", attributes_dict)
+        if !attributes.is_empty() {
+            let attributes_dict_entries: Vec<_> = attributes.iter().map(|&(ref key, ref value)| {
+                let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
+                MessageItem::from(dict_entry)
+            }).collect();
+            let attributes_dict = MessageItem::new_array(attributes_dict_entries).unwrap();
+            //println!("{:?}", attributes_dict);
+            self.item_interface.set_props("Attributes", attributes_dict)
+        } else {
+            Ok(())
+        }
     }
 
     pub fn get_label(&self) -> Result<String, Error> {
@@ -325,6 +329,7 @@ mod test{
             "text/plain; charset=utf8" // content_type
         ).unwrap();
         println!("hit");
+        item.set_attributes(vec![]).unwrap();
         item.set_attributes(vec![("test".into(), "test".into())]).unwrap();
         println!("hit2");
         let attributes = item.get_attributes().unwrap();
