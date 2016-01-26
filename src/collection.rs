@@ -251,6 +251,7 @@ impl<'a> Collection<'a> {
 
         // properties dict (label and attributes)
         let properties_dbus_dict = MessageItem::new_array(properties).unwrap();
+        //TODO: remove this line: println!("{:?}", properties_dbus_dict);
 
         // Method call to CreateItem
         let res = try!(self.collection_interface.method("CreateItem", vec![

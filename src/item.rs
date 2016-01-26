@@ -9,7 +9,6 @@ use ss::{
 };
 use util::{
     exec_prompt,
-    format_secret,
     Interface,
 };
 
@@ -115,9 +114,28 @@ impl<'a> Item<'a> {
     }
 
     pub fn get_attributes(&self) -> Result<Vec<(String, String)>, Error> {
-        let mut res = Vec::new();
-        res.push((String::new(), String::new()));
-        Ok(res)
+        let res = try!(self.item_interface.get_props("Attributes"));
+
+        if let Array(attributes, _) = res {
+            return Ok(attributes.iter().map(|ref dict_entry| {
+                let entry: (&MessageItem, &MessageItem) = dict_entry.inner().unwrap();
+                let key: &String = entry.0.inner().unwrap();
+                let value: &String= entry.1.inner().unwrap();
+                (key.clone(), value.clone())
+            }).collect::<Vec<(String, String)>>())
+        } else {
+            Err(Error::new_custom("SSError", "Could not get attributes"))
+        }
+    }
+
+    pub fn set_attributes(&self, attributes: Vec<(String, String)>) -> Result<(), Error> {
+        let attributes_dict_entries: Vec<_> = attributes.iter().map(|&(ref key, ref value)| {
+            let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
+            MessageItem::from(dict_entry)
+        }).collect();
+        let attributes_dict = MessageItem::new_array(attributes_dict_entries).unwrap();
+        //println!("{:?}", attributes_dict);
+        self.item_interface.set_props("Attributes", attributes_dict)
     }
 
     pub fn get_label(&self) -> Result<String, Error> {
@@ -278,8 +296,7 @@ mod test{
 
     //TODO: rewrite test after fixing attributes!
     #[test]
-    #[ignore]
-    fn should_create_get_and_set_item_attributes() {
+    fn should_create_with_item_attributes() {
         let ss = SecretService::new().unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
@@ -295,6 +312,27 @@ mod test{
         assert!(false);
     }
 
+    //TODO: rewrite test after fixing attributes!
+    #[test]
+    fn should_get_and_set_item_attributes() {
+        let ss = SecretService::new().unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        let item = collection.create_item(
+            "Test",
+            Vec::new(),
+            b"test",
+            false, // replace
+            "text/plain; charset=utf8" // content_type
+        ).unwrap();
+        println!("hit");
+        item.set_attributes(vec![("test".into(), "test".into())]).unwrap();
+        println!("hit2");
+        let attributes = item.get_attributes().unwrap();
+        println!("Attributes: {:?}", attributes);
+        assert_eq!(attributes, vec![("test".into(), "test".into())]);
+        item.delete().unwrap();
+        assert!(false);
+    }
     #[test]
     fn should_get_modified_created_props() {
         let ss = SecretService::new().unwrap();
@@ -306,7 +344,7 @@ mod test{
             false, // replace
             "text/plain; charset=utf8" // content_type
         ).unwrap();
-        item.set_label("Tester");
+        item.set_label("Tester").unwrap();
         let created = item.get_created().unwrap();
         let modified = item.get_modified().unwrap();
         println!("Created {:?}, Modified {:?}", created, modified);

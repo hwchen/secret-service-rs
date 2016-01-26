@@ -14,6 +14,7 @@
 // Rc imposes some cost, is it ok? Or overkill? or inappropriate?
 
 // TODO:
+// Change all MessageItems initialization to use MessageItem::from()
 // Item label and attributes, then created/modified, then secrets, then crypto
 // factor out handling mapping paths to Item
 // Remove all matches for option and result!
