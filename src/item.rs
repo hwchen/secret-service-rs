@@ -128,14 +128,17 @@ impl<'a> Item<'a> {
         }
     }
 
-    pub fn set_attributes(&self, attributes: Vec<(String, String)>) -> Result<(), Error> {
+    // Probably best example of creating dict
+    pub fn set_attributes(&self, attributes: Vec<(&str, &str)>) -> Result<(), Error> {
         if !attributes.is_empty() {
             let attributes_dict_entries: Vec<_> = attributes.iter().map(|&(ref key, ref value)| {
-                let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
+                let dict_entry = (
+                    MessageItem::from(*key),
+                    MessageItem::from(*value)
+                );
                 MessageItem::from(dict_entry)
             }).collect();
             let attributes_dict = MessageItem::new_array(attributes_dict_entries).unwrap();
-            //println!("{:?}", attributes_dict);
             self.item_interface.set_props("Attributes", attributes_dict)
         } else {
             Ok(())
@@ -298,25 +301,24 @@ mod test{
         //assert!(false);
     }
 
-    //TODO: rewrite test after fixing attributes!
     #[test]
     fn should_create_with_item_attributes() {
         let ss = SecretService::new().unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            vec![("one", "one")],
+            vec![("test", "test")],
             b"test",
             false, // replace
             "text/plain; charset=utf8" // content_type
         ).unwrap();
         let attributes = item.get_attributes().unwrap();
+        assert_eq!(attributes, vec![("test".into(), "test".into())]);
         println!("Attributes: {:?}", attributes);
         item.delete().unwrap();
-        assert!(false);
+        //assert!(false);
     }
 
-    //TODO: rewrite test after fixing attributes!
     #[test]
     fn should_get_and_set_item_attributes() {
         let ss = SecretService::new().unwrap();
@@ -328,15 +330,14 @@ mod test{
             false, // replace
             "text/plain; charset=utf8" // content_type
         ).unwrap();
-        println!("hit");
+        // Also test empty array handling
         item.set_attributes(vec![]).unwrap();
-        item.set_attributes(vec![("test".into(), "test".into())]).unwrap();
-        println!("hit2");
+        item.set_attributes(vec![("test", "test")]).unwrap();
         let attributes = item.get_attributes().unwrap();
         println!("Attributes: {:?}", attributes);
         assert_eq!(attributes, vec![("test".into(), "test".into())]);
         item.delete().unwrap();
-        assert!(false);
+        //assert!(false);
     }
     #[test]
     fn should_get_modified_created_props() {

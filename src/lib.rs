@@ -2,20 +2,9 @@
 #![allow(dead_code)]
 // requires ldbus dev library
 // on ubuntu, libdbus-1-dev
-//
-// check hyper and mio to see if passing bus connection
-// is the best architecture, or if connection should be
-// an attribute of secretservice, which should spawn
-// new collections directly and pass a reference to the bus.
-// (I like the second better, seems more consistent).
-//
-// Tried passing bus Connection using & and lifetimes, but Connection
-// didn't live long enough if in two nested structs.
-// Rc imposes some cost, is it ok? Or overkill? or inappropriate?
 
 // TODO:
-// Change all MessageItems initialization to use MessageItem::from()
-// Item label and attributes, then created/modified, then secrets, then crypto
+// Item then secrets, then crypto
 // factor out handling mapping paths to Item
 // Remove all matches for option and result!
 // properly return path for delete actions?
@@ -29,6 +18,7 @@
 // Return using map when possible instead of matching
 // Abstract prompts for creating items. Can I abstract other prompts?
 // in all tests, make sure that check for structs
+// Change all MessageItems initialization to use MessageItem::from()
 
 extern crate crypto;
 extern crate dbus;
@@ -165,6 +155,7 @@ impl SecretService {
                     let obj_path = try!(exec_prompt(self.bus.clone(), path.clone()));
                     //println!("obj_path {:?}", obj_path);
                     // Have to use box syntax
+                    // TODO: use inner()
                     if let Variant(box ObjectPath(ref path)) = obj_path {
                         return Ok(path.clone());
                     }
@@ -267,6 +258,7 @@ mod test {
     }
 
     #[test]
+    // TODO: add an item and search
     fn should_search_items() {
         let ss = SecretService::new().unwrap();
         let items = ss.search_items(Vec::new()).unwrap();

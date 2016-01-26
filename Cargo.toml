@@ -4,6 +4,6 @@ name = "secret-service"
 version = "0.1.0"
 
 [dependencies]
-dbus = "0.2.1"
+dbus = { git = "https://github.com/diwic/dbus-rs.git" }
 rand = "0.3.13"
 rust-crypto = "0.2.34"
