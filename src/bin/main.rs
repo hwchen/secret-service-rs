@@ -4,5 +4,15 @@ use secret_service::SecretService;
 
 fn main() {
     let ss = SecretService::new().unwrap();
-    println!("{:?}", ss.test_message());
+    let collection = ss.get_default_collection().unwrap();
+    let items = collection.get_all_items().unwrap();
+    let items_count = items.len();
+    println!("Count before: {:?}", items.len());
+    if items_count > 0 {
+        for item in items {
+            item.delete();
+        }
+    }
+    let items = collection.get_all_items().unwrap();
+    println!("Count after: {:?}", items.len());
 }
