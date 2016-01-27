@@ -9,6 +9,7 @@ use ss::{
 };
 use util::{
     exec_prompt,
+    format_secret,
     Interface,
 };
 
@@ -177,16 +178,56 @@ impl<'a> Item<'a> {
         Err(Error::new_custom("SSError", "Could not delete Item"))
     }
 
-    pub fn get_secret() -> Result<Vec<u8>, Error> {
-        unimplemented!();
+    pub fn get_secret(&self) -> Result<Vec<u8>, Error> {
+        let session = MessageItem::from(self.session.object_path.clone());
+        let res = try!(self.item_interface.method("GetSecret", vec![session]));
+        // No secret would be a bug, so try!
+        let secret_struct = try!(res.get(0).ok_or(Error::new_custom("SSError", "No Secret Found")));
+
+        // parse out secret
+
+        // get "secret" field out of secret struct
+        // secret should always be index 2
+        let secret_vec: &Vec<_> = secret_struct.inner().unwrap();
+        let secret_dbus = try!(secret_vec
+            .get(2)
+            .ok_or(Error::new_custom("SSError", "No Secret Found"))
+        );
+
+        // get array of dbus bytes
+        let secret_bytes_dbus: &Vec<_> = secret_dbus.inner().unwrap();
+
+        // map dbus bytes to u8
+        let secret: Vec<_> = secret_bytes_dbus.iter().map(|byte| byte.inner::<u8>().unwrap()).collect();
+
+        Ok(secret)
     }
 
-    pub fn get_secret_content_type() -> Result<String, Error> {
-        unimplemented!();
+    pub fn get_secret_content_type(&self) -> Result<String, Error> {
+        let session = MessageItem::from(self.session.object_path.clone());
+        let res = try!(self.item_interface.method("GetSecret", vec![session]));
+        // No secret content type would be a bug, so try!
+        let secret_struct = try!(res.get(0).ok_or(Error::new_custom("SSError", "No Secret Found")));
+
+        // parse out secret content type
+
+        // get "content type" field out of secret struct
+        // content type should always be index 3
+        let secret_vec: &Vec<_> = secret_struct.inner().unwrap();
+        let content_type_dbus = try!(secret_vec
+            .get(3)
+            .ok_or(Error::new_custom("SSError", "No Secret Found"))
+        );
+
+        // Get value out of DBus value
+        let content_type: &String = content_type_dbus.inner().unwrap();
+
+        Ok(content_type.clone())
     }
 
-    pub fn set_secret() -> Result<(), Error> {
-        unimplemented!();
+    pub fn set_secret(&self, secret: &[u8], content_type: &str) -> Result<(), Error> {
+        let secret_struct = format_secret(&self.session, secret, content_type);
+        self.item_interface.method("SetSecret", vec![secret_struct]).map(|_| ())
     }
 
     pub fn get_created(&self) -> Result<u64, Error> {
@@ -225,7 +266,7 @@ mod test{
             Vec::new(),
             b"test",
             false, // replace
-            "text/plain; charset=utf8" // content_type
+            "text/plain" // content_type
         ).unwrap();
         let _ = item.item_path.clone(); // to prepare for future drop for delete?
         item.delete().unwrap();
@@ -245,7 +286,7 @@ mod test{
             Vec::new(),
             b"test",
             false, // replace
-            "text/plain; charset=utf8" // content_type
+            "text/plain" // content_type
         ).unwrap();
         item.is_locked().unwrap();
         item.delete().unwrap();
@@ -261,7 +302,7 @@ mod test{
             Vec::new(),
             b"test",
             false, // replace
-            "text/plain; charset=utf8" // content_type
+            "text/plain" // content_type
         ).unwrap();
         let locked = item.is_locked().unwrap();
         if locked {
@@ -289,7 +330,7 @@ mod test{
             Vec::new(),
             b"test",
             false, // replace
-            "text/plain; charset=utf8" // content_type
+            "text/plain" // content_type
         ).unwrap();
 
         // Set label to test and check
@@ -310,7 +351,7 @@ mod test{
             vec![("test", "test")],
             b"test",
             false, // replace
-            "text/plain; charset=utf8" // content_type
+            "text/plain" // content_type
         ).unwrap();
         let attributes = item.get_attributes().unwrap();
         assert_eq!(attributes, vec![("test".into(), "test".into())]);
@@ -328,7 +369,7 @@ mod test{
             Vec::new(),
             b"test",
             false, // replace
-            "text/plain; charset=utf8" // content_type
+            "text/plain" // content_type
         ).unwrap();
         // Also test empty array handling
         item.set_attributes(vec![]).unwrap();
@@ -348,7 +389,7 @@ mod test{
             Vec::new(),
             b"test",
             false, // replace
-            "text/plain; charset=utf8" // content_type
+            "text/plain" // content_type
         ).unwrap();
         item.set_label("Tester").unwrap();
         let created = item.get_created().unwrap();
@@ -356,6 +397,55 @@ mod test{
         println!("Created {:?}, Modified {:?}", created, modified);
         item.delete().unwrap();
         //assert!(false);
+    }
+
+    #[test]
+    fn should_create_and_get_secret() {
+        let ss = SecretService::new().unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        let item = collection.create_item(
+            "Test",
+            Vec::new(),
+            b"test",
+            false, // replace
+            "text/plain" // content_type
+        ).unwrap();
+        let secret = item.get_secret().unwrap();
+        item.delete().unwrap();
+        assert_eq!(secret, b"test");
+    }
+
+    #[test]
+    fn should_get_secret_content_type() {
+        let ss = SecretService::new().unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        let item = collection.create_item(
+            "Test",
+            Vec::new(),
+            b"test",
+            false, // replace
+            "text/plain" // content_type, defaults to text/plain
+        ).unwrap();
+        let content_type = item.get_secret_content_type().unwrap();
+        item.delete().unwrap();
+        assert_eq!(content_type, "text/plain".to_owned());
+    }
+
+    #[test]
+    fn should_set_secret() {
+        let ss = SecretService::new().unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        let item = collection.create_item(
+            "Test",
+            Vec::new(),
+            b"test",
+            false, // replace
+            "text/plain" // content_type
+        ).unwrap();
+        item.set_secret(b"new_test", "text/plain").unwrap();
+        let secret = item.get_secret().unwrap();
+        item.delete().unwrap();
+        assert_eq!(secret, b"new_test");
     }
 }
 
