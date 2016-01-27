@@ -15,4 +15,13 @@ fn main() {
     }
     let items = collection.get_all_items().unwrap();
     println!("Count after: {:?}", items.len());
+
+    // delete Test collections
+    let collections = ss.get_all_collections().unwrap();
+    for collection in collections {
+        if collection.get_label().unwrap() == "Test" {
+            println!("{:?}", collection.collection_path);
+            collection.delete();
+        }
+    }
 }

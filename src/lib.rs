@@ -4,7 +4,10 @@
 // on ubuntu, libdbus-1-dev
 
 // TODO:
-// Item then secrets, then crypto
+// crypto
+// handle drop for delete methods?
+// lib.rs especially needs to be rewritten
+//
 // factor out handling mapping paths to Item
 // Remove all matches for option and result!
 // properly return path for delete actions?
@@ -136,9 +139,7 @@ impl SecretService {
             })
     }
 
-    // TODO: Eventually should return the collection
-    // doesn't work?
-    pub fn create_collection(&self, label: &str, alias: &str) -> Result<Path, Error> {
+    pub fn create_collection(&self, label: &str, alias: &str) -> Result<Collection, Error> {
         let label = DictEntry(
             Box::new(Str("org.freedesktop.Secret.Collection.Label".to_owned())),
             Box::new(Variant(Box::new(Str(label.to_owned()))))
@@ -148,25 +149,39 @@ impl SecretService {
         let alias = Str(alias.to_owned());
 
         let res = try!(self.service_interface.method("CreateCollection", vec![properties, alias]));
-        // check if prompt is needed
-        if let Some(&ObjectPath(ref created_path)) = res.get(0) {
+
+        let collection_path: Path = {
+            // Get path of created object
+            let created_object_path = try!(res
+                .get(0)
+                .ok_or(Error::new_custom("SSError", "Could not create Collection"))
+            );
+            let created_path: &Path = created_object_path.inner().unwrap();
+
+            // Check if that path is "/", if so should execute a prompt
             if &**created_path == "/" {
-                if let Some(&ObjectPath(ref path)) = res.get(1) {
-                    let obj_path = try!(exec_prompt(self.bus.clone(), path.clone()));
-                    //println!("obj_path {:?}", obj_path);
-                    // Have to use box syntax
-                    // TODO: use inner()
-                    if let Variant(box ObjectPath(ref path)) = obj_path {
-                        return Ok(path.clone());
-                    }
-                }
+                let prompt_object_path = try!(res
+                    .get(1)
+                    .ok_or(Error::new_custom("SSError", "Could not create Collection"))
+                );
+                let prompt_path: &Path = prompt_object_path.inner().unwrap();
+
+                // Exec prompt and parse result
+                let var_obj_path = try!(exec_prompt(self.bus.clone(), prompt_path.clone()));
+                let obj_path: &MessageItem = var_obj_path.inner().unwrap();
+                let path: &Path = obj_path.inner().unwrap();
+                path.clone()
             } else {
-                // returning the first path.
-                return Ok(created_path.clone());
+                // if not, just return created path
+                created_path.clone()
             }
-        }
-        // If for some reason the patterns don't match, return error
-        Err(Error::new_custom("SSError", "Could not create Collection"))
+        };
+
+        Ok(Collection::new(
+            self.bus.clone(),
+            &self.session,
+            collection_path.clone()
+        ))
     }
 
     pub fn search_items(&self, attributes: Vec<(String, String)>) -> Result<Vec<MessageItem>, Error> {
@@ -211,6 +226,7 @@ impl SecretService {
 #[cfg(test)]
 mod test {
     use super::*;
+    use dbus::Path;
 
     #[test]
     fn should_create_secret_service() {
@@ -249,12 +265,15 @@ mod test {
 
     #[test]
     #[ignore]
-    fn should_create_collection() {
-        assert!(false);
+    fn should_create_and_delete_collection() {
         let ss = SecretService::new().unwrap();
-        // Shoul also return object path eventually
         let test_collection = ss.create_collection("Test", "").unwrap();
         println!("{:?}", test_collection);
+        assert_eq!(
+            test_collection.collection_path,
+            Path::new("/org/freedesktop/secrets/collection/Test").unwrap()
+        );
+        test_collection.delete().unwrap();
     }
 
     #[test]
@@ -265,6 +284,6 @@ mod test {
         println!("{:?}", items);
         let items = ss.search_items(vec![("test".into(), "test".into())]).unwrap();
         println!("{:?}", items);
-        //assert!(false);
+        assert!(false);
     }
 }
