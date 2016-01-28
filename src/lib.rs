@@ -37,6 +37,7 @@ mod session;
 use std::rc::Rc;
 
 use collection::Collection;
+use item::Item;
 use util::{Interface, exec_prompt};
 use session::Session;
 use ss::{
@@ -184,8 +185,8 @@ impl SecretService {
         ))
     }
 
-    pub fn search_items(&self, attributes: Vec<(String, String)>) -> Result<Vec<MessageItem>, Error> {
-        let attr_dict_entries: Vec<_> = attributes.iter().map(|&(ref key, ref value)| {
+    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>, Error> {
+        let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
             let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
             MessageItem::from(dict_entry)
         }).collect();
@@ -219,7 +220,18 @@ impl SecretService {
             _ => Vec::new(),
         };
         unlocked.extend(locked);
-        Ok(unlocked)
+        let items = unlocked;
+
+        Ok(items.iter().map(|item_path| {
+            // extract path from objectPath
+            let path: &Path = item_path.inner().unwrap();
+
+            Item::new(
+                self.bus.clone(),
+                &self.session,
+                path.clone()
+            )
+        }).collect::<Vec<_>>())
     }
 }
 
@@ -254,7 +266,7 @@ mod test {
     #[test]
     fn should_get_default_collection() {
         let ss = SecretService::new().unwrap();
-        let _ = ss.get_default_collection();
+        ss.get_default_collection().unwrap();
     }
 
     #[test]
@@ -277,13 +289,35 @@ mod test {
     }
 
     #[test]
-    // TODO: add an item and search
     fn should_search_items() {
         let ss = SecretService::new().unwrap();
-        let items = ss.search_items(Vec::new()).unwrap();
-        println!("{:?}", items);
-        let items = ss.search_items(vec![("test".into(), "test".into())]).unwrap();
-        println!("{:?}", items);
-        assert!(false);
+        let collection = ss.get_default_collection().unwrap();
+
+        // Create an item
+        let item = collection.create_item(
+            "test",
+            vec![("test_attribute", "test_value")],
+            b"test_secret",
+            false,
+            "text/plain"
+        ).unwrap();
+
+        // handle empty vec search
+        ss.search_items(Vec::new()).unwrap();
+
+        // handle no result
+        let bad_search = ss.search_items(vec![("test".into(), "test".into())]).unwrap();
+        assert_eq!(bad_search.len(), 0);
+
+        // handle correct search for item and compare
+        let search_item = ss.search_items(
+            vec![("test_attribute", "test_value")]
+        ).unwrap();
+
+        assert_eq!(
+            item.item_path,
+            search_item[0].item_path
+        );
+        item.delete().unwrap();
     }
 }

@@ -97,7 +97,7 @@ impl<'a> Collection<'a> {
         };
 
         let res = try!(self.service_interface.method(lock_action_str, vec![objects]));
-        //println!("Locking or unlocking paths: {:?}", res);
+        
         if let Some(&Array(ref unlocked, _)) = res.get(0) {
             if unlocked.len() == 0 {
                 if let Some(&ObjectPath(ref path)) = res.get(1) {
@@ -117,6 +117,7 @@ impl<'a> Collection<'a> {
         self.lock_or_unlock(LockAction::Lock)
     }
 
+    // TODO: Rewrite
     pub fn delete(&self) -> Result<(), Error> {
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
@@ -136,6 +137,7 @@ impl<'a> Collection<'a> {
         Err(Error::new_custom("SSError", "Could not delete Collection"))
     }
 
+    // TODO: Refactor to clean up indent
     pub fn get_all_items(&self) -> Result<Vec<Item>, Error> {
         let items = try!(self.collection_interface.get_props("Items"));
         if let Array(item_array, _) = items {
@@ -144,7 +146,7 @@ impl<'a> Collection<'a> {
                     ObjectPath(ref path) => {
                         Some(Item::new(
                             self.bus.clone(),
-                            self.session.clone(),
+                            &self.session,
                             path.clone()
                         ))
                     },
@@ -157,33 +159,31 @@ impl<'a> Collection<'a> {
         }
     }
 
-    pub fn search_items(&self, attributes: Vec<(String, String)>) -> Result<Vec<Item>, Error> {
-        let attr_as_dict_entries: Vec<_> = attributes
-            .iter()
-            .map(|&(ref key, ref value)| {
-                DictEntry(
-                    Box::new(Str((*key).to_owned())),
-                    Box::new(Str((*value).to_owned()))
-                )
-            }).collect();
+    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>, Error> {
+        let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
+            let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
+            MessageItem::from(dict_entry)
+        }).collect();
         let attr_type_sig = DictEntry(
             Box::new(Str("".to_owned())),
             Box::new(Str("".to_owned()))
         ).type_sig();
         let attr_dbus_dict = Array(
-            attr_as_dict_entries,
+            attr_dict_entries,
             attr_type_sig
         );
 
         // Method call to SearchItem
         let items = try!(self.collection_interface.method("SearchItems", vec![attr_dbus_dict]));
+
+        // TODO: Refactor to be clean like create_item
         if let &Array(ref item_array, _) = items.get(0).unwrap() {
             Ok(item_array.iter().filter_map(|ref item| {
                 match **item {
                     ObjectPath(ref path) => {
                         Some(Item::new(
                             self.bus.clone(),
-                            self.session.clone(),
+                            &self.session,
                             path.clone()
                         ))
                     },
@@ -251,7 +251,6 @@ impl<'a> Collection<'a> {
 
         // properties dict (label and attributes)
         let properties_dbus_dict = MessageItem::new_array(properties).unwrap();
-        //TODO: remove this line: println!("{:?}", properties_dbus_dict);
 
         // Method call to CreateItem
         let res = try!(self.collection_interface.method("CreateItem", vec![
@@ -260,33 +259,40 @@ impl<'a> Collection<'a> {
             Bool(replace)
         ]));
 
-        // handle prompt if necessary
-        // So far just cut and paste below, make sure to check
-        if let Some(&ObjectPath(ref created_path)) = res.get(0) {
+        // This prompt handling is practically identical to create_collection
+        // TODO: refactor
+        let item_path: Path = {
+            // Get path of created object
+            let created_object_path = try!(res
+                .get(0)
+                .ok_or(Error::new_custom("SSError", "Could not create Item"))
+            );
+            let created_path: &Path = created_object_path.inner().unwrap();
+
+            // Check if that path is "/", if so should execute a prompt
             if &**created_path == "/" {
-                if let Some(&ObjectPath(ref path)) = res.get(1) {
-                    let obj_path = try!(exec_prompt(self.bus.clone(), path.clone()));
-                    println!("obj_path {:?}", obj_path);
-                    // Have to use box syntax
-                    if let Variant(box ObjectPath(ref path)) = obj_path {
-                        return Ok(Item::new(
-                            self.bus.clone(),
-                            self.session.clone(),
-                            path.clone()
-                        ));
-                    }
-                }
+                let prompt_object_path = try!(res
+                    .get(1)
+                    .ok_or(Error::new_custom("SSError", "Could not create Item"))
+                );
+                let prompt_path: &Path = prompt_object_path.inner().unwrap();
+
+                // Exec prompt and parse result
+                let var_obj_path = try!(exec_prompt(self.bus.clone(), prompt_path.clone()));
+                let obj_path: &MessageItem = var_obj_path.inner().unwrap();
+                let path: &Path = obj_path.inner().unwrap();
+                path.clone()
             } else {
-                // returning the first path.
-                return Ok(Item::new(
-                    self.bus.clone(),
-                    self.session.clone(),
-                    created_path.clone()
-                ));
+                // if not, just return created path
+                created_path.clone()
             }
-        }
-        // If for some reason the patterns don't match, return error
-        Err(Error::new_custom("SSError", "Could not create Item"))
+        };
+
+        Ok(Item::new(
+            self.bus.clone(),
+            &self.session,
+            item_path.clone()
+        ))
     }
 }
 
@@ -363,9 +369,33 @@ mod test{
     fn should_search_items() {
         let ss = SecretService::new().unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let items = collection.search_items(Vec::new()).unwrap();
-        println!("{:?}", items);
-        //assert!(false);
+
+        // Create an item
+        let item = collection.create_item(
+            "test",
+            vec![("test_attribute", "test_value")],
+            b"test_secret",
+            false,
+            "text/plain"
+        ).unwrap();
+
+        // handle empty vec search
+        collection.search_items(Vec::new()).unwrap();
+
+        // handle no result
+        let bad_search = collection.search_items(vec![("test".into(), "test".into())]).unwrap();
+        assert_eq!(bad_search.len(), 0);
+
+        // handle correct search for item and compare
+        let search_item = collection.search_items(
+            vec![("test_attribute", "test_value")]
+        ).unwrap();
+
+        assert_eq!(
+            item.item_path,
+            search_item[0].item_path
+        );
+        item.delete().unwrap();
     }
 
     #[test]

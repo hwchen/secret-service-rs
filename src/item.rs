@@ -37,7 +37,7 @@ enum LockAction {
 pub struct Item<'a> {
     bus: Rc<Connection>,
     session: &'a Session,
-    item_path: Path,
+    pub item_path: Path,
     item_interface: Interface,
     service_interface: Interface,
 }
