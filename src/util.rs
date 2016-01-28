@@ -11,8 +11,6 @@
 //
 // to_unicode, don't need!
 
-use std::rc::Rc;
-
 use session::Session;
 use ss::{
     SS_DBUS_NAME,
@@ -38,6 +36,7 @@ use dbus::MessageItem::{
     Str,
     Struct,
 };
+use std::rc::Rc;
 
 #[derive(Debug, Clone)]
 pub struct Interface {

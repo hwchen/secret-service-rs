@@ -8,8 +8,6 @@
 //use crypto::digest::Digest;
 //use crypto::sha2::Sha256;
 
-use std::rc::Rc;
-
 use ss::{
     SS_DBUS_NAME,
     SS_PATH,
@@ -28,6 +26,7 @@ use dbus::MessageItem::{
     Str,
     ObjectPath,
 };
+use std::rc::Rc;
 
 // helper enum
 pub enum EncryptionType {
@@ -37,6 +36,8 @@ pub enum EncryptionType {
 
 #[derive(Debug)]
 pub struct Session {
+    // TODO: Should session store encryption?
+    // TODO: method for getting path
     pub object_path: Path,
     server_public_key: Option<Vec<u8>>,
     aes_key: Option<Vec<u8>>,
@@ -125,5 +126,11 @@ mod test {
     fn should_create_plain_session() {
         let bus = Connection::get_private(BusType::Session).unwrap();
         Session::new(Rc::new(bus), EncryptionType::Plain).unwrap();
+    }
+
+    #[test]
+    fn should_create_encrypted_session() {
+        let bus = Connection::get_private(BusType::Session).unwrap();
+        Session::new(Rc::new(bus), EncryptionType::Dh).unwrap();
     }
 }

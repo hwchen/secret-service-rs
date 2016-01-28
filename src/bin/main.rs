@@ -1,9 +1,10 @@
 extern crate secret_service;
 
 use secret_service::SecretService;
+use secret_service::session::EncryptionType;
 
 fn main() {
-    let ss = SecretService::new().unwrap();
+    let ss = SecretService::new(EncryptionType::Plain).unwrap();
     let collection = ss.get_default_collection().unwrap();
     let items = collection.get_all_items().unwrap();
     let items_count = items.len();

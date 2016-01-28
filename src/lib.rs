@@ -1,4 +1,3 @@
-#![feature(box_patterns)]
 #![allow(dead_code)]
 // requires ldbus dev library
 // on ubuntu, libdbus-1-dev
@@ -6,19 +5,14 @@
 // TODO:
 // crypto
 // handle drop for delete methods?
-// lib.rs especially needs to be rewritten
 //
 // factor out handling mapping paths to Item
 // Remove all matches for option and result!
 // properly return path for delete actions?
 // Move similar methods to common interface: locking, attributes, del, label?
 // Reorg imports, format function params to be consistent
-// Then check that all functions return Collection or Item instead
-// of Path or MessageItem
-// Refactor Dict
 // Refactor to make str and String function params consistent
 // Redo tests now that full range of api is implemented
-// Return using map when possible instead of matching
 // Abstract prompts for creating items. Can I abstract other prompts?
 // in all tests, make sure that check for structs
 // Change all MessageItems initialization to use MessageItem::from()
@@ -32,9 +26,7 @@ pub mod error;
 pub mod item;
 mod util;
 mod ss;
-mod session;
-
-use std::rc::Rc;
+pub mod session;
 
 use collection::Collection;
 use item::Item;
@@ -63,6 +55,7 @@ use dbus::MessageItem::{
     Str,
     Variant,
 };
+use std::rc::Rc;
 
 // Secret Service Struct
 

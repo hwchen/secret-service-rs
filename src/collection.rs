@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use item::Item;
 use session::Session;
 use ss::{
@@ -32,6 +30,7 @@ use dbus::MessageItem::{
     Str,
     Variant,
 };
+use std::rc::Rc;
 
 // Helper enums
 enum LockAction {
@@ -41,6 +40,7 @@ enum LockAction {
 
 #[derive(Debug, Clone)]
 pub struct Collection<'a> {
+    // TODO: Implement method for path?
     bus: Rc<Connection>,
     session: &'a Session,
     pub collection_path: Path,

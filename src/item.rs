@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use session::Session;
 use ss::{
     SS_DBUS_NAME,
@@ -26,6 +24,7 @@ use dbus::MessageItem::{
     Str,
 };
 use dbus::Interface as InterfaceName;
+use std::rc::Rc;
 
 // Helper enum
 enum LockAction {
@@ -35,6 +34,7 @@ enum LockAction {
 
 #[derive(Debug)]
 pub struct Item<'a> {
+    // TODO: Implement method for path?
     bus: Rc<Connection>,
     session: &'a Session,
     pub item_path: Path,
