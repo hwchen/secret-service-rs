@@ -91,19 +91,16 @@ impl SecretService {
     }
 
     pub fn get_all_collections(&self) -> Result<Vec<Collection>, Error> {
-        let mut collections = Vec::new();
-        if let Array(ref items, _) = try!(self.service_interface.get_props("Collections")) {
-            for item in items {
-                if let ObjectPath(ref path) = *item {
-                    collections.push(Collection::new(
-                        self.bus.clone(),
-                        &self.session,
-                        path.clone()
-                    ));
-                }
-            }
-        }
-        Ok(collections)
+        let res = try!(self.service_interface.get_props("Collections"));
+        let collections: &Vec<_> = res.inner().unwrap();
+        Ok(collections.iter().map(|object_path| {
+            let path: &Path = object_path.inner().unwrap();
+            Collection::new(
+                self.bus.clone(),
+                &self.session,
+                path.clone()
+            )
+        }).collect::<Vec<_>>())
     }
 
     pub fn get_collection_by_alias(&self, alias: &str) -> Result<Collection, Error>{
@@ -260,7 +257,7 @@ mod test {
     #[test]
     fn should_get_collection_by_alias() {
         let ss = SecretService::new().unwrap();
-        let _ = ss.get_collection_by_alias("session");
+        ss.get_collection_by_alias("session").unwrap();
     }
 
     #[test]
