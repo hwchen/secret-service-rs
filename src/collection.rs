@@ -33,7 +33,7 @@ use dbus::MessageItem::{
     Variant,
 };
 
-// Helper enum
+// Helper enums
 enum LockAction {
     Lock,
     Unlock,
@@ -298,18 +298,19 @@ impl<'a> Collection<'a> {
 
 #[cfg(test)]
 mod test{
+    use session::EncryptionType;
     use super::super::*;
 
     #[test]
     fn should_create_collection_struct() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let _ = ss.get_default_collection().unwrap();
         // tested under SecretService struct
     }
 
     #[test]
     fn should_check_if_collection_locked() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let _ = collection.is_locked().unwrap();
     }
@@ -317,7 +318,7 @@ mod test{
     #[test]
     #[ignore]
     fn should_lock_and_unlock() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let locked = collection.is_locked().unwrap();
         if locked {
@@ -338,7 +339,7 @@ mod test{
     #[test]
     #[ignore]
     fn should_delete_collection() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collections = ss.get_all_collections().unwrap();
         println!("collections before delete {:?}", collections);
         println!("# collections before delete {:?}", collections.len());
@@ -359,7 +360,7 @@ mod test{
 
     #[test]
     fn should_get_all_items() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let items = collection.get_all_items().unwrap();
         println!("{:?}", items);
@@ -367,7 +368,7 @@ mod test{
 
     #[test]
     fn should_search_items() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
 
         // Create an item
@@ -401,7 +402,7 @@ mod test{
     #[test]
     #[ignore]
     fn should_get_and_set_collection_label() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let label = collection.get_label().unwrap();
         assert_eq!(label, "Login");

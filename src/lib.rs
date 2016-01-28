@@ -40,6 +40,7 @@ use collection::Collection;
 use item::Item;
 use util::{Interface, exec_prompt};
 use session::Session;
+use session::EncryptionType;
 use ss::{
     SS_DBUS_NAME,
     SS_INTERFACE_SERVICE,
@@ -73,9 +74,9 @@ pub struct SecretService {
 }
 
 impl SecretService {
-    pub fn new() -> Result<Self, dbus::Error> {
+    pub fn new(encryption: EncryptionType) -> Result<Self, dbus::Error> {
         let bus = Rc::new(try!(Connection::get_private(BusType::Session)));
-        let session = try!(Session::new(&bus));
+        let session = try!(Session::new(bus.clone(), encryption));
         let service_interface = Interface::new(
             bus.clone(),
             BusName::new(SS_DBUS_NAME).unwrap(),
@@ -234,19 +235,20 @@ impl SecretService {
 
 #[cfg(test)]
 mod test {
+    use session::EncryptionType;
     use super::*;
     use dbus::Path;
 
     #[test]
     fn should_create_secret_service() {
-        SecretService::new().unwrap();
+        SecretService::new(EncryptionType::Plain).unwrap();
     }
 
     #[test]
     fn should_get_all_collections() {
         // Assumes that there will always be a default
         // collection
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collections = ss.get_all_collections().unwrap();
         assert!(collections.len() >= 1);
         println!("{:?}", collections);
@@ -256,26 +258,26 @@ mod test {
 
     #[test]
     fn should_get_collection_by_alias() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         ss.get_collection_by_alias("session").unwrap();
     }
 
     #[test]
     fn should_get_default_collection() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         ss.get_default_collection().unwrap();
     }
 
     #[test]
     fn should_get_any_collection() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let _ = ss.get_any_collection().unwrap();
     }
 
     #[test]
     #[ignore]
     fn should_create_and_delete_collection() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let test_collection = ss.create_collection("Test", "").unwrap();
         println!("{:?}", test_collection);
         assert_eq!(
@@ -287,7 +289,7 @@ mod test {
 
     #[test]
     fn should_search_items() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
 
         // Create an item

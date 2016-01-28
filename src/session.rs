@@ -8,6 +8,8 @@
 //use crypto::digest::Digest;
 //use crypto::sha2::Sha256;
 
+use std::rc::Rc;
+
 use ss::{
     SS_DBUS_NAME,
     SS_PATH,
@@ -27,6 +29,12 @@ use dbus::MessageItem::{
     ObjectPath,
 };
 
+// helper enum
+pub enum EncryptionType {
+    Plain,
+    Dh,
+}
+
 #[derive(Debug)]
 pub struct Session {
     pub object_path: Path,
@@ -38,18 +46,33 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(bus: &Connection) -> Result<Self, Error> {
+    pub fn new(bus: Rc<Connection>, encryption: EncryptionType) -> Result<Self, Error> {
         // Forming message, should not fail unless bug
-        // Currenty just doing plain
-        let m = Message::new_method_call(
-            SS_DBUS_NAME,
-            SS_PATH,
-            SS_INTERFACE_SERVICE,
-            "OpenSession"
-        ).unwrap()
-        .append(Str(ALGORITHM_PLAIN.to_owned()))
-        // this argument should be input for algorithm
-        .append(Variant(Box::new(Str("".to_owned()))));
+        let m = match encryption {
+            EncryptionType::Plain => {
+                Message::new_method_call(
+                    SS_DBUS_NAME,
+                    SS_PATH,
+                    SS_INTERFACE_SERVICE,
+                    "OpenSession"
+                ).unwrap()
+                .append(Str(ALGORITHM_PLAIN.to_owned()))
+                // this argument should be input for algorithm
+                .append(Variant(Box::new(Str("".to_owned()))))
+            },
+            EncryptionType::Dh => {
+                // TODO: Change this to encrypted!
+                Message::new_method_call(
+                    SS_DBUS_NAME,
+                    SS_PATH,
+                    SS_INTERFACE_SERVICE,
+                    "OpenSession"
+                ).unwrap()
+                .append(Str(ALGORITHM_PLAIN.to_owned()))
+                // this argument should be input for algorithm
+                .append(Variant(Box::new(Str("".to_owned()))))
+            },
+        };
 
         let r = try!(bus.send_with_reply_and_block(m, 2000));
 
@@ -94,12 +117,13 @@ impl Session {
 
 #[cfg(test)]
 mod test {
+    use std::rc::Rc;
     use super::*;
     use dbus::{Connection, BusType};
 
     #[test]
     fn should_create_plain_session() {
         let bus = Connection::get_private(BusType::Session).unwrap();
-        Session::new(&bus).unwrap();
+        Session::new(Rc::new(bus), EncryptionType::Plain).unwrap();
     }
 }

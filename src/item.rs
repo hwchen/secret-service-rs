@@ -255,11 +255,12 @@ impl<'a> PartialEq for Item<'a> {
 
 #[cfg(test)]
 mod test{
+    use session::EncryptionType;
     use super::super::*;
 
     #[test]
     fn should_create_and_delete_item() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
@@ -279,7 +280,7 @@ mod test{
 
     #[test]
     fn should_check_if_item_locked() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
@@ -295,7 +296,7 @@ mod test{
     #[test]
     #[ignore]
     fn should_lock_and_unlock() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
@@ -323,7 +324,7 @@ mod test{
 
     #[test]
     fn should_get_and_set_item_label() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
@@ -344,7 +345,7 @@ mod test{
 
     #[test]
     fn should_create_with_item_attributes() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
@@ -362,7 +363,7 @@ mod test{
 
     #[test]
     fn should_get_and_set_item_attributes() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
@@ -382,7 +383,7 @@ mod test{
     }
     #[test]
     fn should_get_modified_created_props() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
@@ -401,7 +402,7 @@ mod test{
 
     #[test]
     fn should_create_and_get_secret() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
@@ -417,7 +418,7 @@ mod test{
 
     #[test]
     fn should_get_secret_content_type() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
@@ -433,7 +434,7 @@ mod test{
 
     #[test]
     fn should_set_secret() {
-        let ss = SecretService::new().unwrap();
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
