@@ -18,17 +18,18 @@ use ss::{
 use dbus::{
     Connection,
     Message,
+    MessageItem,
     Path,
     Error,
 };
 use dbus::MessageItem::{
     Variant,
     Str,
-    ObjectPath,
 };
 use std::rc::Rc;
 
 // helper enum
+#[derive(Debug, PartialEq)]
 pub enum EncryptionType {
     Plain,
     Dh,
@@ -36,8 +37,7 @@ pub enum EncryptionType {
 
 #[derive(Debug)]
 pub struct Session {
-    // TODO: Should session store encryption?
-    // TODO: method for getting path
+    // TODO: Should session store encryption? As bool or EncryptionType? also getter/setter
     pub object_path: Path,
     server_public_key: Option<Vec<u8>>,
     aes_key: Option<Vec<u8>>,
@@ -76,35 +76,56 @@ impl Session {
         };
 
         let r = try!(bus.send_with_reply_and_block(m, 2000));
-
         let items = r.get_items();
 
         // check session output
-        match items.get(0) {
-            Some(o) if *o == Variant(Box::new(Str("".to_owned()))) => (),
-            Some(_) => {
-                return Err(Error::new_custom("SSError", "Error negotiating algorithm"));
-            },
-            _ => {
-                return Err(Error::new_custom("SSError",  "Error: no output fromOpenSession"));
-            },
+        // Should this always be a Variant String?
+        let session_output_dbus = try!(items
+            .get(0)
+            .ok_or(Error::new_custom("SSError",  "Error: no output from OpenSession"))
+        );
+        let session_output_variant_dbus: &MessageItem = session_output_dbus.inner().unwrap();
+
+        let session_output = if encryption == EncryptionType::Plain {
+            // plain encryption negotiation should result in empty string
+            match session_output_variant_dbus.inner::<&str>().unwrap() {
+                "" => vec![],
+                _ => return Err(Error::new_custom("SSError", "Error negotiating algorithm")),
+            }
+        } else {
+            // If not plain, Variant should be a vector of bytes
+            let session_output_array_dbus: &Vec<_> = session_output_variant_dbus
+                .inner()
+                .expect("SSError, Algorithm negotiation expected Array");
+
+            session_output_array_dbus
+                .iter()
+                .map(|byte_dbus| byte_dbus.inner::<u8>().unwrap())
+                .collect::<Vec<_>>()
         };
 
-        let object_path = match items.get(1) {
-            Some(&ObjectPath(ref path)) => path.clone(),
-            _ => {
-                return Err(Error::new_custom("SSError",  "Error: no output fromOpenSession"));
-            },
-        };
+        println!("{:?}", session_output);
+
+        // get session path
+        let object_path_dbus = try!(items
+            .get(1)
+            .ok_or(Error::new_custom("SSError",  "Error: no output from OpenSession"))
+        );
+        let object_path: &Path = object_path_dbus.inner().unwrap();
+
 
         Ok(Session {
-            object_path: object_path,
+            object_path: object_path.clone(),
             server_public_key: None,
             aes_key: None,
             encrypted: false,
             my_private_key: vec![],
             my_public_key: vec![],
         })
+    }
+
+    pub fn is_encrypted(&self) -> bool {
+        self.encrypted
     }
 
 //    pub fn set_server_public_key(&mut self, server_public_key: &[u8]) {
@@ -125,12 +146,14 @@ mod test {
     #[test]
     fn should_create_plain_session() {
         let bus = Connection::get_private(BusType::Session).unwrap();
-        Session::new(Rc::new(bus), EncryptionType::Plain).unwrap();
+        let session = Session::new(Rc::new(bus), EncryptionType::Plain).unwrap();
+        assert!(!session.is_encrypted());
     }
 
     #[test]
     fn should_create_encrypted_session() {
         let bus = Connection::get_private(BusType::Session).unwrap();
-        Session::new(Rc::new(bus), EncryptionType::Dh).unwrap();
+        let session = Session::new(Rc::new(bus), EncryptionType::Dh).unwrap();
+        assert!(session.is_encrypted());
     }
 }
