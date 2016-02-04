@@ -16,6 +16,7 @@ use ss::{
     SS_DBUS_NAME,
     SS_INTERFACE_PROMPT,
 };
+use ss_crypto::encrypt;
 
 use dbus::{
     BusName,
@@ -36,6 +37,7 @@ use dbus::MessageItem::{
     Str,
     Struct,
 };
+use rand::{Rng, OsRng};
 use std::rc::Rc;
 
 #[derive(Debug, Clone)]
@@ -108,19 +110,47 @@ pub fn format_secret(session: &Session,
                      content_type: &str
                     ) -> MessageItem {
 
-    // just Plain for now
-    let object_path = ObjectPath(session.object_path.clone());
-    let parameters = Array(vec![], Byte(0u8).type_sig());
-    let value_array: Vec<_> = secret.iter().map(|&byte| Byte(byte)).collect();
-    let value_dbus = Array(value_array, Byte(0u8).type_sig());
-    let content_type = Str(content_type.to_owned());
+    if session.is_encrypted() {
+        let mut rng = OsRng::new().unwrap();
+        let mut aes_iv = [0;16];
+        rng.fill_bytes(&mut aes_iv);
 
-    Struct(vec![
-        object_path,
-        parameters,
-        value_dbus,
-        content_type
+        let encrypted_secret = encrypt(secret, &session.get_aes_key()[..], &aes_iv).unwrap();
+
+        // Construct secret struct
+        let object_path = ObjectPath(session.object_path.clone());
+
+        let aes_iv_dbus: Vec<_> = aes_iv.iter().map(|&byte| Byte(byte)).collect();
+        let parameters = MessageItem::new_array(aes_iv_dbus).unwrap();
+
+        let secret_dbus: Vec<_> = encrypted_secret.iter().map(|&byte| Byte(byte)).collect();
+        let value_dbus = MessageItem::new_array(secret_dbus).unwrap();
+        let content_type = Str(content_type.to_owned());
+
+        println!("In format_secret: {:?}", value_dbus);
+
+        Struct(vec![
+            object_path,
+            parameters,
+            value_dbus,
+            content_type
         ])
+
+    } else {
+        // just Plain for now
+        let object_path = ObjectPath(session.object_path.clone());
+        let parameters = Array(vec![], Byte(0u8).type_sig());
+        let value_array: Vec<_> = secret.iter().map(|&byte| Byte(byte)).collect();
+        let value_dbus = Array(value_array, Byte(0u8).type_sig());
+        let content_type = Str(content_type.to_owned());
+
+        Struct(vec![
+            object_path,
+            parameters,
+            value_dbus,
+            content_type
+        ])
+    }
 }
 
 pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<MessageItem, Error> {

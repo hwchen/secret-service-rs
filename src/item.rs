@@ -5,6 +5,7 @@ use ss::{
     SS_INTERFACE_SERVICE,
     SS_PATH,
 };
+use ss_crypto::decrypt;
 use util::{
     exec_prompt,
     format_secret,
@@ -200,7 +201,24 @@ impl<'a> Item<'a> {
         // map dbus bytes to u8
         let secret: Vec<_> = secret_bytes_dbus.iter().map(|byte| byte.inner::<u8>().unwrap()).collect();
 
-        Ok(secret)
+        if !self.session.is_encrypted() {
+            Ok(secret)
+        } else {
+            // get "param" (aes_iv) field out of secret struct
+            // param should always be index 1
+            let aes_iv_dbus = try!(secret_vec
+                .get(1)
+                .ok_or(Error::new_custom("SSError", "No Secret Found"))
+            );
+            // get array of dbus bytes
+            let aes_iv_bytes_dbus: &Vec<_> = aes_iv_dbus.inner().unwrap();
+            // map dbus bytes to u8
+            let aes_iv: Vec<_> = aes_iv_bytes_dbus.iter().map(|byte| byte.inner::<u8>().unwrap()).collect();
+
+            // decrypt
+            let decrypted_secret = decrypt(&secret[..], &self.session.get_aes_key()[..], &aes_iv[..]).unwrap();
+            Ok(decrypted_secret)
+        }
     }
 
     pub fn get_secret_content_type(&self) -> Result<String, Error> {
@@ -349,13 +367,13 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            vec![("test", "test")],
+            vec![("test_attributes_in_item", "test")],
             b"test",
             false, // replace
             "text/plain" // content_type
         ).unwrap();
         let attributes = item.get_attributes().unwrap();
-        assert_eq!(attributes, vec![("test".into(), "test".into())]);
+        assert_eq!(attributes, vec![("test_attributes_in_item".into(), "test".into())]);
         println!("Attributes: {:?}", attributes);
         item.delete().unwrap();
         //assert!(false);
@@ -374,10 +392,10 @@ mod test{
         ).unwrap();
         // Also test empty array handling
         item.set_attributes(vec![]).unwrap();
-        item.set_attributes(vec![("test", "test")]).unwrap();
+        item.set_attributes(vec![("test_attributes_in_item_get", "test")]).unwrap();
         let attributes = item.get_attributes().unwrap();
         println!("Attributes: {:?}", attributes);
-        assert_eq!(attributes, vec![("test".into(), "test".into())]);
+        assert_eq!(attributes, vec![("test_attributes_in_item_get".into(), "test".into())]);
         item.delete().unwrap();
         //assert!(false);
     }
@@ -447,6 +465,22 @@ mod test{
         let secret = item.get_secret().unwrap();
         item.delete().unwrap();
         assert_eq!(secret, b"new_test");
+    }
+
+    #[test]
+    fn should_create_encrypted_item() {
+        let ss = SecretService::new(EncryptionType::Dh).unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        let item = collection.create_item(
+            "Test",
+            Vec::new(),
+            b"test_encrypted",
+            false, // replace
+            "text/plain" // content_type
+        ).expect("Error on item creation");
+        let secret = item.get_secret().unwrap();
+        item.delete().unwrap();
+        assert_eq!(secret, b"test_encrypted");
     }
 }
 

@@ -3,7 +3,7 @@
 // on ubuntu, libdbus-1-dev
 
 // TODO:
-// crypto
+// clear tests in case of failure
 // handle drop for delete methods?
 //
 // factor out handling mapping paths to Item
@@ -19,6 +19,8 @@
 
 extern crate crypto;
 extern crate dbus;
+extern crate gmp;
+extern crate num;
 extern crate rand;
 
 pub mod collection;
@@ -26,6 +28,7 @@ pub mod error;
 pub mod item;
 mod util;
 mod ss;
+mod ss_crypto;
 pub mod session;
 
 use collection::Collection;
@@ -288,7 +291,7 @@ mod test {
         // Create an item
         let item = collection.create_item(
             "test",
-            vec![("test_attribute", "test_value")],
+            vec![("test_attribute_in_ss", "test_value")],
             b"test_secret",
             false,
             "text/plain"
@@ -303,7 +306,7 @@ mod test {
 
         // handle correct search for item and compare
         let search_item = ss.search_items(
-            vec![("test_attribute", "test_value")]
+            vec![("test_attribute_in_ss", "test_value")]
         ).unwrap();
 
         assert_eq!(

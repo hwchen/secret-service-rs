@@ -11,7 +11,7 @@ fn main() {
     println!("Count before: {:?}", items.len());
     if items_count > 0 {
         for item in items {
-            item.delete();
+            item.delete().unwrap();
         }
     }
     let items = collection.get_all_items().unwrap();
@@ -22,7 +22,7 @@ fn main() {
     for collection in collections {
         if collection.get_label().unwrap() == "Test" {
             println!("{:?}", collection.collection_path);
-            collection.delete();
+            collection.delete().unwrap();
         }
     }
 }

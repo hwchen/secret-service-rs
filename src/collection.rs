@@ -374,7 +374,7 @@ mod test{
         // Create an item
         let item = collection.create_item(
             "test",
-            vec![("test_attribute", "test_value")],
+            vec![("test_attributes_in_collection", "test")],
             b"test_secret",
             false,
             "text/plain"
@@ -384,12 +384,12 @@ mod test{
         collection.search_items(Vec::new()).unwrap();
 
         // handle no result
-        let bad_search = collection.search_items(vec![("test".into(), "test".into())]).unwrap();
+        let bad_search = collection.search_items(vec![("test_bad".into(), "test".into())]).unwrap();
         assert_eq!(bad_search.len(), 0);
 
         // handle correct search for item and compare
         let search_item = collection.search_items(
-            vec![("test_attribute", "test_value")]
+            vec![("test_attributes_in_collection", "test")]
         ).unwrap();
 
         assert_eq!(
