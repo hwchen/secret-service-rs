@@ -214,7 +214,7 @@ impl<'a> Collection<'a> {
 
     pub fn get_label(&self) -> Result<String, Error> {
         let label = try!(self.collection_interface.get_props("Label"));
-        // TODO: switxh to inner()?
+        // TODO: switch to inner()?
         if let Str(label_str) = label {
             Ok(label_str)
         } else {

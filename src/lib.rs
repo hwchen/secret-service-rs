@@ -12,9 +12,12 @@
 // TODO:
 // clear tests in case of failure
 // handle drop for delete methods?
+// move bin to example
+// errors
 //
 // TODO: refactoring
 //
+// return errors early.
 // factor out handling mapping paths to Item
 // Remove all matches for option and result!
 // properly return path for delete actions?
@@ -177,10 +180,11 @@ impl SecretService {
             .or_else(|_| {
                 self.get_collection_by_alias("session")
             }).or_else(|_| {
-                match try!(self.get_all_collections()).get(0) {
-                    Some(collection) => Ok(collection.clone()),
-                    _ => Err(Error::new_custom("SSError", "No collections found")),
-                }
+                let collections = try!(self.get_all_collections());
+                collections
+                    .get(0)
+                    .ok_or(Error::new_custom("SSError", "No collections found"))
+                    .map(|collection| collection.clone())
             })
     }
 

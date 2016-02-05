@@ -190,7 +190,10 @@ impl<'a> Item<'a> {
         let session = MessageItem::from(self.session.object_path.clone());
         let res = try!(self.item_interface.method("GetSecret", vec![session]));
         // No secret would be an error, so try! instead of option
-        let secret_struct = try!(res.get(0).ok_or(Error::new_custom("SSError", "No Secret Found")));
+        let secret_struct = try!(res
+            .get(0)
+            .ok_or(Error::new_custom("SSError", "No Secret Found"))
+        );
 
         // parse out secret
 
@@ -232,7 +235,10 @@ impl<'a> Item<'a> {
         let session = MessageItem::from(self.session.object_path.clone());
         let res = try!(self.item_interface.method("GetSecret", vec![session]));
         // No secret content type would be a bug, so try!
-        let secret_struct = try!(res.get(0).ok_or(Error::new_custom("SSError", "No Secret Found")));
+        let secret_struct = try!(res
+            .get(0)
+            .ok_or(Error::new_custom("SSError", "No Secret Found"))
+        );
 
         // parse out secret content type
 

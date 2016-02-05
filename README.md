@@ -20,23 +20,20 @@ I'll provide better notes on installation once finished and published
 
 ### Completed
 
-- SecretService: initialize dbus, create plain/encrypted session
-- Collections: create, delete, search
-- Items: create, delete, search
+- SecretService: initialize dbus, create plain/encrypted session.
+- Collections: create, delete, search.
+- Items: create, delete, search, get/set secret.
 - crypto
 
 ### Todo
 
-- better comments
-- handle drop?
-- actual docs
 - error handling (return an SSError)
+- actual docs/example
 - some refactoring
+- clear failed tests? (there is no "after" currently)
+- move tests to integration tests?
+- Should struct instances be deleted when dbus object is deleted?
 - publishing
-
-I've been writing simple tests as I go along. Most of completed list has some coverage.
-
-
 
 ## License
 
