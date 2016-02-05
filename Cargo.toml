@@ -2,6 +2,7 @@
 authors = ["Walther Chen <walther.chen@gmail.com>"]
 name = "secret-service"
 version = "0.1.0"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 num = "0.1.30"
