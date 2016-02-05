@@ -482,5 +482,31 @@ mod test{
         item.delete().unwrap();
         assert_eq!(secret, b"test_encrypted");
     }
+
+    #[test]
+    fn should_get_encrypted_secret_across_dbus_connections() {
+        {
+            let ss = SecretService::new(EncryptionType::Dh).unwrap();
+            let collection = ss.get_default_collection().unwrap();
+            let item = collection.create_item(
+                "Test",
+                vec![("test_attributes_in_item_encrypt", "test")],
+                b"test_encrypted",
+                false, // replace
+                "text/plain" // content_type
+            ).expect("Error on item creation");
+            let secret = item.get_secret().unwrap();
+            assert_eq!(secret, b"test_encrypted");
+        }
+        {
+            let ss = SecretService::new(EncryptionType::Dh).unwrap();
+            let collection = ss.get_default_collection().unwrap();
+            let search_item = collection.search_items(
+                vec![("test_attributes_in_item_encrypt", "test")]
+            ).unwrap();
+            let item = search_item.get(0).unwrap().clone();
+            assert_eq!(item.get_secret().unwrap(), b"test_encrypted");
+        }
+    }
 }
 

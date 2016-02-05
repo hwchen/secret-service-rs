@@ -127,8 +127,6 @@ pub fn format_secret(session: &Session,
         let value_dbus = MessageItem::new_array(secret_dbus).unwrap();
         let content_type = Str(content_type.to_owned());
 
-        println!("In format_secret: {:?}", value_dbus);
-
         Struct(vec![
             object_path,
             parameters,
