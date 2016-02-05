@@ -5,18 +5,14 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-// Will contain utils if necessary?
+// Contains helpers for:
+//   exec_prompt
+//   interfaces
+//   formatting secrets
 //
-//
-// open session (will be done in session.rs)
-//
-// format secret goes in its own struct
-//
-// exec_prompt, could belong here? 
-//
-// unlock_objects, more likely under SecretService
-//
-// to_unicode, don't need!
+//   Consider: What else should be in here? Should
+//   formatting secrets be in crypto? Should interfaces
+//   have their own module?
 
 use session::Session;
 use ss::{

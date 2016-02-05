@@ -13,16 +13,55 @@
 // clear tests in case of failure
 // handle drop for delete methods?
 //
+// TODO: refactoring
+//
 // factor out handling mapping paths to Item
 // Remove all matches for option and result!
 // properly return path for delete actions?
 // Move similar methods to common interface: locking, attributes, del, label?
 // Reorg imports, format function params to be consistent
 // Refactor to make str and String function params consistent
-// Redo tests now that full range of api is implemented
 // Abstract prompts for creating items. Can I abstract other prompts?
 // in all tests, make sure that check for structs
 // Change all MessageItems initialization to use MessageItem::from()
+//
+// ********************** Secret Service libary ************************
+//
+// This library implements a rust interface to the Secret Service API which is implemented
+// in Linux.
+//
+// http://standards.freedesktop.org/secret-service/
+//
+// Secret Service provides a secure place to store secrets.
+// Gnome keyring and KWallet implement the Secret Service API.
+//
+// Short roadmap of this library:
+//
+// SecretService struct is in this module, it's the entry point for the library.
+// It initializes dbus and negotiates an encryption session.
+// From SecretService struct, you can create and search for collections, and search
+// for items. Each of those methods will return a Collection or Item struct, which
+// you can use to perform similar actions (searching, creating, deleting, etc.)
+//
+// Searching can be done by attributes and labels. Some common attributes to set are
+// Label, the callin app, etc.
+//
+// For the Item struct, there is the additional fact that you can set and get a secret
+// value (in bytes).
+//
+// The other modules: util, error, ss_crypto, ss, provide supporting functions.
+//
+// Util currently has interfaces (dbus method namespace) to make it easier to call methods.
+// Util contains function to execute prompts (used in many collection and item methods, like
+// delete)
+// TODO: Could factor out some fns into utils: lock/unlock, more prompts.
+// TODO: Util also contains format_secret, but this may be moved to ss_crypto.
+// error is for custom SS errors.
+// ss_crypto handles encryption and decryption (along with, to some extent, Session)
+// ss provides some constants which are paths for dbus interaction, and some other strings.
+//
+// High-level crypto notes in ss_crypto. Specifics in SecretService API Draft Proposal:
+// http://standards.freedesktop.org/secret-service/
 
 extern crate crypto;
 extern crate dbus;
@@ -33,10 +72,10 @@ extern crate rand;
 pub mod collection;
 pub mod error;
 pub mod item;
-mod util;
+mod session;
 mod ss;
 mod ss_crypto;
-pub mod session;
+mod util;
 
 use collection::Collection;
 use item::Item;
@@ -68,7 +107,11 @@ use dbus::MessageItem::{
 use std::rc::Rc;
 
 // Secret Service Struct
-
+// This the main entry point for usage of the library.
+// Creating a new SecretService will also initialize dbus
+// and negotiate a new cryptographic session (plain or crypto)
+//
+// Interfaces are the dbus namespace for methods
 #[derive(Debug)]
 pub struct SecretService {
     bus: Rc<Connection>,
@@ -142,6 +185,7 @@ impl SecretService {
     }
 
     pub fn create_collection(&self, label: &str, alias: &str) -> Result<Collection, Error> {
+        // Set up dbus args
         let label = DictEntry(
             Box::new(Str("org.freedesktop.Secret.Collection.Label".to_owned())),
             Box::new(Variant(Box::new(Str(label.to_owned()))))
@@ -150,8 +194,10 @@ impl SecretService {
         let properties = Array(vec![label], label_type_sig);
         let alias = Str(alias.to_owned());
 
+        // Call the dbus method
         let res = try!(self.service_interface.method("CreateCollection", vec![properties, alias]));
 
+        // parse the result
         let collection_path: Path = {
             // Get path of created object
             let created_object_path = try!(res
@@ -187,6 +233,7 @@ impl SecretService {
     }
 
     pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>, Error> {
+        // Build dbus args
         let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
             let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
             MessageItem::from(dict_entry)
@@ -202,6 +249,9 @@ impl SecretService {
 
         // Method call to SearchItem
         let res = try!(self.service_interface.method("SearchItems", vec![attr_dbus_dict]));
+
+        // The result is unlocked and unlocked items.
+        // Currently, I just concatenate and return all.
         let mut unlocked = match res.get(0) {
             Some(ref array) => {
                 match **array {
@@ -223,6 +273,7 @@ impl SecretService {
         unlocked.extend(locked);
         let items = unlocked;
 
+        // Map the array of item pahts to array of Item
         Ok(items.iter().map(|item_path| {
             // extract path from objectPath
             let path: &Path = item_path.inner().unwrap();

@@ -5,24 +5,16 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-// In pythons secretstorage, this is dhcrypto.py
-//
-// This module implements Secret Service Session,
-// including crypto
-//
-// rand to get integer with 1024 random bits
-
-
-// crypto:
-// x1. Before session negotiation (openSession), set private key and public key using ed25519.
-// x3. In session negotiation, send public key.
-// 4. As result of session negotiation, get object path for session, which (I think
+// key exchange and crypto for session:
+// 1. Before session negotiation (openSession), set private key and public key using DH method.
+// 2. In session negotiation, send public key.
+// 3. As result of session negotiation, get object path for session, which (I think
 //      it means that it uses the same server public key to create an aes key which is used
 //      to decode the encoded secret using the aes seed that's sent with the secret).
-// x5. As result of session negotition, get server public key.
-// x6. Use server public key, my private key, to set an aes key.
-// 7. Format Secret: aes iv is random seed, in secret struct it's the parameter (Array(Byte))
-// 8. Format Secret: encode the secret value for the value field in secret struct. 
+// 4. As result of session negotition, get server public key.
+// 5. Use server public key, my private key, to set an aes key using HKDF.
+// 6. Format Secret: aes iv is random seed, in secret struct it's the parameter (Array(Byte))
+// 7. Format Secret: encode the secret value for the value field in secret struct. 
 //      This encoding uses the aes_key from the associated Session.
 
 use ss::{
@@ -51,6 +43,7 @@ use num::bigint::BigUint;
 use rand::{Rng, OsRng};
 use std::rc::Rc;
 
+// for key exchange
 const DH_PRIME_1024_BYTES: [u8; 128] = [
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC9, 0x0F, 0xDA, 0xA2, 0x21, 0x68, 0xC2, 0x34,
     0xC4, 0xC6, 0x62, 0x8B, 0x80, 0xDC, 0x1C, 0xD1, 0x29, 0x02, 0x4E, 0x08, 0x8A, 0x67, 0xCC, 0x74,
@@ -62,7 +55,6 @@ const DH_PRIME_1024_BYTES: [u8; 128] = [
     0x49, 0x28, 0x66, 0x51, 0xEC, 0xE6, 0x53, 0x81, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 ];
 
-// helper enum
 #[derive(Debug, PartialEq)]
 pub enum EncryptionType {
     Plain,
@@ -80,6 +72,11 @@ pub struct Session {
     my_public_key: Option<Vec<u8>>,
 }
 
+// Think about how to break this function up? It's 134 lines.
+// Could have a function for plain, and one for encrypted.
+// Encryption could probably have a good chunk factored out.
+// setting aes key could be put into ss_crypto
+// Or factor out some common parts to helper functions?
 impl Session {
     pub fn new(bus: Rc<Connection>, encryption: EncryptionType) -> Result<Self, Error> {
         match encryption {
@@ -127,6 +124,7 @@ impl Session {
             EncryptionType::Dh => {
                 // crypto: create private and public key, send public key
                 // requires some finagling to get pow() for bigints
+                // mpz is multiple precision integer type for gmp
                 let mut rng = OsRng::new().unwrap();
                 let mut private_key_bytes = [0;128];
                 rng.fill_bytes(&mut private_key_bytes);
@@ -142,6 +140,7 @@ impl Session {
                     .map(|&byte| { MessageItem::from(byte) })
                     .collect();
 
+                // Method call to negotiate encrypted session
                 let m = Message::new_method_call(
                     SS_DBUS_NAME,
                     SS_PATH,
@@ -149,14 +148,13 @@ impl Session {
                     "OpenSession"
                 ).unwrap()
                 .append(Str(ALGORITHM_DH.to_owned()))
-                // input public key here
                 .append(Variant(Box::new(MessageItem::new_array(public_key_bytes_dbus).unwrap())));
 
                 // Call to session
                 let r = try!(bus.send_with_reply_and_block(m, 2000));
                 let items = r.get_items();
 
-                // Get session output
+                // Get session output (which is the server public key when using encryption)
                 let session_output_dbus = try!(items
                     .get(0)
                     .ok_or(Error::new_custom("SSError",  "Error: no output from OpenSession"))
@@ -194,7 +192,7 @@ impl Session {
 
                 let aes_key = output_block[0..16].to_vec();
 
-                // get session path
+                // get session path to store
                 let object_path_dbus = try!(items
                     .get(1)
                     .ok_or(Error::new_custom("SSError",  "Error: no output from OpenSession"))

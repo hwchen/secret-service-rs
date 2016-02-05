@@ -39,12 +39,16 @@ use dbus::MessageItem::{
 };
 use std::rc::Rc;
 
-// Helper enums
+// Helper enum for
+// locking and unlocking
 enum LockAction {
     Lock,
     Unlock,
 }
 
+// Collection struct.
+// Should always be created from the SecretService entry point,
+// whether through a new collection or a collection search
 #[derive(Debug, Clone)]
 pub struct Collection<'a> {
     // TODO: Implement method for path?
@@ -93,6 +97,7 @@ impl<'a> Collection<'a> {
     }
 
     //Helper function for locking and unlocking
+    // TODO: refactor into utils? It should be same as collection
     fn lock_or_unlock(&self, lock_action: LockAction) -> Result<(), Error> {
         let objects = MessageItem::new_array(
             vec![ObjectPath(self.collection_path.clone())]
@@ -104,9 +109,10 @@ impl<'a> Collection<'a> {
         };
 
         let res = try!(self.service_interface.method(lock_action_str, vec![objects]));
-        
-        if let Some(&Array(ref unlocked, _)) = res.get(0) {
-            if unlocked.len() == 0 {
+
+        // If the action requires a prompt, execute it.
+        if let Some(&Array(ref lock_action, _)) = res.get(0) {
+            if lock_action.len() == 0 {
                 if let Some(&ObjectPath(ref path)) = res.get(1) {
                     try!(exec_prompt(self.bus.clone(), path.clone()));
                 }
@@ -120,17 +126,17 @@ impl<'a> Collection<'a> {
     }
 
     pub fn lock(&self) -> Result<(), Error> {
-        println!("locked!");
         self.lock_or_unlock(LockAction::Lock)
     }
 
-    // TODO: Rewrite
+    // TODO: Rewrite?
     pub fn delete(&self) -> Result<(), Error> {
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
         try!(self.ensure_unlocked());
         let prompt = try!(self.collection_interface.method("Delete", vec![]));
 
+        // Returns prompt path. If there's a non-trivial prompt path, execute it.
         if let Some(&ObjectPath(ref prompt_path)) = prompt.get(0) {
             if &**prompt_path != "/" {
                     let del_res = try!(exec_prompt(self.bus.clone(), prompt_path.clone()));
@@ -144,9 +150,11 @@ impl<'a> Collection<'a> {
         Err(Error::new_custom("SSError", "Could not delete Collection"))
     }
 
-    // TODO: Refactor to clean up indent
+    // TODO: Refactor to clean up indents?
     pub fn get_all_items(&self) -> Result<Vec<Item>, Error> {
         let items = try!(self.collection_interface.get_props("Items"));
+
+        // map array of item paths to Item
         if let Array(item_array, _) = items {
             Ok(item_array.iter().filter_map(|ref item| {
                 match **item {
@@ -167,6 +175,7 @@ impl<'a> Collection<'a> {
     }
 
     pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>, Error> {
+        // Process dbus args
         let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
             let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
             MessageItem::from(dict_entry)
@@ -183,7 +192,7 @@ impl<'a> Collection<'a> {
         // Method call to SearchItem
         let items = try!(self.collection_interface.method("SearchItems", vec![attr_dbus_dict]));
 
-        // TODO: Refactor to be clean like create_item
+        // TODO: Refactor to be clean like create_item?
         if let &Array(ref item_array, _) = items.get(0).unwrap() {
             Ok(item_array.iter().filter_map(|ref item| {
                 match **item {
@@ -205,6 +214,7 @@ impl<'a> Collection<'a> {
 
     pub fn get_label(&self) -> Result<String, Error> {
         let label = try!(self.collection_interface.get_props("Label"));
+        // TODO: switxh to inner()?
         if let Str(label_str) = label {
             Ok(label_str)
         } else {

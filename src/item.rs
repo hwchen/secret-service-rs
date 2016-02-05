@@ -34,7 +34,7 @@ use dbus::MessageItem::{
 use dbus::Interface as InterfaceName;
 use std::rc::Rc;
 
-// Helper enum
+// Helper enum for locking
 enum LockAction {
     Lock,
     Unlock,
@@ -91,6 +91,7 @@ impl<'a> Item<'a> {
     }
 
     //Helper function for locking and unlocking
+    // TODO: refactor into utils? It should be same as collection
     fn lock_or_unlock(&self, lock_action: LockAction) -> Result<(), Error> {
         let objects = MessageItem::new_array(
             vec![ObjectPath(self.item_path.clone())]
@@ -102,7 +103,6 @@ impl<'a> Item<'a> {
         };
 
         let res = try!(self.service_interface.method(lock_action_str, vec![objects]));
-        //println!("Locking or unlocking paths: {:?}", res);
         if let Some(&Array(ref unlocked, _)) = res.get(0) {
             if unlocked.len() == 0 {
                 if let Some(&ObjectPath(ref path)) = res.get(1) {
@@ -189,7 +189,7 @@ impl<'a> Item<'a> {
     pub fn get_secret(&self) -> Result<Vec<u8>, Error> {
         let session = MessageItem::from(self.session.object_path.clone());
         let res = try!(self.item_interface.method("GetSecret", vec![session]));
-        // No secret would be a bug, so try!
+        // No secret would be an error, so try! instead of option
         let secret_struct = try!(res.get(0).ok_or(Error::new_custom("SSError", "No Secret Found")));
 
         // parse out secret

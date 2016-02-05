@@ -28,7 +28,7 @@ I'll provide better notes on installation once finished and published
 ### Todo
 
 - better comments
-- license
+- handle drop?
 - actual docs
 - error handling (return an SSError)
 - some refactoring
