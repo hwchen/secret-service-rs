@@ -5,6 +5,7 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
+use error::SsError;
 use session::Session;
 use ss::{
     SS_DBUS_NAME,
@@ -22,7 +23,6 @@ use util::{
 use dbus::{
     BusName,
     Connection,
-    Error,
     MessageItem,
     Path,
 };
@@ -76,23 +76,23 @@ impl<'a> Item<'a> {
         }
     }
 
-    pub fn is_locked(&self) -> Result<bool, Error> {
+    pub fn is_locked(&self) -> Result<bool, SsError> {
         self.item_interface.get_props("Locked")
             .map(|locked| {
                 locked.inner().unwrap()
             })
     }
 
-    pub fn ensure_unlocked(&self) -> Result<(), Error> {
+    pub fn ensure_unlocked(&self) -> Result<(), SsError> {
         match try!(self.is_locked()) {
             false => Ok(()),
-            true => Err(Error::new_custom("SSError", "Item is locked")),
+            true => Err(SsError::Locked),
         }
     }
 
     //Helper function for locking and unlocking
     // TODO: refactor into utils? It should be same as collection
-    fn lock_or_unlock(&self, lock_action: LockAction) -> Result<(), Error> {
+    fn lock_or_unlock(&self, lock_action: LockAction) -> Result<(), SsError> {
         let objects = MessageItem::new_array(
             vec![ObjectPath(self.item_path.clone())]
         ).unwrap();
@@ -113,16 +113,16 @@ impl<'a> Item<'a> {
         Ok(())
     }
 
-    pub fn unlock(&self) -> Result<(), Error> {
+    pub fn unlock(&self) -> Result<(), SsError> {
         self.lock_or_unlock(LockAction::Unlock)
     }
 
-    pub fn lock(&self) -> Result<(), Error> {
+    pub fn lock(&self) -> Result<(), SsError> {
         println!("locked!");
         self.lock_or_unlock(LockAction::Lock)
     }
 
-    pub fn get_attributes(&self) -> Result<Vec<(String, String)>, Error> {
+    pub fn get_attributes(&self) -> Result<Vec<(String, String)>, SsError> {
         let res = try!(self.item_interface.get_props("Attributes"));
 
         if let Array(attributes, _) = res {
@@ -133,12 +133,12 @@ impl<'a> Item<'a> {
                 (key.clone(), value.clone())
             }).collect::<Vec<(String, String)>>())
         } else {
-            Err(Error::new_custom("SSError", "Could not get attributes"))
+            Err(SsError::Parse)
         }
     }
 
     // Probably best example of creating dict
-    pub fn set_attributes(&self, attributes: Vec<(&str, &str)>) -> Result<(), Error> {
+    pub fn set_attributes(&self, attributes: Vec<(&str, &str)>) -> Result<(), SsError> {
         if !attributes.is_empty() {
             let attributes_dict_entries: Vec<_> = attributes.iter().map(|&(ref key, ref value)| {
                 let dict_entry = (
@@ -154,20 +154,20 @@ impl<'a> Item<'a> {
         }
     }
 
-    pub fn get_label(&self) -> Result<String, Error> {
+    pub fn get_label(&self) -> Result<String, SsError> {
         let label = try!(self.item_interface.get_props("Label"));
         if let Str(label_str) = label {
             Ok(label_str)
         } else {
-            Err(Error::new_custom("SSError", "Could not get label"))
+            Err(SsError::Parse)
         }
     }
 
-    pub fn set_label(&self, new_label: &str) -> Result<(), Error> {
+    pub fn set_label(&self, new_label: &str) -> Result<(), SsError> {
         self.item_interface.set_props("Label", Str(new_label.to_owned()))
     }
 
-    pub fn delete(&self) -> Result<(), Error> {
+    pub fn delete(&self) -> Result<(), SsError> {
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
         try!(self.ensure_unlocked());
@@ -183,16 +183,16 @@ impl<'a> Item<'a> {
             }
         }
         // If for some reason the patterns don't match, return error
-        Err(Error::new_custom("SSError", "Could not delete Item"))
+        Err(SsError::Parse)
     }
 
-    pub fn get_secret(&self) -> Result<Vec<u8>, Error> {
+    pub fn get_secret(&self) -> Result<Vec<u8>, SsError> {
         let session = MessageItem::from(self.session.object_path.clone());
         let res = try!(self.item_interface.method("GetSecret", vec![session]));
         // No secret would be an error, so try! instead of option
         let secret_struct = try!(res
             .get(0)
-            .ok_or(Error::new_custom("SSError", "No Secret Found"))
+            .ok_or(SsError::NoResult)
         );
 
         // parse out secret
@@ -202,7 +202,7 @@ impl<'a> Item<'a> {
         let secret_vec: &Vec<_> = secret_struct.inner().unwrap();
         let secret_dbus = try!(secret_vec
             .get(2)
-            .ok_or(Error::new_custom("SSError", "No Secret Found"))
+            .ok_or(SsError::NoResult)
         );
 
         // get array of dbus bytes
@@ -218,7 +218,7 @@ impl<'a> Item<'a> {
             // param should always be index 1
             let aes_iv_dbus = try!(secret_vec
                 .get(1)
-                .ok_or(Error::new_custom("SSError", "No Secret Found"))
+                .ok_or(SsError::NoResult)
             );
             // get array of dbus bytes
             let aes_iv_bytes_dbus: &Vec<_> = aes_iv_dbus.inner().unwrap();
@@ -231,13 +231,13 @@ impl<'a> Item<'a> {
         }
     }
 
-    pub fn get_secret_content_type(&self) -> Result<String, Error> {
+    pub fn get_secret_content_type(&self) -> Result<String, SsError> {
         let session = MessageItem::from(self.session.object_path.clone());
         let res = try!(self.item_interface.method("GetSecret", vec![session]));
         // No secret content type would be a bug, so try!
         let secret_struct = try!(res
             .get(0)
-            .ok_or(Error::new_custom("SSError", "No Secret Found"))
+            .ok_or(SsError::NoResult)
         );
 
         // parse out secret content type
@@ -247,7 +247,7 @@ impl<'a> Item<'a> {
         let secret_vec: &Vec<_> = secret_struct.inner().unwrap();
         let content_type_dbus = try!(secret_vec
             .get(3)
-            .ok_or(Error::new_custom("SSError", "No Secret Found"))
+            .ok_or(SsError::NoResult)
         );
 
         // Get value out of DBus value
@@ -256,19 +256,19 @@ impl<'a> Item<'a> {
         Ok(content_type.clone())
     }
 
-    pub fn set_secret(&self, secret: &[u8], content_type: &str) -> Result<(), Error> {
+    pub fn set_secret(&self, secret: &[u8], content_type: &str) -> Result<(), SsError> {
         let secret_struct = format_secret(&self.session, secret, content_type);
         self.item_interface.method("SetSecret", vec![secret_struct]).map(|_| ())
     }
 
-    pub fn get_created(&self) -> Result<u64, Error> {
+    pub fn get_created(&self) -> Result<u64, SsError> {
         self.item_interface.get_props("Created")
             .map(|locked| {
                 locked.inner::<u64>().unwrap()
             })
     }
 
-    pub fn get_modified(&self) -> Result<u64, Error> {
+    pub fn get_modified(&self) -> Result<u64, SsError> {
         self.item_interface.get_props("Modified")
             .map(|locked| {
                 locked.inner::<u64>().unwrap()
@@ -519,6 +519,7 @@ mod test{
             ).unwrap();
             let item = search_item.get(0).unwrap().clone();
             assert_eq!(item.get_secret().unwrap(), b"test_encrypted");
+            item.delete().unwrap();
         }
     }
 }

@@ -5,6 +5,7 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
+use error::SsError;
 use item::Item;
 use session::Session;
 use ss::{
@@ -24,7 +25,6 @@ use util::{
 use dbus::{
     BusName,
     Connection,
-    Error,
     MessageItem,
     Path,
 };
@@ -82,23 +82,23 @@ impl<'a> Collection<'a> {
         }
     }
 
-    pub fn is_locked(&self) -> Result<bool, Error> {
+    pub fn is_locked(&self) -> Result<bool, SsError> {
         self.collection_interface.get_props("Locked")
             .map(|locked| {
                 locked.inner().unwrap()
             })
     }
 
-    pub fn ensure_unlocked(&self) -> Result<(), Error> {
+    pub fn ensure_unlocked(&self) -> Result<(), SsError> {
         match try!(self.is_locked()) {
             false => Ok(()),
-            true => Err(Error::new_custom("SSError", "Collection is locked")),
+            true => Err(SsError::Locked),
         }
     }
 
     //Helper function for locking and unlocking
     // TODO: refactor into utils? It should be same as collection
-    fn lock_or_unlock(&self, lock_action: LockAction) -> Result<(), Error> {
+    fn lock_or_unlock(&self, lock_action: LockAction) -> Result<(), SsError> {
         let objects = MessageItem::new_array(
             vec![ObjectPath(self.collection_path.clone())]
         ).unwrap();
@@ -121,16 +121,16 @@ impl<'a> Collection<'a> {
         Ok(())
     }
 
-    pub fn unlock(&self) -> Result<(), Error> {
+    pub fn unlock(&self) -> Result<(), SsError> {
         self.lock_or_unlock(LockAction::Unlock)
     }
 
-    pub fn lock(&self) -> Result<(), Error> {
+    pub fn lock(&self) -> Result<(), SsError> {
         self.lock_or_unlock(LockAction::Lock)
     }
 
     // TODO: Rewrite?
-    pub fn delete(&self) -> Result<(), Error> {
+    pub fn delete(&self) -> Result<(), SsError> {
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
         try!(self.ensure_unlocked());
@@ -147,11 +147,11 @@ impl<'a> Collection<'a> {
             }
         }
         // If for some reason the patterns don't match, return error
-        Err(Error::new_custom("SSError", "Could not delete Collection"))
+        Err(SsError::Parse)
     }
 
     // TODO: Refactor to clean up indents?
-    pub fn get_all_items(&self) -> Result<Vec<Item>, Error> {
+    pub fn get_all_items(&self) -> Result<Vec<Item>, SsError> {
         let items = try!(self.collection_interface.get_props("Items"));
 
         // map array of item paths to Item
@@ -170,11 +170,11 @@ impl<'a> Collection<'a> {
             }).collect::<Vec<_>>()
             )
         } else {
-            Err(Error::new_custom("SSError", "Could not get items"))
+            Err(SsError::Parse)
         }
     }
 
-    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>, Error> {
+    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>, SsError> {
         // Process dbus args
         let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
             let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
@@ -208,21 +208,21 @@ impl<'a> Collection<'a> {
             }).collect::<Vec<_>>()
             )
         } else {
-            Err(Error::new_custom("SSError", "Could not get items"))
+            Err(SsError::Parse)
         }
     }
 
-    pub fn get_label(&self) -> Result<String, Error> {
+    pub fn get_label(&self) -> Result<String, SsError> {
         let label = try!(self.collection_interface.get_props("Label"));
         // TODO: switch to inner()?
         if let Str(label_str) = label {
             Ok(label_str)
         } else {
-            Err(Error::new_custom("SSError", "Could not get label"))
+            Err(SsError::Parse)
         }
     }
 
-    pub fn set_label(&self, new_label: &str) -> Result<(), Error> {
+    pub fn set_label(&self, new_label: &str) -> Result<(), SsError> {
         self.collection_interface.set_props("Label", Str(new_label.to_owned()))
     }
 
@@ -232,7 +232,7 @@ impl<'a> Collection<'a> {
                        secret: &[u8],
                        replace: bool,
                        content_type: &str,
-                       ) -> Result<Item, Error> {
+                       ) -> Result<Item, SsError> {
 
         let secret_struct = format_secret(&self.session, secret, content_type);
 
@@ -282,7 +282,7 @@ impl<'a> Collection<'a> {
             // Get path of created object
             let created_object_path = try!(res
                 .get(0)
-                .ok_or(Error::new_custom("SSError", "Could not create Item"))
+                .ok_or(SsError::NoResult)
             );
             let created_path: &Path = created_object_path.inner().unwrap();
 
@@ -290,7 +290,7 @@ impl<'a> Collection<'a> {
             if &**created_path == "/" {
                 let prompt_object_path = try!(res
                     .get(1)
-                    .ok_or(Error::new_custom("SSError", "Could not create Item"))
+                    .ok_or(SsError::NoResult)
                 );
                 let prompt_path: &Path = prompt_object_path.inner().unwrap();
 

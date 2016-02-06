@@ -5,8 +5,6 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-// See Hyper for example?
-
 // implement custom errors
 //
 // Classes of errors:
@@ -24,14 +22,64 @@
 // - locked (currently custom dbus error)
 // - prompt dismissed (not an error?) (currently custom dbus error)
 
+use crypto::symmetriccipher;
+use dbus;
+use std::error;
+use std::fmt;
 
-// DBus errors (from secretstorage)
-// Want to convert DBus errors to SecretService Error?
-const DBUS_UNKNOWN_METHOD: &'static str  = "org.freedesktop.DBus.Error.UnknownMethod";
-const DBUS_ACCESS_DENIED: &'static str   = "org.freedesktop.DBus.Error.AccessDenied";
-const DBUS_SERVICE_UNKNOWN: &'static str = "org.freedesktop.DBus.Error.ServiceUnknown";
-const DBUS_EXEC_FAILED: &'static str     = "org.freedesktop.DBus.Error.Spawn.ExecFailed";
-const DBUS_NO_REPLY: &'static str        = "org.freedesktop.DBus.Error.NoReply";
-const DBUS_NOT_SUPPORTED: &'static str   = "org.freedesktop.DBus.Error.NotSupported";
-const DBUS_NO_SUCH_OBJECT: &'static str  = "org.freedesktop.Secret.Error.NoSuchObject";
+#[derive(Debug)]
+pub enum SsError {
+    Crypto(symmetriccipher::SymmetricCipherError),
+    Dbus(dbus::Error),
+    Locked,
+    NoResult,
+    Parse,
+    Prompt,
+}
+
+impl fmt::Display for SsError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt:: Result {
+        match *self {
+            // crypto error does not implement Display
+            SsError::Crypto(_) => write!(f, "Crypto error: Invalid Length or Padding"),
+            SsError::Dbus(ref err) => write!(f, "Dbus error: {}", err),
+            SsError::Locked => write!(f, "SS Error: object locked"),
+            SsError::NoResult => write!(f, "SS error: result not returned from SS API"),
+            SsError::Parse => write!(f, "SS error: could not parse Dbus output"),
+            SsError::Prompt => write!(f, "SS error: prompt dismissed"),
+        }
+    }
+}
+
+impl error::Error for SsError {
+    fn description(&self) -> &str {
+        match *self {
+            SsError::Crypto(_) => "crypto: Invalid Length or Padding",
+            SsError::Dbus(ref err) => err.description(),
+            SsError::Locked => "Object locked",
+            SsError::NoResult => "Result not returned from SS API",
+            SsError::Parse => "Error parsing Dbus output",
+            SsError::Prompt => "Prompt Dismissed",
+        }
+    }
+
+    fn cause(&self) -> Option<&error::Error> {
+        match *self {
+            SsError::Dbus(ref err) => Some(err),
+            _ => None,
+        }
+    }
+}
+
+impl From<symmetriccipher::SymmetricCipherError> for SsError {
+    fn from(err: symmetriccipher::SymmetricCipherError) -> SsError {
+        SsError::Crypto(err)
+    }
+}
+
+impl From<dbus::Error> for SsError {
+    fn from(err: dbus::Error) -> SsError {
+        SsError::Dbus(err)
+    }
+}
 

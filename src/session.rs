@@ -17,6 +17,7 @@
 // 7. Format Secret: encode the secret value for the value field in secret struct. 
 //      This encoding uses the aes_key from the associated Session.
 
+use error::SsError;
 use ss::{
     SS_DBUS_NAME,
     SS_PATH,
@@ -32,7 +33,6 @@ use dbus::{
     Message,
     MessageItem,
     Path,
-    Error,
 };
 use dbus::MessageItem::{
     Str,
@@ -78,7 +78,7 @@ pub struct Session {
 // setting aes key could be put into ss_crypto
 // Or factor out some common parts to helper functions?
 impl Session {
-    pub fn new(bus: Rc<Connection>, encryption: EncryptionType) -> Result<Self, Error> {
+    pub fn new(bus: Rc<Connection>, encryption: EncryptionType) -> Result<Self, SsError> {
         match encryption {
             EncryptionType::Plain => {
                 let m = Message::new_method_call(
@@ -98,7 +98,7 @@ impl Session {
                 // Get session output
                 let session_output_dbus = try!(items
                     .get(0)
-                    .ok_or(Error::new_custom("SSError",  "Error: no output from OpenSession"))
+                    .ok_or(SsError::NoResult)
                 );
                 let session_output_variant_dbus: &MessageItem = session_output_dbus.inner().unwrap();
 
@@ -108,7 +108,7 @@ impl Session {
                 // get session path
                 let object_path_dbus = try!(items
                     .get(1)
-                    .ok_or(Error::new_custom("SSError", "Error: no output from OpenSession"))
+                    .ok_or(SsError::NoResult)
                 );
                 let object_path: &Path = object_path_dbus.inner().unwrap();
 
@@ -157,14 +157,16 @@ impl Session {
                 // Get session output (which is the server public key when using encryption)
                 let session_output_dbus = try!(items
                     .get(0)
-                    .ok_or(Error::new_custom("SSError",  "Error: no output from OpenSession"))
+                    .ok_or(SsError::NoResult)
                 );
                 let session_output_variant_dbus: &MessageItem = session_output_dbus.inner().unwrap();
 
                 // Since encrypted Variant should be a vector of bytes
-                let session_output_array_dbus: &Vec<_> = session_output_variant_dbus
+                let session_output_array_dbus: &Vec<_> = try!(session_output_variant_dbus
                     .inner()
-                    .expect("SSError, Algorithm negotiation expected Array");
+                    // inner does not return an Error type, so have to manually map
+                    .map_err(|_| SsError::Parse)
+                );
 
                 let server_public_key: Vec<_> = session_output_array_dbus
                     .iter()
@@ -195,7 +197,7 @@ impl Session {
                 // get session path to store
                 let object_path_dbus = try!(items
                     .get(1)
-                    .ok_or(Error::new_custom("SSError",  "Error: no output from OpenSession"))
+                    .ok_or(SsError::NoResult)
                 );
                 let object_path: &Path = object_path_dbus.inner().unwrap();
 

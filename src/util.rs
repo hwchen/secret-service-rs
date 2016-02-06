@@ -14,6 +14,7 @@
 //   formatting secrets be in crypto? Should interfaces
 //   have their own module?
 
+use error::SsError;
 use session::Session;
 use ss::{
     SS_DBUS_NAME,
@@ -24,7 +25,6 @@ use ss_crypto::encrypt;
 use dbus::{
     BusName,
     Connection,
-    Error,
     Message,
     MessageItem,
     Path,
@@ -67,13 +67,14 @@ impl Interface {
 
     pub fn method(&self,
                   method_name: &str,
-                  args: Vec<MessageItem>) -> Result<Vec<MessageItem>, Error> {
+                  args: Vec<MessageItem>) -> Result<Vec<MessageItem>, SsError> {
+        // Should never fail, so unwrap
         let mut m = Message::new_method_call(
             self.name.clone(),
             self.path.clone(),
             self.interface.clone(),
-            method_name,
-        ).unwrap();
+            method_name)
+            .unwrap();
 
         m.append_items(&args);
 
@@ -83,7 +84,7 @@ impl Interface {
         Ok(r.get_items())
     }
 
-    pub fn get_props(&self, prop_name: &str) -> Result<MessageItem, Error> {
+    pub fn get_props(&self, prop_name: &str) -> Result<MessageItem, SsError> {
         let p = Props::new(
             &self.bus,
             self.name.clone(),
@@ -92,10 +93,10 @@ impl Interface {
             2000
         );
 
-        p.get(prop_name)
+        Ok(try!(p.get(prop_name)))
     }
 
-    pub fn set_props(&self, prop_name: &str, value: MessageItem) -> Result<(), Error> {
+    pub fn set_props(&self, prop_name: &str, value: MessageItem) -> Result<(), SsError> {
         let p = Props::new(
             &self.bus,
             self.name.clone(),
@@ -104,7 +105,7 @@ impl Interface {
             2000
         );
 
-        p.set(prop_name, value)
+        Ok(try!(p.set(prop_name, value)))
     }
 }
 
@@ -154,7 +155,7 @@ pub fn format_secret(session: &Session,
     }
 }
 
-pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<MessageItem, Error> {
+pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<MessageItem, SsError> {
     let prompt_interface = Interface::new(
         bus.clone(),
         BusName::new(SS_DBUS_NAME).unwrap(),
@@ -174,7 +175,7 @@ pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<MessageItem, Err
                 if let Some(&Bool(dismissed)) = items.get(0) {
                     //println!("Was prompt dismissed? {:?}", dismissed);
                     if dismissed {
-                        return Err(Error::new_custom("SSError", "Prompt was dismissed"));
+                        return Err(SsError::Prompt);
                     }
                 }
                 if let Some(&ref result) = items.get(1) {
@@ -184,6 +185,6 @@ pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> Result<MessageItem, Err
             _ => (),
         }
     }
-    Err(Error::new_custom("SSError", "Prompt was dismissed"))
+    Err(SsError::Prompt)
 }
 

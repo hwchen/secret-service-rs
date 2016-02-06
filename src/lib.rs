@@ -9,12 +9,6 @@
 // requires ldbus dev library
 // on ubuntu, libdbus-1-dev
 
-// TODO:
-// clear tests in case of failure
-// handle drop for delete methods?
-// move bin to example
-// errors
-//
 // TODO: refactoring
 //
 // return errors early.
@@ -75,12 +69,13 @@ extern crate rand;
 pub mod collection;
 pub mod error;
 pub mod item;
-mod session;
+pub mod session;
 mod ss;
 mod ss_crypto;
 mod util;
 
 use collection::Collection;
+use error::SsError;
 use item::Item;
 use util::{Interface, exec_prompt};
 use session::Session;
@@ -95,7 +90,6 @@ use dbus::{
     BusName,
     BusType,
     Connection,
-    Error,
     MessageItem,
     Path,
 };
@@ -123,7 +117,7 @@ pub struct SecretService {
 }
 
 impl SecretService {
-    pub fn new(encryption: EncryptionType) -> Result<Self, dbus::Error> {
+    pub fn new(encryption: EncryptionType) -> Result<Self, SsError> {
         let bus = Rc::new(try!(Connection::get_private(BusType::Session)));
         let session = try!(Session::new(bus.clone(), encryption));
         let service_interface = Interface::new(
@@ -140,7 +134,7 @@ impl SecretService {
         })
     }
 
-    pub fn get_all_collections(&self) -> Result<Vec<Collection>, Error> {
+    pub fn get_all_collections(&self) -> Result<Vec<Collection>, SsError> {
         let res = try!(self.service_interface.get_props("Collections"));
         let collections: &Vec<_> = res.inner().unwrap();
         Ok(collections.iter().map(|object_path| {
@@ -153,7 +147,7 @@ impl SecretService {
         }).collect::<Vec<_>>())
     }
 
-    pub fn get_collection_by_alias(&self, alias: &str) -> Result<Collection, Error>{
+    pub fn get_collection_by_alias(&self, alias: &str) -> Result<Collection, SsError>{
         let name = Str(alias.to_owned());
 
         let res = try!(self.service_interface.method("ReadAlias", vec![name]));
@@ -164,16 +158,16 @@ impl SecretService {
                 path.clone()
             ))
         } else {
-            Err(Error::new_custom("SSError", "Didn't return an object path"))
+            Err(SsError::Parse)
         }
 
     }
 
-    pub fn get_default_collection(&self) -> Result<Collection, Error> {
+    pub fn get_default_collection(&self) -> Result<Collection, SsError> {
         self.get_collection_by_alias("default")
     }
 
-    pub fn get_any_collection(&self) -> Result<Collection, Error> {
+    pub fn get_any_collection(&self) -> Result<Collection, SsError> {
         // default first, then session, then first
 
         self.get_default_collection()
@@ -183,12 +177,12 @@ impl SecretService {
                 let collections = try!(self.get_all_collections());
                 collections
                     .get(0)
-                    .ok_or(Error::new_custom("SSError", "No collections found"))
+                    .ok_or(SsError::NoResult)
                     .map(|collection| collection.clone())
             })
     }
 
-    pub fn create_collection(&self, label: &str, alias: &str) -> Result<Collection, Error> {
+    pub fn create_collection(&self, label: &str, alias: &str) -> Result<Collection, SsError> {
         // Set up dbus args
         let label = DictEntry(
             Box::new(Str("org.freedesktop.Secret.Collection.Label".to_owned())),
@@ -206,7 +200,7 @@ impl SecretService {
             // Get path of created object
             let created_object_path = try!(res
                 .get(0)
-                .ok_or(Error::new_custom("SSError", "Could not create Collection"))
+                .ok_or(SsError::NoResult)
             );
             let created_path: &Path = created_object_path.inner().unwrap();
 
@@ -214,7 +208,7 @@ impl SecretService {
             if &**created_path == "/" {
                 let prompt_object_path = try!(res
                     .get(1)
-                    .ok_or(Error::new_custom("SSError", "Could not create Collection"))
+                    .ok_or(SsError::NoResult)
                 );
                 let prompt_path: &Path = prompt_object_path.inner().unwrap();
 
@@ -236,7 +230,7 @@ impl SecretService {
         ))
     }
 
-    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>, Error> {
+    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>, SsError> {
         // Build dbus args
         let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
             let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
