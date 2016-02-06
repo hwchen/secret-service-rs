@@ -11,6 +11,7 @@
 
 // TODO: refactoring
 //
+// map_err() for inner() instead of unwrap()
 // return errors early.
 // factor out handling mapping paths to Item
 // Remove all matches for option and result!
