@@ -4,11 +4,11 @@ Secret Service Rust library.
 
 Interfaces with the Linux Secret Service API through dbus.
 
-My understanding is that this library will interface directly with Secret Service. Encryption is negotiated each new session, so an item that was encrypted/decrypted in one session, will be encrypted/decrypted with the new session parameters when a new connection is created.
+My understanding is that encryption is negotiated each new session, so an item that was encrypted/decrypted in one session, will be encrypted/decrypted with the new session parameters when a new connection is created.
 
-(API was not entirely clear on this, my conclusion is drawn from the fact that when secret is returned, the session path is that of the current session, and not the one when the item was created).
+(API was not entirely clear on this from my reading, my conclusion is drawn from the fact that when secret is returned, the session path is that of the current session, and not the one when the item was created).
 
-Readme current for 2/5/2016.
+Readme current for 2/6/2016.
 
 ## Installation
 
@@ -28,13 +28,16 @@ I'll provide better notes on installation once finished and published
 
 ### Todo
 
+ actual docs/example
+- publishing
+
+### Todo later
+
 - use `map_err(|_| SsError::Parse)` for `inner()`? can't `try!` because `inner()` doesn't return an Error type in the Result. Or just `unwrap()`?
-- actual docs/example
-- some refactoring (a list in lib.rs)
+- some refactoring (a list is in lib.rs)
 - clear failed tests? (there is no "after" currently)
 - move tests to integration tests?
-- Should struct instances be deleted when dbus object is deleted?
-- publishing
+- Should/can struct instances be deleted when dbus object is deleted?
 
 ## License
 
