@@ -8,13 +8,12 @@
 // Contains encryption and decryption using aes.
 // Could also contain setting aes key
 
-use error::SsError;
 use crypto::{ buffer, aes, blockmodes };
 use crypto::buffer::{ ReadBuffer, WriteBuffer, BufferResult };
 
 //use rand::{ Rng, OsRng };
 
-pub fn encrypt(data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>, SsError> {
+pub fn encrypt(data: &[u8], key: &[u8], iv: &[u8]) -> ::Result<Vec<u8>> {
     let mut encryptor = aes::cbc_encryptor(
         aes::KeySize::KeySize128,
         key,
@@ -38,7 +37,7 @@ pub fn encrypt(data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>, SsError> {
     Ok(final_result)
 }
 
-pub fn decrypt(encrypted_data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>, SsError> {
+pub fn decrypt(encrypted_data: &[u8], key: &[u8], iv: &[u8]) -> ::Result<Vec<u8>> {
     let mut decryptor = aes::cbc_decryptor(
         aes::KeySize::KeySize128,
         key,

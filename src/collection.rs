@@ -82,14 +82,14 @@ impl<'a> Collection<'a> {
         }
     }
 
-    pub fn is_locked(&self) -> Result<bool, SsError> {
+    pub fn is_locked(&self) -> ::Result<bool> {
         self.collection_interface.get_props("Locked")
             .map(|locked| {
                 locked.inner().unwrap()
             })
     }
 
-    pub fn ensure_unlocked(&self) -> Result<(), SsError> {
+    pub fn ensure_unlocked(&self) -> ::Result<()> {
         match try!(self.is_locked()) {
             false => Ok(()),
             true => Err(SsError::Locked),
@@ -98,7 +98,7 @@ impl<'a> Collection<'a> {
 
     //Helper function for locking and unlocking
     // TODO: refactor into utils? It should be same as collection
-    fn lock_or_unlock(&self, lock_action: LockAction) -> Result<(), SsError> {
+    fn lock_or_unlock(&self, lock_action: LockAction) -> ::Result<()> {
         let objects = MessageItem::new_array(
             vec![ObjectPath(self.collection_path.clone())]
         ).unwrap();
@@ -121,16 +121,16 @@ impl<'a> Collection<'a> {
         Ok(())
     }
 
-    pub fn unlock(&self) -> Result<(), SsError> {
+    pub fn unlock(&self) -> ::Result<()> {
         self.lock_or_unlock(LockAction::Unlock)
     }
 
-    pub fn lock(&self) -> Result<(), SsError> {
+    pub fn lock(&self) -> ::Result<()> {
         self.lock_or_unlock(LockAction::Lock)
     }
 
     // TODO: Rewrite?
-    pub fn delete(&self) -> Result<(), SsError> {
+    pub fn delete(&self) -> ::Result<()> {
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
         try!(self.ensure_unlocked());
@@ -151,7 +151,7 @@ impl<'a> Collection<'a> {
     }
 
     // TODO: Refactor to clean up indents?
-    pub fn get_all_items(&self) -> Result<Vec<Item>, SsError> {
+    pub fn get_all_items(&self) -> ::Result<Vec<Item>> {
         let items = try!(self.collection_interface.get_props("Items"));
 
         // map array of item paths to Item
@@ -174,7 +174,7 @@ impl<'a> Collection<'a> {
         }
     }
 
-    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>, SsError> {
+    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> ::Result<Vec<Item>> {
         // Process dbus args
         let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
             let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
@@ -212,7 +212,7 @@ impl<'a> Collection<'a> {
         }
     }
 
-    pub fn get_label(&self) -> Result<String, SsError> {
+    pub fn get_label(&self) -> ::Result<String> {
         let label = try!(self.collection_interface.get_props("Label"));
         // TODO: switch to inner()?
         if let Str(label_str) = label {
@@ -222,7 +222,7 @@ impl<'a> Collection<'a> {
         }
     }
 
-    pub fn set_label(&self, new_label: &str) -> Result<(), SsError> {
+    pub fn set_label(&self, new_label: &str) -> ::Result<()> {
         self.collection_interface.set_props("Label", Str(new_label.to_owned()))
     }
 
@@ -232,7 +232,7 @@ impl<'a> Collection<'a> {
                        secret: &[u8],
                        replace: bool,
                        content_type: &str,
-                       ) -> Result<Item, SsError> {
+                       ) -> ::Result<Item> {
 
         let secret_struct = format_secret(&self.session, secret, content_type);
 

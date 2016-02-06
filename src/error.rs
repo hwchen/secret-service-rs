@@ -27,6 +27,11 @@ use dbus;
 use std::error;
 use std::fmt;
 
+/// Result type often returned from methods that have SsError.
+/// Fns in this library return ::Result<T> when using this alias.
+// (This pattern is something I saw in hyper)
+pub type Result<T> = ::std::result::Result<T, SsError>;
+
 #[derive(Debug)]
 pub enum SsError {
     Crypto(symmetriccipher::SymmetricCipherError),

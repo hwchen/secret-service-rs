@@ -78,7 +78,7 @@ pub struct Session {
 // setting aes key could be put into ss_crypto
 // Or factor out some common parts to helper functions?
 impl Session {
-    pub fn new(bus: Rc<Connection>, encryption: EncryptionType) -> Result<Self, SsError> {
+    pub fn new(bus: Rc<Connection>, encryption: EncryptionType) -> ::Result<Self> {
         match encryption {
             EncryptionType::Plain => {
                 let m = Message::new_method_call(

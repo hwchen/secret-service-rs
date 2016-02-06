@@ -76,7 +76,7 @@ mod ss_crypto;
 mod util;
 
 use collection::Collection;
-use error::SsError;
+pub use error::{Result, SsError};
 use item::Item;
 use util::{Interface, exec_prompt};
 use session::Session;
@@ -118,7 +118,7 @@ pub struct SecretService {
 }
 
 impl SecretService {
-    pub fn new(encryption: EncryptionType) -> Result<Self, SsError> {
+    pub fn new(encryption: EncryptionType) -> ::Result<Self> {
         let bus = Rc::new(try!(Connection::get_private(BusType::Session)));
         let session = try!(Session::new(bus.clone(), encryption));
         let service_interface = Interface::new(
@@ -135,7 +135,7 @@ impl SecretService {
         })
     }
 
-    pub fn get_all_collections(&self) -> Result<Vec<Collection>, SsError> {
+    pub fn get_all_collections(&self) -> ::Result<Vec<Collection>> {
         let res = try!(self.service_interface.get_props("Collections"));
         let collections: &Vec<_> = res.inner().unwrap();
         Ok(collections.iter().map(|object_path| {
@@ -148,7 +148,7 @@ impl SecretService {
         }).collect::<Vec<_>>())
     }
 
-    pub fn get_collection_by_alias(&self, alias: &str) -> Result<Collection, SsError>{
+    pub fn get_collection_by_alias(&self, alias: &str) -> ::Result<Collection>{
         let name = Str(alias.to_owned());
 
         let res = try!(self.service_interface.method("ReadAlias", vec![name]));
@@ -164,11 +164,11 @@ impl SecretService {
 
     }
 
-    pub fn get_default_collection(&self) -> Result<Collection, SsError> {
+    pub fn get_default_collection(&self) -> ::Result<Collection> {
         self.get_collection_by_alias("default")
     }
 
-    pub fn get_any_collection(&self) -> Result<Collection, SsError> {
+    pub fn get_any_collection(&self) -> ::Result<Collection> {
         // default first, then session, then first
 
         self.get_default_collection()
@@ -183,7 +183,7 @@ impl SecretService {
             })
     }
 
-    pub fn create_collection(&self, label: &str, alias: &str) -> Result<Collection, SsError> {
+    pub fn create_collection(&self, label: &str, alias: &str) -> ::Result<Collection> {
         // Set up dbus args
         let label = DictEntry(
             Box::new(Str("org.freedesktop.Secret.Collection.Label".to_owned())),
@@ -231,7 +231,7 @@ impl SecretService {
         ))
     }
 
-    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>, SsError> {
+    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> ::Result<Vec<Item>> {
         // Build dbus args
         let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
             let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
