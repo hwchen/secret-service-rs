@@ -28,7 +28,7 @@ I'll provide better notes on installation once finished and published
 
 ### Todo
 
- actual docs/example
+- actual docs/example
 - publishing
 
 ### Todo later

@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 //Copyright 2016 secret-service-rs Developers
 //
 // Licensed under the Apache License, Version 2.0, <LICENSE-APACHE or
