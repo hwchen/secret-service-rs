@@ -2,7 +2,7 @@
 
 Secret Service Rust library.
 
-[docs](https://hwchen.github.io/secret-service-rs/secret-service/)
+[docs](https://hwchen.github.io/secret-service-rs/secret_service/)
 
 Interfaces with the Linux Secret Service API through dbus.
 
