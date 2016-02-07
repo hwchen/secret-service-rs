@@ -2,6 +2,8 @@
 
 Secret Service Rust library.
 
+[docs](https://hwchen.github.io/secret-service-rs/secret-service/)
+
 Interfaces with the Linux Secret Service API through dbus.
 
 My understanding is that encryption is negotiated each new session, so an item that was encrypted/decrypted in one session, will be encrypted/decrypted with the new session parameters when a new connection is created.
@@ -28,7 +30,6 @@ I'll provide better notes on installation once finished and published
 
 ### Todo
 
-- actual docs/example
 - publishing
 
 ### Todo later
