@@ -2,21 +2,17 @@
 
 Secret Service Rust library.
 
-[docs](https://hwchen.github.io/secret-service-rs/secret_service/)
+## Documentation
+
+[Get Docs!](https://hwchen.github.io/secret-service-rs/secret_service/)
 
 Interfaces with the Linux Secret Service API through dbus.
 
-My understanding is that encryption is negotiated each new session, so an item that was encrypted/decrypted in one session, will be encrypted/decrypted with the new session parameters when a new connection is created.
-
-(API was not entirely clear on this from my reading, my conclusion is drawn from the fact that when secret is returned, the session path is that of the current session, and not the one when the item was created).
-
-Readme current for 2/6/2016.
-
 ## Installation
 
-On ubuntu, requires libdbus-1-dev to compile.
+Requires dbus development library installed.
 
-I'll provide better notes on installation once finished and published
+On ubuntu, requires libdbus-1-dev.
 
 ## Progress
 
@@ -26,7 +22,7 @@ I'll provide better notes on installation once finished and published
 - Collections: create, delete, search.
 - Items: create, delete, search, get/set secret.
 - crypto
-- error handling (return an SSError)
+- error handling
 
 ### Todo
 
