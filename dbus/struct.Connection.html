@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Connection` struct in crate `dbus`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Connection">
+
+    <title>dbus::Connection - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>dbus</a></p><script>window.sidebarCurrent = {name: 'Connection', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>dbus</a>::<wbr><a class='struct' href=''>Connection</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-4697' class='srclink' href='../src/dbus/lib.rs.html#267-269' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Connection {
+    // some fields omitted
+}</pre><div class='docblock'><p>A D-Bus connection. Start here if you want to get on the D-Bus!</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../dbus/struct.Connection.html' title='dbus::Connection'>Connection</a></code></h3><div class='impl-items'><h4 id='method.get_private' class='method'><code>fn <a href='#method.get_private' class='fnname'>get_private</a>(bus: <a class='enum' href='../dbus/enum.BusType.html' title='dbus::BusType'>BusType</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../dbus/struct.Connection.html' title='dbus::Connection'>Connection</a>, <a class='struct' href='../dbus/struct.Error.html' title='dbus::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Creates a new D-Bus connection.</p>
+</div><h4 id='method.send_with_reply_and_block' class='method'><code>fn <a href='#method.send_with_reply_and_block' class='fnname'>send_with_reply_and_block</a>(&amp;self, msg: <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a>, timeout_ms: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i32.html'>i32</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a>, <a class='struct' href='../dbus/struct.Error.html' title='dbus::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Sends a message over the D-Bus and waits for a reply.
+This is usually used for method calls.</p>
+</div><h4 id='method.send' class='method'><code>fn <a href='#method.send' class='fnname'>send</a>(&amp;self, msg: <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+<div class='docblock'><p>Sends a message over the D-Bus without waiting. Useful for sending signals and method call replies.</p>
+</div><h4 id='method.unique_name' class='method'><code>fn <a href='#method.unique_name' class='fnname'>unique_name</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a></code></h4>
+<div class='docblock'><p>Get the connection&#39;s unique name.</p>
+</div><h4 id='method.iter' class='method'><code>fn <a href='#method.iter' class='fnname'>iter</a>(&amp;self, timeout_ms: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i32.html'>i32</a>) -&gt; <a class='struct' href='../dbus/struct.ConnectionItems.html' title='dbus::ConnectionItems'>ConnectionItems</a></code></h4>
+<div class='docblock'><p>Check if there are new incoming events</p>
+</div><h4 id='method.register_object_path' class='method'><code>fn <a href='#method.register_object_path' class='fnname'>register_object_path</a>(&amp;self, path: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='struct' href='../dbus/struct.Error.html' title='dbus::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Register an object path.</p>
+</div><h4 id='method.unregister_object_path' class='method'><code>fn <a href='#method.unregister_object_path' class='fnname'>unregister_object_path</a>(&amp;self, path: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>)</code></h4>
+<div class='docblock'><p>Unregister an object path.</p>
+</div><h4 id='method.list_registered_object_paths' class='method'><code>fn <a href='#method.list_registered_object_paths' class='fnname'>list_registered_object_paths</a>(&amp;self, path: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>List registered object paths.</p>
+</div><h4 id='method.register_name' class='method'><code>fn <a href='#method.register_name' class='fnname'>register_name</a>(&amp;self, name: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, flags: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='enum' href='../dbus/enum.RequestNameReply.html' title='dbus::RequestNameReply'>RequestNameReply</a>, <a class='struct' href='../dbus/struct.Error.html' title='dbus::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Register a name.</p>
+</div><h4 id='method.release_name' class='method'><code>fn <a href='#method.release_name' class='fnname'>release_name</a>(&amp;self, name: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='enum' href='../dbus/enum.ReleaseNameReply.html' title='dbus::ReleaseNameReply'>ReleaseNameReply</a>, <a class='struct' href='../dbus/struct.Error.html' title='dbus::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Release a name.</p>
+</div><h4 id='method.add_match' class='method'><code>fn <a href='#method.add_match' class='fnname'>add_match</a>(&amp;self, rule: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='struct' href='../dbus/struct.Error.html' title='dbus::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Add a match rule to match messages on the message bus.</p>
+</div><h4 id='method.remove_match' class='method'><code>fn <a href='#method.remove_match' class='fnname'>remove_match</a>(&amp;self, rule: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='struct' href='../dbus/struct.Error.html' title='dbus::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Remove a match rule to match messages on the message bus.</p>
+</div><h4 id='method.watch_fds' class='method'><code>fn <a href='#method.watch_fds' class='fnname'>watch_fds</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='../dbus/struct.Watch.html' title='dbus::Watch'>Watch</a>&gt;</code></h4>
+<div class='docblock'><p>Async I/O: Get an up-to-date list of file descriptors to watch.</p>
+</div><h4 id='method.watch_handle' class='method'><code>fn <a href='#method.watch_handle' class='fnname'>watch_handle</a>(&amp;self, fd: <a class='type' href='https://doc.rust-lang.org/nightly/std/sys/ext/io/type.RawFd.html' title='std::sys::ext::io::RawFd'>RawFd</a>, flags: <a class='type' href='../libc/type.c_uint.html' title='libc::c_uint'>c_uint</a>) -&gt; <a class='struct' href='../dbus/struct.ConnectionItems.html' title='dbus::ConnectionItems'>ConnectionItems</a></code></h4>
+<div class='docblock'><p>Async I/O: Call this function whenever you detected an event on the Fd,
+Flags are a set of WatchEvent bits.
+The returned iterator will return pending items only, never block for new events.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html' title='core::ops::Drop'>Drop</a> for <a class='struct' href='../dbus/struct.Connection.html' title='dbus::Connection'>Connection</a></code></h3><div class='impl-items'><h4 id='method.drop' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html#method.drop' class='fnname'>drop</a>(&amp;mut self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../dbus/struct.Connection.html' title='dbus::Connection'>Connection</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Error.html' title='core::fmt::Error'>Error</a>&gt;</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "dbus";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

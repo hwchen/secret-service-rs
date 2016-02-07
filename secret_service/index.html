@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `secret_service` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, secret_service">
+
+    <title>secret_service - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'secret_service', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>secret_service</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-0' class='srclink' href='../src/secret_service/lib.rs.html#27-482' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'>
+<h1 id='secret-service-libary' class='section-header'><a href='#secret-service-libary'>Secret Service libary</a></h1>
+<p>This library implements a rust interface to the Secret Service API which is implemented
+in Linux.</p>
+
+<h2 id='about-secret-service-api' class='section-header'><a href='#about-secret-service-api'>About Secret Service API</a></h2>
+<p><a href="http://standards.freedesktop.org/secret-service/">http://standards.freedesktop.org/secret-service/</a></p>
+
+<p>Secret Service provides a secure place to store secrets.
+Gnome keyring and KWallet implement the Secret Service API.</p>
+
+<h2 id='basic-usage' class='section-header'><a href='#basic-usage'>Basic Usage</a></h2><pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>secret_service</span>;
+<span class='kw'>use</span> <span class='ident'>secret_service</span>::<span class='ident'>SecretService</span>;
+<span class='kw'>use</span> <span class='ident'>secret_service</span>::<span class='ident'>EncryptionType</span>;
+
+
+<span class='comment'>// initialize secret service (dbus connection and encryption session)</span>
+<span class='kw'>let</span> <span class='ident'>ss</span> <span class='op'>=</span> <span class='ident'>SecretService</span>::<span class='ident'>new</span>(<span class='ident'>EncryptionType</span>::<span class='ident'>Dh</span>).<span class='ident'>unwrap</span>();
+
+<span class='comment'>// get default collection</span>
+<span class='kw'>let</span> <span class='ident'>collection</span> <span class='op'>=</span> <span class='ident'>ss</span>.<span class='ident'>get_default_collection</span>().<span class='ident'>unwrap</span>();
+
+<span class='comment'>//create new item</span>
+<span class='ident'>collection</span>.<span class='ident'>create_item</span>(
+    <span class='string'>&quot;test_label&quot;</span>, <span class='comment'>// label</span>
+    <span class='macro'>vec</span><span class='macro'>!</span>[(<span class='string'>&quot;test&quot;</span>, <span class='string'>&quot;test_value&quot;</span>)], <span class='comment'>// properties</span>
+    <span class='string'>b&quot;test_secret&quot;</span>, <span class='comment'>//secret</span>
+    <span class='boolval'>false</span>, <span class='comment'>// replace item with same attributes</span>
+    <span class='string'>&quot;text/plain&quot;</span> <span class='comment'>// secret content type</span>
+).<span class='ident'>unwrap</span>();
+
+<span class='comment'>// search items by properties</span>
+<span class='kw'>let</span> <span class='ident'>search_items</span> <span class='op'>=</span> <span class='ident'>ss</span>.<span class='ident'>search_items</span>(
+    <span class='macro'>vec</span><span class='macro'>!</span>[(<span class='string'>&quot;test&quot;</span>, <span class='string'>&quot;test_value&quot;</span>)]
+).<span class='ident'>unwrap</span>();
+
+<span class='kw'>let</span> <span class='ident'>item</span> <span class='op'>=</span> <span class='ident'>search_items</span>.<span class='ident'>get</span>(<span class='number'>0</span>).<span class='ident'>unwrap</span>();
+
+<span class='comment'>// retrieve secret from item</span>
+<span class='kw'>let</span> <span class='ident'>secret</span> <span class='op'>=</span> <span class='ident'>item</span>.<span class='ident'>get_secret</span>().<span class='ident'>unwrap</span>();
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>secret</span>, <span class='string'>b&quot;test_secret&quot;</span>);
+
+<span class='comment'>// delete item (deletes the dbus object, not the struct instance)</span>
+<span class='ident'>item</span>.<span class='ident'>delete</span>().<span class='ident'>unwrap</span>()</pre>
+
+<h2 id='overview-of-this-library' class='section-header'><a href='#overview-of-this-library'>Overview of this library:</a></h2>
+<h3 id='entry-point' class='section-header'><a href='#entry-point'>Entry point</a></h3>
+<p>The entry point for this library is the <code>SecretService</code> struct. A new instance of
+<code>SecretService</code> will initialize the dbus connection and negotiate an encryption session.</p>
+<pre class='rust rust-example-rendered'>
+<span class='ident'>SecretService</span>::<span class='ident'>new</span>(<span class='ident'>EncryptionType</span>::<span class='ident'>Plain</span>).<span class='ident'>unwrap</span>();</pre>
+
+<p>or</p>
+<pre class='rust rust-example-rendered'>
+<span class='ident'>SecretService</span>::<span class='ident'>new</span>(<span class='ident'>EncryptionType</span>::<span class='ident'>Dh</span>).<span class='ident'>unwrap</span>();</pre>
+
+<p>Once the SecretService struct is initialized, it can be used to navigate to a collection.
+Items can also be directly searched for without getting a collection first.</p>
+
+<h3 id='collections-and-items' class='section-header'><a href='#collections-and-items'>Collections and Items</a></h3>
+<p>The Secret Service API organizes secrets into collections, and holds each secret
+in an item.</p>
+
+<p>Items consist of a label, attributes, and the secret. The most common way to find
+an item is a search by attributes.</p>
+
+<p>While it&#39;s possible to create new collections, most users will simply create items
+within the default collection.</p>
+
+<h3 id='actions-overview' class='section-header'><a href='#actions-overview'>Actions overview</a></h3>
+<p>The most common supported actions are <code>create</code>, <code>get</code>, <code>search</code>, and <code>delete</code> for
+<code>Collections</code> and <code>Items</code>. For more specifics and exact method names, please see 
+each struct&#39;s documentation.</p>
+
+<p>In addition, <code>set</code> and <code>get</code> actions are available for secrets contained in an <code>Item</code>.</p>
+
+<h3 id='errors' class='section-header'><a href='#errors'>Errors</a></h3>
+<p>This library provides a custom <code>SsError</code>. <code>dbus</code> and <code>rust-crypto</code> crate errors
+are converted into <code>SsError</code>s.</p>
+
+<p>Types of errors:</p>
+
+<ul>
+<li>dbus</li>
+<li>crypto</li>
+<li>parsing dbus output</li>
+<li>no result, if dbus gives back result but doesn&#39;t contain expected parameter</li>
+<li>locked, if an object path is locked</li>
+<li>prompt dismissed, if action requires prompt but the prompt is dismissed</li>
+</ul>
+
+<h3 id='crypto' class='section-header'><a href='#crypto'>Crypto</a></h3>
+<p>Specifics in SecretService API Draft Proposal:
+<a href="http://standards.freedesktop.org/secret-service/">http://standards.freedesktop.org/secret-service/</a></p>
+
+<p>In this library, the encryption negotiation and key exchange is carried
+out in the <code>session</code> module, and encryption/decryption is done in the
+<code>ss_crypto</code> module.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Collection.html'
+                               title='secret_service::Collection'>Collection</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Item.html'
+                               title='secret_service::Item'>Item</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.SecretService.html'
+                               title='secret_service::SecretService'>SecretService</a></td>
+                        <td class='docblock short'>
+                             <p>Secret Service Struct.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.EncryptionType.html'
+                               title='secret_service::EncryptionType'>EncryptionType</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.SsError.html'
+                               title='secret_service::SsError'>SsError</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                </table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='type' href='type.Result.html'
+                               title='secret_service::Result'>Result</a></td>
+                        <td class='docblock short'>
+                             <p>Result type often returned from methods that have SsError.
+Fns in this library return ::Result<T> when using this alias.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "secret_service";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

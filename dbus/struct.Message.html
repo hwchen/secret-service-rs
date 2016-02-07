@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Message` struct in crate `dbus`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Message">
+
+    <title>dbus::Message - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>dbus</a></p><script>window.sidebarCurrent = {name: 'Message', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>dbus</a>::<wbr><a class='struct' href=''>Message</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-1324' class='srclink' href='../src/dbus/message.rs.html#511-513' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Message {
+    // some fields omitted
+}</pre><div class='docblock'><p>A D-Bus message. A message contains some headers (e g sender and destination address)
+and a list of MessageItems.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a></code></h3><div class='impl-items'><h4 id='method.new_method_call' class='method'><code>fn <a href='#method.new_method_call' class='fnname'>new_method_call</a>&lt;D, P, I, M&gt;(destination: D, path: P, iface: I, method: M) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a>, <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt; <span class='where'>where D: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../dbus/struct.BusName.html' title='dbus::BusName'>BusName</a>&gt;, P: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../dbus/struct.Path.html' title='dbus::Path'>Path</a>&gt;, I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../dbus/struct.Interface.html' title='dbus::Interface'>Interface</a>&gt;, M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../dbus/struct.Member.html' title='dbus::Member'>Member</a>&gt;</span></code></h4>
+<div class='docblock'><p>Creates a new method call message.</p>
+</div><h4 id='method.method_call' class='method'><code>fn <a href='#method.method_call' class='fnname'>method_call</a>(destination: &amp;<a class='struct' href='../dbus/struct.BusName.html' title='dbus::BusName'>BusName</a>, path: &amp;<a class='struct' href='../dbus/struct.Path.html' title='dbus::Path'>Path</a>, iface: &amp;<a class='struct' href='../dbus/struct.Interface.html' title='dbus::Interface'>Interface</a>, name: &amp;<a class='struct' href='../dbus/struct.Member.html' title='dbus::Member'>Member</a>) -&gt; <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a></code></h4>
+<div class='docblock'><p>Creates a new method call message.</p>
+</div><h4 id='method.new_signal' class='method'><code>fn <a href='#method.new_signal' class='fnname'>new_signal</a>&lt;P, I, M&gt;(path: P, iface: I, name: M) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a>, <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt; <span class='where'>where P: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt;&gt;, I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt;&gt;, M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt;&gt;</span></code></h4>
+<div class='docblock'><p>Creates a new signal message.</p>
+</div><h4 id='method.signal' class='method'><code>fn <a href='#method.signal' class='fnname'>signal</a>(path: &amp;<a class='struct' href='../dbus/struct.Path.html' title='dbus::Path'>Path</a>, iface: &amp;<a class='struct' href='../dbus/struct.Interface.html' title='dbus::Interface'>Interface</a>, name: &amp;<a class='struct' href='../dbus/struct.Member.html' title='dbus::Member'>Member</a>) -&gt; <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a></code></h4>
+<div class='docblock'><p>Creates a new signal message.</p>
+</div><h4 id='method.new_method_return' class='method'><code>fn <a href='#method.new_method_return' class='fnname'>new_method_return</a>(m: &amp;<a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a>&gt;</code></h4>
+<div class='docblock'><p>Creates a method reply for this method call.</p>
+</div><h4 id='method.method_return' class='method'><code>fn <a href='#method.method_return' class='fnname'>method_return</a>(&amp;self) -&gt; <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a></code></h4>
+<div class='docblock'><p>Creates a method return (reply) for this method call.</p>
+</div><h4 id='method.new_error' class='method'><code>fn <a href='#method.new_error' class='fnname'>new_error</a>(m: &amp;<a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a>, error_name: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, error_message: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a>&gt;</code></h4>
+<div class='docblock'><p>The old way to create a new error reply</p>
+</div><h4 id='method.error' class='method'><code>fn <a href='#method.error' class='fnname'>error</a>(&amp;self, error_name: &amp;<a class='struct' href='../dbus/struct.ErrorName.html' title='dbus::ErrorName'>ErrorName</a>, error_message: &amp;<a class='struct' href='https://doc.rust-lang.org/nightly/std/ffi/c_str/struct.CStr.html' title='std::ffi::c_str::CStr'>CStr</a>) -&gt; <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a></code></h4>
+<div class='docblock'><p>Creates a new error reply</p>
+</div><h4 id='method.get_items' class='method'><code>fn <a href='#method.get_items' class='fnname'>get_items</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;</code></h4>
+<div class='docblock'><p>Get the MessageItems that make up the message.</p>
+</div><h4 id='method.get_serial' class='method'><code>fn <a href='#method.get_serial' class='fnname'>get_serial</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a></code></h4>
+<div class='docblock'><p>Get the D-Bus serial of a message, if one was specified.</p>
+</div><h4 id='method.get_reply_serial' class='method'><code>fn <a href='#method.get_reply_serial' class='fnname'>get_reply_serial</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>&gt;</code></h4>
+<div class='docblock'><p>Get the serial of the message this message is a reply to, if present.</p>
+</div><h4 id='method.append_items' class='method'><code>fn <a href='#method.append_items' class='fnname'>append_items</a>(&amp;mut self, v: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>)</code></h4>
+<div class='docblock'><p>Add one or more MessageItems to this Message.</p>
+</div><h4 id='method.append' class='method'><code>fn <a href='#method.append' class='fnname'>append</a>&lt;I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;&gt;(self, v: I) -&gt; Self</code></h4>
+<div class='docblock'><p>Appends one MessageItem to a message.
+Use in builder style: e g <code>m.method_return().append(7i32)</code></p>
+</div><h4 id='method.append1' class='method'><code>fn <a href='#method.append1' class='fnname'>append1</a>&lt;A: <a class='trait' href='../dbus/arg/trait.Append.html' title='dbus::arg::Append'>Append</a>&gt;(self, a: A) -&gt; Self</code></h4>
+<div class='docblock'><p>Appends one argument to this message.
+Use in builder style: e g <code>m.method_return().append1(7i32)</code></p>
+</div><h4 id='method.append2' class='method'><code>fn <a href='#method.append2' class='fnname'>append2</a>&lt;A1: <a class='trait' href='../dbus/arg/trait.Append.html' title='dbus::arg::Append'>Append</a>, A2: <a class='trait' href='../dbus/arg/trait.Append.html' title='dbus::arg::Append'>Append</a>&gt;(self, a1: A1, a2: A2) -&gt; Self</code></h4>
+<div class='docblock'><p>Appends two arguments to this message.
+Use in builder style: e g <code>m.method_return().append2(7i32, 6u8)</code></p>
+</div><h4 id='method.append3' class='method'><code>fn <a href='#method.append3' class='fnname'>append3</a>&lt;A1: <a class='trait' href='../dbus/arg/trait.Append.html' title='dbus::arg::Append'>Append</a>, A2: <a class='trait' href='../dbus/arg/trait.Append.html' title='dbus::arg::Append'>Append</a>, A3: <a class='trait' href='../dbus/arg/trait.Append.html' title='dbus::arg::Append'>Append</a>&gt;(self, a1: A1, a2: A2, a3: A3) -&gt; Self</code></h4>
+<div class='docblock'><p>Appends three arguments to this message.
+Use in builder style: e g <code>m.method_return().append3(7i32, 6u8, true)</code></p>
+</div><h4 id='method.msg_type' class='method'><code>fn <a href='#method.msg_type' class='fnname'>msg_type</a>(&amp;self) -&gt; <a class='enum' href='../dbus/enum.MessageType.html' title='dbus::MessageType'>MessageType</a></code></h4>
+<div class='docblock'><p>Gets the MessageType of the Message.</p>
+</div><h4 id='method.sender' class='method'><code>fn <a href='#method.sender' class='fnname'>sender</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>Gets the name of the connection that originated this message.</p>
+</div><h4 id='method.headers' class='method'><code>fn <a href='#method.headers' class='fnname'>headers</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a class='enum' href='../dbus/enum.MessageType.html' title='dbus::MessageType'>MessageType</a>, <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;, <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;, <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;)</a></code></h4>
+<div class='docblock'><p>Returns a tuple of (Message type, Path, Interface, Member) of the current message.</p>
+</div><h4 id='method.path' class='method'><code>fn <a href='#method.path' class='fnname'>path</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../dbus/struct.Path.html' title='dbus::Path'>Path</a>&gt;</code></h4>
+<div class='docblock'><p>Gets the object path this Message is being sent to.</p>
+</div><h4 id='method.interface' class='method'><code>fn <a href='#method.interface' class='fnname'>interface</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../dbus/struct.Interface.html' title='dbus::Interface'>Interface</a>&gt;</code></h4>
+<div class='docblock'><p>Gets the interface this Message is being sent to.</p>
+</div><h4 id='method.member' class='method'><code>fn <a href='#method.member' class='fnname'>member</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../dbus/struct.Member.html' title='dbus::Member'>Member</a>&gt;</code></h4>
+<div class='docblock'><p>Gets the interface member being called.</p>
+</div><h4 id='method.as_result' class='method'><code>fn <a href='#method.as_result' class='fnname'>as_result</a>(&amp;mut self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;&amp;mut <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a>, <a class='struct' href='../dbus/struct.Error.html' title='dbus::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>When the remote end returns an error, the message itself is
+correct but its contents is an error. This method will
+transform such an error to a D-Bus Error or otherwise return
+the original message.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a> for <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a></code></h3><div class='impl-items'></div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html' title='core::ops::Drop'>Drop</a> for <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a></code></h3><div class='impl-items'><h4 id='method.drop' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html#method.drop' class='fnname'>drop</a>(&amp;mut self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../dbus/struct.Message.html' title='dbus::Message'>Message</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Error.html' title='core::fmt::Error'>Error</a>&gt;</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "dbus";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

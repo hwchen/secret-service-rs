@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Mpq",""],["mpq_struct",""]],"type":[["mpq_ptr",""],["mpq_srcptr",""]]});

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Factory` struct in crate `dbus`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Factory">
+
+    <title>dbus::tree::Factory - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>dbus</a>::<wbr><a href='index.html'>tree</a></p><script>window.sidebarCurrent = {name: 'Factory', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>dbus</a>::<wbr><a href='index.html'>tree</a>::<wbr><a class='struct' href=''>Factory</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-4487' class='srclink' href='../../src/dbus/methoddisp.rs.html#723' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Factory&lt;M&gt;(_);</pre><div class='docblock'><p>The factory is used to create object paths, interfaces, methods etc.</p>
+
+<p>There are three factories:</p>
+
+<p><strong>Fn</strong> - all methods are <code>Fn()</code>.</p>
+
+<p><strong>FnMut</strong> - all methods are <code>FnMut()</code>. This means they can mutate their environment,
+ which has the side effect that if you call it recursively, it will RefCell panic.</p>
+
+<p><strong>Sync</strong> - all methods are <code>Fn() + Send + Sync + &#39;static</code>. This means that the methods
+ can be called from different threads in parallel.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;'a&gt; <a class='struct' href='../../dbus/tree/struct.Factory.html' title='dbus::tree::Factory'>Factory</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'a&gt;&gt;</code></h3><div class='impl-items'><h4 id='method.new_fn' class='method'><code>fn <a href='#method.new_fn' class='fnname'>new_fn</a>() -&gt; Self</code></h4>
+<div class='docblock'><p>Creates a new factory for single-thread use.</p>
+</div><h4 id='method.method' class='method'><code>fn <a href='#method.method' class='fnname'>method</a>&lt;'b, H: 'b, T&gt;(&amp;self, t: T, handler: H) -&gt; <a class='struct' href='../../dbus/tree/struct.Method.html' title='dbus::tree::Method'>Method</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'b&gt;&gt; <span class='where'>where H: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>(&amp;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>, &amp;<a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'b&gt;&gt;, &amp;<a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'b&gt;&gt;) -&gt; <a class='type' href='../../dbus/tree/type.MethodResult.html' title='dbus::tree::MethodResult'>MethodResult</a>, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Member.html' title='dbus::Member'>Member</a>&gt;</span></code></h4>
+<div class='docblock'><p>Creates a new method for single-thread use.</p>
+</div><h4 id='method.property' class='method'><code>fn <a href='#method.property' class='fnname'>property</a>&lt;'b, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;, I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='enum' href='../../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;&gt;(&amp;self, t: T, i: I) -&gt; <a class='struct' href='../../dbus/tree/struct.Property.html' title='dbus::tree::Property'>Property</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'b&gt;&gt;</code></h4>
+<div class='docblock'><p>Creates a new property for single-thread use.</p>
+</div><h4 id='method.interface' class='method'><code>fn <a href='#method.interface' class='fnname'>interface</a>&lt;'b, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Interface.html' title='dbus::Interface'>IfaceName</a>&gt;&gt;(&amp;self, t: T) -&gt; <a class='struct' href='../../dbus/tree/struct.Interface.html' title='dbus::tree::Interface'>Interface</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'b&gt;&gt;</code></h4>
+<div class='docblock'><p>Creates a new interface for single-thread use.</p>
+</div><h4 id='method.tree' class='method'><code>fn <a href='#method.tree' class='fnname'>tree</a>&lt;'b&gt;(&amp;self) -&gt; <a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'b&gt;&gt;</code></h4>
+<div class='docblock'><p>Creates a new tree for single-thread use.</p>
+</div><h4 id='method.object_path' class='method'><code>fn <a href='#method.object_path' class='fnname'>object_path</a>&lt;'b, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Path.html' title='dbus::Path'>Path</a>&gt;&gt;(&amp;self, t: T) -&gt; <a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'b&gt;&gt;</code></h4>
+<div class='docblock'><p>Creates a new object path for single-thread use.</p>
+</div></div><h3 class='impl'><code>impl&lt;'a&gt; <a class='struct' href='../../dbus/tree/struct.Factory.html' title='dbus::tree::Factory'>Factory</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'a&gt;&gt;</code></h3><div class='impl-items'><h4 id='method.new_fnmut' class='method'><code>fn <a href='#method.new_fnmut' class='fnname'>new_fnmut</a>() -&gt; Self</code></h4>
+<div class='docblock'><p>Creates a new factory for single-thread + mutable fns use.</p>
+</div><h4 id='method.method-1' class='method'><code>fn <a href='#method.method' class='fnname'>method</a>&lt;'b, H: 'b, T&gt;(&amp;self, t: T, handler: H) -&gt; <a class='struct' href='../../dbus/tree/struct.Method.html' title='dbus::tree::Method'>Method</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'b&gt;&gt; <span class='where'>where H: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(&amp;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>, &amp;<a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'b&gt;&gt;, &amp;<a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'b&gt;&gt;) -&gt; <a class='type' href='../../dbus/tree/type.MethodResult.html' title='dbus::tree::MethodResult'>MethodResult</a>, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Member.html' title='dbus::Member'>Member</a>&gt;</span></code></h4>
+<div class='docblock'><p>Creates a new method for single-thread use.
+This method can mutate its environment, so it will panic in case
+it is called recursively.</p>
+</div><h4 id='method.property-1' class='method'><code>fn <a href='#method.property' class='fnname'>property</a>&lt;'b, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;, I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='enum' href='../../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;&gt;(&amp;self, t: T, i: I) -&gt; <a class='struct' href='../../dbus/tree/struct.Property.html' title='dbus::tree::Property'>Property</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'b&gt;&gt;</code></h4>
+<div class='docblock'><p>Creates a new mutable property for single-thread use.</p>
+</div><h4 id='method.interface-1' class='method'><code>fn <a href='#method.interface' class='fnname'>interface</a>&lt;'b, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Interface.html' title='dbus::Interface'>IfaceName</a>&gt;&gt;(&amp;self, t: T) -&gt; <a class='struct' href='../../dbus/tree/struct.Interface.html' title='dbus::tree::Interface'>Interface</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'b&gt;&gt;</code></h4>
+<div class='docblock'><p>Creates a new mutable interface for single-thread use.</p>
+</div><h4 id='method.tree-1' class='method'><code>fn <a href='#method.tree' class='fnname'>tree</a>&lt;'b&gt;(&amp;self) -&gt; <a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'b&gt;&gt;</code></h4>
+<div class='docblock'><p>Creates a new mutable tree for single-thread use.</p>
+</div><h4 id='method.object_path-1' class='method'><code>fn <a href='#method.object_path' class='fnname'>object_path</a>&lt;'b, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Path.html' title='dbus::Path'>Path</a>&gt;&gt;(&amp;self, t: T) -&gt; <a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'b&gt;&gt;</code></h4>
+<div class='docblock'><p>Creates a new mutable object path for single-thread use.</p>
+</div></div><h3 class='impl'><code>impl <a class='struct' href='../../dbus/tree/struct.Factory.html' title='dbus::tree::Factory'>Factory</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt;</code></h3><div class='impl-items'><h4 id='method.new_sync' class='method'><code>fn <a href='#method.new_sync' class='fnname'>new_sync</a>() -&gt; Self</code></h4>
+<div class='docblock'><p>Creates a new factory for multi-thread use.
+Trees created will be able to Send and Sync, i e,
+it can handle several messages in parallel.</p>
+</div><h4 id='method.method-2' class='method'><code>fn <a href='#method.method' class='fnname'>method</a>&lt;H, T&gt;(&amp;self, t: T, handler: H) -&gt; <a class='struct' href='../../dbus/tree/struct.Method.html' title='dbus::tree::Method'>Method</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt; <span class='where'>where H: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>(&amp;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>, &amp;<a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt;, &amp;<a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt;) -&gt; <a class='type' href='../../dbus/tree/type.MethodResult.html' title='dbus::tree::MethodResult'>MethodResult</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html' title='core::marker::Sync'>Sync</a> + 'static, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Member.html' title='dbus::Member'>Member</a>&gt;</span></code></h4>
+<div class='docblock'><p>Creates a new method for multi-thread use.
+This puts bounds on the callback to enable it to be called from several threads
+in parallel.</p>
+</div><h4 id='method.property-2' class='method'><code>fn <a href='#method.property' class='fnname'>property</a>&lt;T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;, I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='enum' href='../../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;&gt;(&amp;self, t: T, i: I) -&gt; <a class='struct' href='../../dbus/tree/struct.Property.html' title='dbus::tree::Property'>Property</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt;</code></h4>
+<div class='docblock'><p>Creates a new property for multi-threaded use.</p>
+</div><h4 id='method.interface-2' class='method'><code>fn <a href='#method.interface' class='fnname'>interface</a>&lt;T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Interface.html' title='dbus::Interface'>IfaceName</a>&gt;&gt;(&amp;self, t: T) -&gt; <a class='struct' href='../../dbus/tree/struct.Interface.html' title='dbus::tree::Interface'>Interface</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt;</code></h4>
+<div class='docblock'><p>Creates a new interface for multi-threaded use.</p>
+</div><h4 id='method.tree-2' class='method'><code>fn <a href='#method.tree' class='fnname'>tree</a>(&amp;self) -&gt; <a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt;</code></h4>
+<div class='docblock'><p>Creates a new tree for multi-threaded use.</p>
+</div><h4 id='method.object_path-2' class='method'><code>fn <a href='#method.object_path' class='fnname'>object_path</a>&lt;T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Path.html' title='dbus::Path'>Path</a>&gt;&gt;(&amp;self, t: T) -&gt; <a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt;</code></h4>
+<div class='docblock'><p>Creates a new object path for multi-threaded use.</p>
+</div></div><h3 class='impl'><code>impl&lt;M&gt; <a class='struct' href='../../dbus/tree/struct.Factory.html' title='dbus::tree::Factory'>Factory</a>&lt;M&gt;</code></h3><div class='impl-items'><h4 id='method.signal' class='method'><code>fn <a href='#method.signal' class='fnname'>signal</a>&lt;T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Member.html' title='dbus::Member'>Member</a>&gt;&gt;(&amp;self, t: T) -&gt; <a class='struct' href='../../dbus/tree/struct.Signal.html' title='dbus::tree::Signal'>Signal</a></code></h4>
+<div class='docblock'><p>Create a Signal.</p>
+</div></div><h3 class='impl'><code>impl&lt;M: MethodType&gt; <a class='struct' href='../../dbus/tree/struct.Factory.html' title='dbus::tree::Factory'>Factory</a>&lt;M&gt;</code></h3><div class='impl-items'><h4 id='method.method_sync' class='method'><code>fn <a href='#method.method_sync' class='fnname'>method_sync</a>&lt;H, T&gt;(&amp;self, t: T, handler: H) -&gt; <a class='struct' href='../../dbus/tree/struct.Method.html' title='dbus::tree::Method'>Method</a>&lt;M&gt; <span class='where'>where H: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>(&amp;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>, &amp;<a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;M&gt;, &amp;<a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;M&gt;) -&gt; <a class='type' href='../../dbus/tree/type.MethodResult.html' title='dbus::tree::MethodResult'>MethodResult</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html' title='core::marker::Sync'>Sync</a> + 'static, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/struct.Member.html' title='dbus::Member'>Member</a>&gt;</span></code></h4>
+<div class='docblock'><p>Creates a new method with bounds enough to be used in all trees.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl&lt;M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../dbus/tree/struct.Factory.html' title='dbus::tree::Factory'>Factory</a>&lt;M&gt;</code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../dbus/tree/struct.Factory.html' title='dbus::tree::Factory'>Factory</a>&lt;M&gt;</code></h4>
+<h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div><h3 class='impl'><code>impl&lt;M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a> for <a class='struct' href='../../dbus/tree/struct.Factory.html' title='dbus::tree::Factory'>Factory</a>&lt;M&gt;</code></h3><div class='impl-items'></div><h3 class='impl'><code>impl&lt;M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../dbus/tree/struct.Factory.html' title='dbus::tree::Factory'>Factory</a>&lt;M&gt;</code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "dbus";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

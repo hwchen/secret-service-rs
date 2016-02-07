@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["SsError",""]],"type":[["Result","Result type often returned from methods that have SsError. Fns in this library return ::Result<T> when using this alias."]]});

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Mpq` struct in crate `gmp`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Mpq">
+
+    <title>gmp::mpq::Mpq - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>gmp</a>::<wbr><a href='index.html'>mpq</a></p><script>window.sidebarCurrent = {name: 'Mpq', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>gmp</a>::<wbr><a href='index.html'>mpq</a>::<wbr><a class='struct' href=''>Mpq</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-917' class='srclink' href='../../src/gmp/mpq.rs.html#42-44' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Mpq {
+    pub mpq: <a class='struct' href='../../gmp/mpq/struct.mpq_struct.html' title='gmp::mpq::mpq_struct'>mpq_struct</a>,
+}</pre><h2 class='fields'>Fields</h2>
+<table><tr class='stab '>
+                                  <td id='structfield.mpq'><code>mpq</code></td><td></td></tr></table><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.set' class='method'><code>fn <a href='#method.set' class='fnname'>set</a>(&amp;mut self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>)</code></h4>
+<h4 id='method.set_z' class='method'><code>fn <a href='#method.set_z' class='fnname'>set_z</a>(&amp;mut self, other: &amp;<a class='struct' href='../../gmp/mpz/struct.Mpz.html' title='gmp::mpz::Mpz'>Mpz</a>)</code></h4>
+<h4 id='method.set_d' class='method'><code>fn <a href='#method.set_d' class='fnname'>set_d</a>(&amp;mut self, other: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>)</code></h4>
+<h4 id='method.set_f' class='method'><code>fn <a href='#method.set_f' class='fnname'>set_f</a>(&amp;mut self, other: &amp;<a class='struct' href='../../gmp/mpf/struct.Mpf.html' title='gmp::mpf::Mpf'>Mpf</a>)</code></h4>
+<h4 id='method.get_num' class='method'><code>fn <a href='#method.get_num' class='fnname'>get_num</a>(&amp;self) -&gt; <a class='struct' href='../../gmp/mpz/struct.Mpz.html' title='gmp::mpz::Mpz'>Mpz</a></code></h4>
+<h4 id='method.get_den' class='method'><code>fn <a href='#method.get_den' class='fnname'>get_den</a>(&amp;self) -&gt; <a class='struct' href='../../gmp/mpz/struct.Mpz.html' title='gmp::mpz::Mpz'>Mpz</a></code></h4>
+<h4 id='method.abs' class='method'><code>fn <a href='#method.abs' class='fnname'>abs</a>(&amp;self) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.invert' class='method'><code>fn <a href='#method.invert' class='fnname'>invert</a>(&amp;self) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.one' class='method'><code>fn <a href='#method.one' class='fnname'>one</a>() -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.zero' class='method'><code>fn <a href='#method.zero' class='fnname'>zero</a>() -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.is_zero' class='method'><code>fn <a href='#method.is_zero' class='fnname'>is_zero</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a> for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'></div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html' title='core::ops::Drop'>Drop</a> for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.drop' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html#method.drop' class='fnname'>drop</a>(&amp;mut self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'></div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.eq' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.eq' class='fnname'>eq</a>(&amp;self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.ne' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html' title='core::cmp::Ord'>Ord</a> for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.cmp' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html#method.cmp' class='fnname'>cmp</a>(&amp;self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html' title='core::cmp::Ordering'>Ordering</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html' title='core::cmp::PartialOrd'>PartialOrd</a> for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.partial_cmp' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.partial_cmp' class='fnname'>partial_cmp</a>(&amp;self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html' title='core::cmp::Ordering'>Ordering</a>&gt;</code></h4>
+<h4 id='method.lt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.lt' class='fnname'>lt</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.le' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.le' class='fnname'>le</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.gt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.gt' class='fnname'>gt</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.ge' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.ge' class='fnname'>ge</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a, 'b&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;&amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for &amp;'b <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.add' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;&amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-1' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.add-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a, 'b&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Sub</a>&lt;&amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for &amp;'b <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-2' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.sub' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#method.sub' class='fnname'>sub</a>(self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Sub</a>&lt;&amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-3' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.sub-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#method.sub' class='fnname'>sub</a>(self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a, 'b&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;&amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for &amp;'b <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-4' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.mul' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Mul.html#method.mul' class='fnname'>mul</a>(self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;&amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-5' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.mul-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Mul.html#method.mul' class='fnname'>mul</a>(self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a, 'b&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Div.html' title='core::ops::Div'>Div</a>&lt;&amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for &amp;'b <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-6' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.div' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Div.html#method.div' class='fnname'>div</a>(self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Div.html' title='core::ops::Div'>Div</a>&lt;&amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-7' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.div-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Div.html#method.div' class='fnname'>div</a>(self, other: &amp;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'b&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Neg.html' title='core::ops::Neg'>Neg</a> for &amp;'b <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-8' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.neg' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Neg.html#method.neg' class='fnname'>neg</a>(self) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Neg.html' title='core::ops::Neg'>Neg</a> for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-9' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.neg-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Neg.html#method.neg' class='fnname'>neg</a>(self) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a>&gt;&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.into' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html#method.into' class='fnname'>into</a>(self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a>&gt;</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>&gt;&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.into-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html#method.into' class='fnname'>into</a>(self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>&gt;</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a>&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(other: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.from-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(other: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for &amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-10' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.add-2' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, other: <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-11' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.add-3' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, other: <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Sub</a>&lt;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for &amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-12' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.sub-2' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#method.sub' class='fnname'>sub</a>(self, other: <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Sub</a>&lt;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-13' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.sub-3' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#method.sub' class='fnname'>sub</a>(self, other: <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for &amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-14' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.mul-2' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Mul.html#method.mul' class='fnname'>mul</a>(self, other: <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-15' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.mul-3' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Mul.html#method.mul' class='fnname'>mul</a>(self, other: <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Div.html' title='core::ops::Div'>Div</a>&lt;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for &amp;'a <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-16' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.div-2' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Div.html#method.div' class='fnname'>div</a>(self, other: <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Div.html' title='core::ops::Div'>Div</a>&lt;<a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>&gt; for <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output-17' class='type'><code>type Output = <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+<h4 id='method.div-3' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Div.html#method.div' class='fnname'>div</a>(self, other: <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a>) -&gt; <a class='struct' href='../../gmp/mpq/struct.Mpq.html' title='gmp::mpq::Mpq'>Mpq</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "gmp";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

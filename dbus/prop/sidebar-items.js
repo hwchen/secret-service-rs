@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["PropHandler","Wrapper around Props that keeps a map of fetched properties."],["Props","Client side properties - get and set properties on a remote application."]]});

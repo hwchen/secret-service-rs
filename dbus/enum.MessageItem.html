@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `MessageItem` enum in crate `dbus`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, MessageItem">
+
+    <title>dbus::MessageItem - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>dbus</a></p><script>window.sidebarCurrent = {name: 'MessageItem', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content enum">
+<h1 class='fqn'><span class='in-band'>Enum <a href='index.html'>dbus</a>::<wbr><a class='enum' href=''>MessageItem</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-609' class='srclink' href='../src/dbus/message.rs.html#81-119' title='goto source code'>[src]</a></span></h1>
+<pre class='rust enum'>pub enum MessageItem {
+    Array(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;, <a class='type' href='../dbus/type.TypeSig.html' title='dbus::TypeSig'>TypeSig</a>&lt;'static&gt;),
+    Struct(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;),
+    Variant(<a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;),
+    DictEntry(<a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;, <a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;),
+    ObjectPath(<a class='struct' href='../dbus/struct.Path.html' title='dbus::Path'>Path</a>),
+    Str(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>),
+    Bool(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a>),
+    Byte(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>),
+    Int16(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a>),
+    Int32(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i32.html'>i32</a>),
+    Int64(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a>),
+    UInt16(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>),
+    UInt32(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>),
+    UInt64(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>),
+    Double(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>),
+    UnixFd(<a class='struct' href='../dbus/struct.OwnedFd.html' title='dbus::OwnedFd'>OwnedFd</a>),
+}</pre><div class='docblock'><p>MessageItem - used as parameters and return values from
+method calls, or as data added to a signal.</p>
+</div><h2 class='variants'>Variants</h2>
+<table><tr><td id='variant.Array'><code>Array</code></td><td><div class='docblock'><p>A D-Bus array requires all elements to be of the same type.
+All elements must match the TypeSig.</p>
+</div></td></tr><tr><td id='variant.Struct'><code>Struct</code></td><td><div class='docblock'><p>A D-Bus struct allows for values of different types.</p>
+</div></td></tr><tr><td id='variant.Variant'><code>Variant</code></td><td><div class='docblock'><p>A D-Bus variant is a wrapper around another <code>MessageItem</code>, which
+can be of any type.</p>
+</div></td></tr><tr><td id='variant.DictEntry'><code>DictEntry</code></td><td><div class='docblock'><p>A D-Bus dictionary is an Array of DictEntry items.</p>
+</div></td></tr><tr><td id='variant.ObjectPath'><code>ObjectPath</code></td><td><div class='docblock'><p>A D-Bus objectpath requires its content to be a valid objectpath,
+so this cannot be any string.</p>
+</div></td></tr><tr><td id='variant.Str'><code>Str</code></td><td><div class='docblock'><p>A D-Bus String is zero terminated, so no \0 s in the String, please.
+(D-Bus strings are also - like Rust strings - required to be valid UTF-8.)</p>
+</div></td></tr><tr><td id='variant.Bool'><code>Bool</code></td><td><div class='docblock'><p>A D-Bus boolean type.</p>
+</div></td></tr><tr><td id='variant.Byte'><code>Byte</code></td><td><div class='docblock'><p>A D-Bus unsigned 8 bit type.</p>
+</div></td></tr><tr><td id='variant.Int16'><code>Int16</code></td><td><div class='docblock'><p>A D-Bus signed 16 bit type.</p>
+</div></td></tr><tr><td id='variant.Int32'><code>Int32</code></td><td><div class='docblock'><p>A D-Bus signed 32 bit type.</p>
+</div></td></tr><tr><td id='variant.Int64'><code>Int64</code></td><td><div class='docblock'><p>A D-Bus signed 64 bit type.</p>
+</div></td></tr><tr><td id='variant.UInt16'><code>UInt16</code></td><td><div class='docblock'><p>A D-Bus unsigned 16 bit type.</p>
+</div></td></tr><tr><td id='variant.UInt32'><code>UInt32</code></td><td><div class='docblock'><p>A D-Bus unsigned 32 bit type.</p>
+</div></td></tr><tr><td id='variant.UInt64'><code>UInt64</code></td><td><div class='docblock'><p>A D-Bus unsigned 64 bit type.</p>
+</div></td></tr><tr><td id='variant.Double'><code>Double</code></td><td><div class='docblock'><p>A D-Bus IEEE-754 double-precision floating point type.</p>
+</div></td></tr><tr><td id='variant.UnixFd'><code>UnixFd</code></td><td><div class='docblock'><p>D-Bus allows for sending file descriptors, which can be used to
+set up SHM, unix pipes, or other communication channels.</p>
+</div></td></tr></table><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.type_sig' class='method'><code>fn <a href='#method.type_sig' class='fnname'>type_sig</a>(&amp;self) -&gt; <a class='type' href='../dbus/type.TypeSig.html' title='dbus::TypeSig'>TypeSig</a>&lt;'static&gt;</code></h4>
+<div class='docblock'><p>Get the D-Bus ASCII type-code for this MessageItem.</p>
+</div><h4 id='method.array_type' class='method'><code>fn <a href='#method.array_type' class='fnname'>array_type</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i32.html'>i32</a></code></h4>
+<div class='docblock'><p>Get the integer value for this MessageItem&#39;s type-code.</p>
+</div><h4 id='method.from_dict' class='method'><code>fn <a href='#method.from_dict' class='fnname'>from_dict</a>&lt;E, I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a>&lt;Item=<a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>, <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>)</a>, E&gt;&gt;&gt;(i: I) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>, E&gt;</code></h4>
+<div class='docblock'><p>Creates a (String, Variant) dictionary from an iterator with Result passthrough (an Err will abort and return that Err)</p>
+</div><h4 id='method.new_array' class='method'><code>fn <a href='#method.new_array' class='fnname'>new_array</a>(v: <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>, <a class='enum' href='../dbus/enum.ArrayError.html' title='dbus::ArrayError'>ArrayError</a>&gt;</code></h4>
+<div class='docblock'><p>Creates an MessageItem::Array from a list of MessageItems.</p>
+
+<p>Note: This requires <code>v</code> to be non-empty. See also
+<code>MessageItem::from(&amp;[T])</code>, which can handle empty arrays as well.</p>
+</div><h4 id='method.inner' class='method'><code>fn <a href='#method.inner' class='fnname'>inner</a>&lt;'a, T: <a class='trait' href='../dbus/trait.FromMessageItem.html' title='dbus::FromMessageItem'>FromMessageItem</a>&lt;'a&gt;&gt;(&amp;'a self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+<div class='docblock'><p>Conveniently get the inner value of a <code>MessageItem</code></p>
+
+<h1 id='example' class='section-header'><a href='#example'>Example</a></h1><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>dbus</span>::<span class='ident'>MessageItem</span>;
+<span class='kw'>let</span> <span class='ident'>m</span>: <span class='ident'>MessageItem</span> <span class='op'>=</span> <span class='number'>5i64</span>.<span class='ident'>into</span>();
+<span class='kw'>let</span> <span class='ident'>s</span>: <span class='ident'>i64</span> <span class='op'>=</span> <span class='ident'>m</span>.<span class='ident'>inner</span>().<span class='ident'>unwrap</span>();
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>s</span>, <span class='number'>5i64</span>);</pre>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-2' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-3' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-4' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i32.html'>i32</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-5' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i32.html'>i32</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-6' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-7' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-8' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a, T&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;'a [</a>T<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a> <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt; + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html' title='core::default::Default'>Default</a></span></code></h3><div class='docblock'><p>Create a <code>MessageItem::Array</code>.</p>
+</div><div class='impl-items'><h4 id='method.from-9' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;'a [</a>T<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;&amp;'a <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-10' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-11' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='struct' href='../dbus/struct.Path.html' title='dbus::Path'>Path</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-12' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='struct' href='../dbus/struct.Path.html' title='dbus::Path'>Path</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='struct' href='../dbus/struct.OwnedFd.html' title='dbus::OwnedFd'>OwnedFd</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-13' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='struct' href='../dbus/struct.OwnedFd.html' title='dbus::OwnedFd'>OwnedFd</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='docblock'><p>Create a <code>MessageItem::Variant</code></p>
+</div><div class='impl-items'><h4 id='method.from-14' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>&gt;) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>, <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>)</a>&gt; for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='docblock'><p>Create a <code>MessageItem::DictEntry</code></p>
+</div><div class='impl-items'><h4 id='method.from-15' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>, <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>)</a>) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='../dbus/trait.FromMessageItem.html' title='dbus::FromMessageItem'>FromMessageItem</a>&lt;'a&gt; for &amp;'a <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.from-16' class='method'><code>fn <a href='../dbus/trait.FromMessageItem.html#method.from' class='fnname'>from</a>(i: &amp;'a <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;&amp;'a <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../dbus/obj/trait.PropertyROHandler.html' title='dbus::obj::PropertyROHandler'>PropertyROHandler</a> for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.get' class='method'><code>fn <a href='../dbus/obj/trait.PropertyROHandler.html#method.get' class='fnname'>get</a>(&amp;self) -&gt; <a class='type' href='../dbus/obj/type.PropertyGetResult.html' title='dbus::obj::PropertyGetResult'>PropertyGetResult</a></code></h4>
+</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+<h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html' title='core::cmp::PartialOrd'>PartialOrd</a> for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.partial_cmp' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.partial_cmp' class='fnname'>partial_cmp</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html' title='core::cmp::Ordering'>Ordering</a>&gt;</code></h4>
+<h4 id='method.lt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.lt' class='fnname'>lt</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.le' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.le' class='fnname'>le</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.gt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.gt' class='fnname'>gt</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.ge' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.ge' class='fnname'>ge</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.eq' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.eq' class='fnname'>eq</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.ne' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "dbus";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

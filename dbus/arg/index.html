@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `arg` mod in crate `dbus`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, arg">
+
+    <title>dbus::arg - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>dbus</a></p><script>window.sidebarCurrent = {name: 'arg', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>dbus</a>::<wbr><a class='mod' href=''>arg</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-3451' class='srclink' href='../../src/dbus/lib.rs.html#76-78' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Types and traits for easily appending a message with arguments.</p>
+
+<p>Using this module to append argument to a message should be faster than
+using MessageItem, especially when large arrays need to be appended.
+It also encodes more of D-Bus restrictions into Rust&#39;s type system, so
+trying to append anything that D-Bus would not allow should result in a
+compile-time error.</p>
+
+<p><strong>Append a</strong>:</p>
+
+<p><code>bool, u8, u16, u32, u64, i16, i32, i64, f64</code> - the corresponding D-Bus basic type</p>
+
+<p><code>&amp;str</code> - a D-Bus string. TODO: If the string contains null characters, it will be cropped
+to only include the data before the null character. (This allows for skipping an
+allocation by writing a string literal which ends with a null character.)</p>
+
+<p><code>&amp;[T] where T: Append</code> - a D-Bus array. Note: can use an efficient fast-path in case of 
+T being an integer or f64 type.</p>
+
+<p><code>Array&lt;T, I&gt; where I: Iterator&lt;Item=T&gt;, T: Append</code> - a D-Bus array, maximum flexibility.</p>
+
+<p><code>Variant&lt;T&gt; where T: Append</code> - a D-Bus variant.</p>
+
+<p><code>(T1, T2) where T1: Append, T2: Append</code> - tuples are D-Bus structs. Implemented up to 12.</p>
+
+<p><code>Dict&lt;T1, T2, I&gt; where I: Iterator&lt;Item=(T1, T2)&gt;, T1: Append, T2: Append</code> - A D-Bus dict (array of dict entries).</p>
+
+<p>Not implemented yet: Fd, ObjectPath and Signature types. And to get arguments just as ergonomic
+as this module appends them.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Array.html'
+                               title='dbus::arg::Array'>Array</a></td>
+                        <td class='docblock short'>
+                             <p>Append a D-Bus Array with maximum flexibility (wraps an iterator of items to append).</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Dict.html'
+                               title='dbus::arg::Dict'>Dict</a></td>
+                        <td class='docblock short'>
+                             <p>Append a D-Bus dict type (as an array of dict entries).</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.IterAppend.html'
+                               title='dbus::arg::IterAppend'>IterAppend</a></td>
+                        <td class='docblock short'>
+                             <p>Helper struct for appending one or more arguments to a Message.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Variant.html'
+                               title='dbus::arg::Variant'>Variant</a></td>
+                        <td class='docblock short'>
+                             <p>A simple wrapper to specify a D-Bus variant.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Append.html'
+                               title='dbus::arg::Append'>Append</a></td>
+                        <td class='docblock short'>
+                             <p>Types that can be appended to a message as argument implement this helper trait.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.DictKey.html'
+                               title='dbus::arg::DictKey'>DictKey</a></td>
+                        <td class='docblock short'>
+                             <p>Types that can be used as keys in a dict type implement this trait.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "dbus";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

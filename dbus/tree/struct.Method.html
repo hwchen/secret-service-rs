@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Method` struct in crate `dbus`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Method">
+
+    <title>dbus::tree::Method - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>dbus</a>::<wbr><a href='index.html'>tree</a></p><script>window.sidebarCurrent = {name: 'Method', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>dbus</a>::<wbr><a href='index.html'>tree</a>::<wbr><a class='struct' href=''>Method</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-3781' class='srclink' href='../../src/dbus/methoddisp.rs.html#143-149' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Method&lt;M&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>A D-Bus Method.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;M&gt; <a class='struct' href='../../dbus/tree/struct.Method.html' title='dbus::tree::Method'>Method</a>&lt;M&gt;</code></h3><div class='impl-items'><h4 id='method.in_arg' class='method'><code>fn <a href='#method.in_arg' class='fnname'>in_arg</a>&lt;A: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/tree/struct.Argument.html' title='dbus::tree::Argument'>Argument</a>&gt;&gt;(self, a: A) -&gt; Self</code></h4>
+<div class='docblock'><p>Builder method that adds an &quot;in&quot; Argument to this Method.</p>
+</div><h4 id='method.in_args' class='method'><code>fn <a href='#method.in_args' class='fnname'>in_args</a>&lt;Z: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/tree/struct.Argument.html' title='dbus::tree::Argument'>Argument</a>&gt;, A: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIterator</a>&lt;Item=Z&gt;&gt;(self, a: A) -&gt; Self</code></h4>
+<div class='docblock'><p>Builder method that adds multiple &quot;in&quot; Arguments to this Method.</p>
+</div><h4 id='method.out_arg' class='method'><code>fn <a href='#method.out_arg' class='fnname'>out_arg</a>&lt;A: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/tree/struct.Argument.html' title='dbus::tree::Argument'>Argument</a>&gt;&gt;(self, a: A) -&gt; Self</code></h4>
+<div class='docblock'><p>Builder method that adds an &quot;out&quot; Argument to this Method.</p>
+</div><h4 id='method.out_args' class='method'><code>fn <a href='#method.out_args' class='fnname'>out_args</a>&lt;Z: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='../../dbus/tree/struct.Argument.html' title='dbus::tree::Argument'>Argument</a>&gt;, A: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIterator</a>&lt;Item=Z&gt;&gt;(self, a: A) -&gt; Self</code></h4>
+<div class='docblock'><p>Builder method that adds multiple &quot;out&quot; Arguments to this Method.</p>
+</div><h4 id='method.annotate' class='method'><code>fn <a href='#method.annotate' class='fnname'>annotate</a>&lt;N: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;, V: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;&gt;(self, name: N, value: V) -&gt; Self</code></h4>
+<div class='docblock'><p>Add an annotation to the method.</p>
+</div><h4 id='method.deprecated' class='method'><code>fn <a href='#method.deprecated' class='fnname'>deprecated</a>(self) -&gt; Self</code></h4>
+<div class='docblock'><p>Add an annotation that this entity is deprecated.</p>
+</div></div><h3 class='impl'><code>impl&lt;M: MethodType&gt; <a class='struct' href='../../dbus/tree/struct.Method.html' title='dbus::tree::Method'>Method</a>&lt;M&gt;</code></h3><div class='impl-items'><h4 id='method.call' class='method'><code>fn <a href='#method.call' class='fnname'>call</a>(&amp;self, m: &amp;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>, o: &amp;<a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;M&gt;, i: &amp;<a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;M&gt;) -&gt; <a class='type' href='../../dbus/tree/type.MethodResult.html' title='dbus::tree::MethodResult'>MethodResult</a></code></h4>
+<div class='docblock'><p>Call the Method.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl&lt;M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../dbus/tree/struct.Method.html' title='dbus::tree::Method'>Method</a>&lt;M&gt;</code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "dbus";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

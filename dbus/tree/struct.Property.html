@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Property` struct in crate `dbus`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Property">
+
+    <title>dbus::tree::Property - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>dbus</a>::<wbr><a href='index.html'>tree</a></p><script>window.sidebarCurrent = {name: 'Property', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>dbus</a>::<wbr><a href='index.html'>tree</a>::<wbr><a class='struct' href=''>Property</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-4015' class='srclink' href='../../src/dbus/methoddisp.rs.html#267-275' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Property&lt;M&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>A D-Bus Property.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;M: MethodType&gt; <a class='struct' href='../../dbus/tree/struct.Property.html' title='dbus::tree::Property'>Property</a>&lt;M&gt;</code></h3><div class='impl-items'><h4 id='method.get_value' class='method'><code>fn <a href='#method.get_value' class='fnname'>get_value</a>(&amp;self) -&gt; <a class='enum' href='../../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a></code></h4>
+<div class='docblock'><p>Gets the value of the Property.</p>
+</div><h4 id='method.get_signal' class='method'><code>fn <a href='#method.get_signal' class='fnname'>get_signal</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>&gt;</code></h4>
+<div class='docblock'><p>Gets the signal (if any) associated with the Property.</p>
+</div><h4 id='method.set_value' class='method'><code>fn <a href='#method.set_value' class='fnname'>set_value</a>(&amp;self, m: <a class='enum' href='../../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>&gt;, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+<div class='docblock'><p>Returns error if &quot;emits&quot; is &quot;Const&quot;, and the property is in a
+tree.  Returns messages to be sent over a connection, this
+could be the PropertiesChanged signal.</p>
+</div><h4 id='method.emits_changed' class='method'><code>fn <a href='#method.emits_changed' class='fnname'>emits_changed</a>(self, e: <a class='enum' href='../../dbus/tree/enum.EmitsChangedSignal.html' title='dbus::tree::EmitsChangedSignal'>EmitsChangedSignal</a>) -&gt; Self</code></h4>
+<div class='docblock'><p>Builder method that allows setting the Property&#39;s signal
+behavior when changed.</p>
+</div><h4 id='method.access' class='method'><code>fn <a href='#method.access' class='fnname'>access</a>(self, e: <a class='enum' href='../../dbus/tree/enum.Access.html' title='dbus::tree::Access'>Access</a>) -&gt; Self</code></h4>
+<div class='docblock'><p>Builder method that allows setting the Property as readable,
+writable, or both.</p>
+</div><h4 id='method.remote_get' class='method'><code>fn <a href='#method.remote_get' class='fnname'>remote_get</a>(&amp;self, _: &amp;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='enum' href='../../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>, <a class='struct' href='../../dbus/tree/struct.MethodErr.html' title='dbus::tree::MethodErr'>MethodErr</a>&gt;</code></h4>
+<div class='docblock'><p>Helper method to check accessibility before getting a value.</p>
+</div><h4 id='method.verify_remote_set' class='method'><code>fn <a href='#method.verify_remote_set' class='fnname'>verify_remote_set</a>(&amp;self, m: &amp;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='enum' href='../../dbus/enum.MessageItem.html' title='dbus::MessageItem'>MessageItem</a>, <a class='struct' href='../../dbus/tree/struct.MethodErr.html' title='dbus::tree::MethodErr'>MethodErr</a>&gt;</code></h4>
+<div class='docblock'><p>Helper method to verify and extract a MessageItem from a Set message</p>
+</div><h4 id='method.annotate' class='method'><code>fn <a href='#method.annotate' class='fnname'>annotate</a>&lt;N: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;, V: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.Into.html' title='core::convert::Into'>Into</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;&gt;(self, name: N, value: V) -&gt; Self</code></h4>
+<div class='docblock'><p>Add an annotation to this Property.</p>
+</div><h4 id='method.deprecated' class='method'><code>fn <a href='#method.deprecated' class='fnname'>deprecated</a>(self) -&gt; Self</code></h4>
+<div class='docblock'><p>Add an annotation that this entity is deprecated.</p>
+</div></div><h3 class='impl'><code>impl <a class='struct' href='../../dbus/tree/struct.Property.html' title='dbus::tree::Property'>Property</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt;</code></h3><div class='impl-items'><h4 id='method.on_set' class='method'><code>fn <a href='#method.on_set' class='fnname'>on_set</a>&lt;H&gt;(self, m: H) -&gt; Self <span class='where'>where H: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>(&amp;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>, &amp;<a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt;, &amp;<a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodSync.html' title='dbus::tree::MethodSync'>MethodSync</a>&gt;) -&gt; <a class='type' href='../../dbus/tree/type.MethodResult.html' title='dbus::tree::MethodResult'>MethodResult</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html' title='core::marker::Sync'>Sync</a> + 'static</span></code></h4>
+<div class='docblock'><p>Sets a callback to be called when a &quot;Set&quot; call is coming in from the remote side.
+Might change to something more ergonomic.
+For multi-thread use.</p>
+</div></div><h3 class='impl'><code>impl&lt;'a&gt; <a class='struct' href='../../dbus/tree/struct.Property.html' title='dbus::tree::Property'>Property</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'a&gt;&gt;</code></h3><div class='impl-items'><h4 id='method.on_set-1' class='method'><code>fn <a href='#method.on_set' class='fnname'>on_set</a>&lt;H: 'a&gt;(self, m: H) -&gt; Self <span class='where'>where H: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>(&amp;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>, &amp;<a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'a&gt;&gt;, &amp;<a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFn.html' title='dbus::tree::MethodFn'>MethodFn</a>&lt;'a&gt;&gt;) -&gt; <a class='type' href='../../dbus/tree/type.MethodResult.html' title='dbus::tree::MethodResult'>MethodResult</a></span></code></h4>
+<div class='docblock'><p>Sets a callback to be called when a &quot;Set&quot; call is coming in from the remote side.
+Might change to something more ergonomic.
+For single-thread use.</p>
+</div></div><h3 class='impl'><code>impl&lt;'a&gt; <a class='struct' href='../../dbus/tree/struct.Property.html' title='dbus::tree::Property'>Property</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'a&gt;&gt;</code></h3><div class='impl-items'><h4 id='method.on_set-2' class='method'><code>fn <a href='#method.on_set' class='fnname'>on_set</a>&lt;H: 'a&gt;(self, m: H) -&gt; Self <span class='where'>where H: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(&amp;<a class='struct' href='../../dbus/struct.Message.html' title='dbus::Message'>Message</a>, &amp;<a class='struct' href='../../dbus/tree/struct.ObjectPath.html' title='dbus::tree::ObjectPath'>ObjectPath</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'a&gt;&gt;, &amp;<a class='struct' href='../../dbus/tree/struct.Tree.html' title='dbus::tree::Tree'>Tree</a>&lt;<a class='struct' href='../../dbus/tree/struct.MethodFnMut.html' title='dbus::tree::MethodFnMut'>MethodFnMut</a>&lt;'a&gt;&gt;) -&gt; <a class='type' href='../../dbus/tree/type.MethodResult.html' title='dbus::tree::MethodResult'>MethodResult</a></span></code></h4>
+<div class='docblock'><p>Sets a callback to be called when a &quot;Set&quot; call is coming in from the remote side.
+Might change to something more ergonomic.
+For single-thread use.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl&lt;M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../dbus/tree/struct.Property.html' title='dbus::tree::Property'>Property</a>&lt;M&gt;</code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "dbus";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>
