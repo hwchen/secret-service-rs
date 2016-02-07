@@ -167,6 +167,7 @@ impl<'a> Item<'a> {
         self.item_interface.set_props("Label", Str(new_label.to_owned()))
     }
 
+    /// Deletes dbus object, but struct instance still exists (current implementation)
     pub fn delete(&self) -> ::Result<()> {
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
@@ -286,7 +287,6 @@ impl<'a> PartialEq for Item<'a> {
 
 #[cfg(test)]
 mod test{
-    use session::EncryptionType;
     use super::super::*;
 
     #[test]

@@ -130,6 +130,7 @@ impl<'a> Collection<'a> {
     }
 
     // TODO: Rewrite?
+    /// Deletes dbus object, but struct instance still exists (current implementation)
     pub fn delete(&self) -> ::Result<()> {
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
@@ -315,7 +316,6 @@ impl<'a> Collection<'a> {
 
 #[cfg(test)]
 mod test{
-    use session::EncryptionType;
     use super::super::*;
 
     #[test]

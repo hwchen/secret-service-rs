@@ -8,11 +8,36 @@
 extern crate secret_service;
 
 use secret_service::SecretService;
-use secret_service::session::EncryptionType;
+use secret_service::EncryptionType;
 
 fn main() {
+    // Initialize secret service
     let ss = SecretService::new(EncryptionType::Plain).unwrap();
+
+    // navigate to default collection
     let collection = ss.get_default_collection().unwrap();
+
+    //create new item
+    collection.create_item(
+        "test_label", // label
+        vec![("test", "test_value")], // properties
+        b"test_secret", //secret
+        false, // replace item with same attributes
+        "text/plain" // secret content type
+    ).unwrap();
+
+    // search items by properties
+    let search_items = ss.search_items(
+        vec![("test", "test_value")]
+    ).unwrap();
+
+    let item = search_items.get(0).unwrap();
+
+    // retrieve secret from item
+    let secret = item.get_secret().unwrap();
+    assert_eq!(secret, b"test_secret");
+
+    // Clear out all items
     let items = collection.get_all_items().unwrap();
     let items_count = items.len();
     println!("Count before: {:?}", items.len());

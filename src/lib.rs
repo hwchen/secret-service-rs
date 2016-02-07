@@ -21,44 +21,128 @@
 // Abstract prompts for creating items. Can I abstract other prompts?
 // in all tests, make sure that check for structs
 // Change all MessageItems initialization to use MessageItem::from()
+// TODO: Could factor out some fns into utils: lock/unlock, more prompts.
+// TODO: Util also contains format_secret, but this may be moved to ss_crypto.
 //
-// ********************** Secret Service libary ************************
-//
-// This library implements a rust interface to the Secret Service API which is implemented
-// in Linux.
-//
-// http://standards.freedesktop.org/secret-service/
-//
-// Secret Service provides a secure place to store secrets.
-// Gnome keyring and KWallet implement the Secret Service API.
-//
-// Short roadmap of this library:
-//
-// SecretService struct is in this module, it's the entry point for the library.
-// It initializes dbus and negotiates an encryption session.
-// From SecretService struct, you can create and search for collections, and search
-// for items. Each of those methods will return a Collection or Item struct, which
-// you can use to perform similar actions (searching, creating, deleting, etc.)
-//
-// Searching can be done by attributes and labels. Some common attributes to set are
-// Label, the callin app, etc.
-//
-// For the Item struct, there is the additional fact that you can set and get a secret
-// value (in bytes).
+//! # Secret Service libary
+//!
+//! This library implements a rust interface to the Secret Service API which is implemented
+//! in Linux.
+//!
+//! ## About Secret Service API
+//! http://standards.freedesktop.org/secret-service/
+//!
+//! Secret Service provides a secure place to store secrets.
+//! Gnome keyring and KWallet implement the Secret Service API.
+//!
+//! ## Basic Usage
+//! ```
+//! extern crate secret_service;
+//! use secret_service::SecretService;
+//! use secret_service::EncryptionType;
+//!
+//! # fn main() {
+//!
+//! // initialize secret service (dbus connection and encryption session)
+//! let ss = SecretService::new(EncryptionType::Dh).unwrap();
+//!
+//! // get default collection
+//! let collection = ss.get_default_collection().unwrap();
+//!
+//! //create new item
+//! collection.create_item(
+//!     "test_label", // label
+//!     vec![("test", "test_value")], // properties
+//!     b"test_secret", //secret
+//!     false, // replace item with same attributes
+//!     "text/plain" // secret content type
+//! ).unwrap();
+//!
+//! // search items by properties
+//! let search_items = ss.search_items(
+//!     vec![("test", "test_value")]
+//! ).unwrap();
+//!
+//! let item = search_items.get(0).unwrap();
+//!
+//! // retrieve secret from item
+//! let secret = item.get_secret().unwrap();
+//! assert_eq!(secret, b"test_secret");
+//!
+//! // delete item (deletes the dbus object, not the struct instance)
+//! item.delete().unwrap()
+//! # }
+//! ```
+//!
+//! ## Overview of this library:
+//! ### Entry point
+//! The entry point for this library is the `SecretService` struct. A new instance of
+//! `SecretService` will initialize the dbus connection and negotiate an encryption session.
+//!
+//! ```
+//! # use secret_service::SecretService;
+//! # use secret_service::EncryptionType;
+//! SecretService::new(EncryptionType::Plain).unwrap();
+//! ```
+//! or
+//!
+//! ```
+//! # use secret_service::SecretService;
+//! # use secret_service::EncryptionType;
+//! SecretService::new(EncryptionType::Dh).unwrap();
+//! ```
+//!
+//! Once the SecretService struct is initialized, it can be used to navigate to a collection.
+//! Items can also be directly searched for without getting a collection first.
+//!
+//! ### Collections and Items
+//! The Secret Service API organizes secrets into collections, and holds each secret
+//! in an item.
+//!
+//! Items consist of a label, attributes, and the secret. The most common way to find
+//! an item is a search by attributes.
+//!
+//! While it's possible to create new collections, most users will simply create items
+//! within the default collection.
+//!
+//! ### Actions overview
+//! The most common supported actions are `create`, `get`, `search`, and `delete` for
+//! `Collections` and `Items`. For more specifics and exact method names, please see 
+//! each struct's documentation.
+//!
+//! In addition, `set` and `get` actions are available for secrets contained in an `Item`.
+//!
+//! ### Errors
+//! This library provides a custom `SsError`. `dbus` and `rust-crypto` crate errors
+//! are converted into `SsError`s.
+//!
+//! Types of errors:
+//!
+//! - dbus
+//! - crypto
+//! - parsing dbus output
+//! - no result, if dbus gives back result but doesn't contain expected parameter
+//! - locked, if an object path is locked
+//! - prompt dismissed, if action requires prompt but the prompt is dismissed
+//!
+//! ### Crypto
+//! Specifics in SecretService API Draft Proposal:
+//! http://standards.freedesktop.org/secret-service/
+//!
+//! In this library, the encryption negotiation and key exchange is carried
+//! out in the `session` module, and encryption/decryption is done in the
+//! `ss_crypto` module.
 //
 // The other modules: util, error, ss_crypto, ss, provide supporting functions.
 //
 // Util currently has interfaces (dbus method namespace) to make it easier to call methods.
 // Util contains function to execute prompts (used in many collection and item methods, like
 // delete)
-// TODO: Could factor out some fns into utils: lock/unlock, more prompts.
-// TODO: Util also contains format_secret, but this may be moved to ss_crypto.
+//
 // error is for custom SS errors.
 // ss_crypto handles encryption and decryption (along with, to some extent, Session)
 // ss provides some constants which are paths for dbus interaction, and some other strings.
 //
-// High-level crypto notes in ss_crypto. Specifics in SecretService API Draft Proposal:
-// http://standards.freedesktop.org/secret-service/
 
 extern crate crypto;
 extern crate dbus;
@@ -66,20 +150,20 @@ extern crate gmp;
 extern crate num;
 extern crate rand;
 
-pub mod collection;
-pub mod error;
-pub mod item;
-pub mod session;
+mod collection;
+mod error;
+mod item;
+mod session;
 mod ss;
 mod ss_crypto;
 mod util;
 
-use collection::Collection;
+pub use collection::Collection;
 pub use error::{Result, SsError};
-use item::Item;
+pub use item::Item;
 use util::{Interface, exec_prompt};
 use session::Session;
-use session::EncryptionType;
+pub use session::EncryptionType;
 use ss::{
     SS_DBUS_NAME,
     SS_INTERFACE_SERVICE,
@@ -103,11 +187,14 @@ use dbus::MessageItem::{
 };
 use std::rc::Rc;
 
-// Secret Service Struct
-// This the main entry point for usage of the library.
-// Creating a new SecretService will also initialize dbus
-// and negotiate a new cryptographic session (plain or crypto)
-//
+/// Secret Service Struct.
+///
+/// This the main entry point for usage of the library.
+///
+/// Creating a new SecretService will also initialize dbus
+/// and negotiate a new cryptographic session
+/// (`EncryptionType::Plain` or `EncryptionType::Dh`)
+///
 // Interfaces are the dbus namespace for methods
 #[derive(Debug)]
 pub struct SecretService {
@@ -117,6 +204,15 @@ pub struct SecretService {
 }
 
 impl SecretService {
+    /// Create a new `SecretService` instance
+    ///
+    /// # Example
+    /// 
+    /// ```
+    /// # use secret_service::SecretService;
+    /// # use secret_service::EncryptionType;
+    /// let ss = SecretService::new(EncryptionType::Dh).unwrap();
+    /// ```
     pub fn new(encryption: EncryptionType) -> ::Result<Self> {
         let bus = Rc::new(try!(Connection::get_private(BusType::Session)));
         let session = try!(Session::new(bus.clone(), encryption));
@@ -134,6 +230,7 @@ impl SecretService {
         })
     }
 
+    /// Get all collections
     pub fn get_all_collections(&self) -> ::Result<Vec<Collection>> {
         let res = try!(self.service_interface.get_props("Collections"));
         let collections: &Vec<_> = res.inner().unwrap();
@@ -147,6 +244,10 @@ impl SecretService {
         }).collect::<Vec<_>>())
     }
 
+    /// Get collection by alias.
+    /// Most common would be the `default` alias, but there
+    /// is also a specific method for getting the collection
+    /// by default aliasl
     pub fn get_collection_by_alias(&self, alias: &str) -> ::Result<Collection>{
         let name = Str(alias.to_owned());
 
@@ -163,10 +264,16 @@ impl SecretService {
 
     }
 
+    /// Get default collection.
+    /// (The collection whos alias is `default`)
     pub fn get_default_collection(&self) -> ::Result<Collection> {
         self.get_collection_by_alias("default")
     }
 
+    /// Get any collection.
+    /// First tries `default` collection, then `session`
+    /// collection, then the first collection when it 
+    /// gets all collections.
     pub fn get_any_collection(&self) -> ::Result<Collection> {
         // default first, then session, then first
 
@@ -182,6 +289,7 @@ impl SecretService {
             })
     }
 
+    /// Creates a new collection with a label and an alias.
     pub fn create_collection(&self, label: &str, alias: &str) -> ::Result<Collection> {
         // Set up dbus args
         let label = DictEntry(
@@ -230,6 +338,7 @@ impl SecretService {
         ))
     }
 
+    /// Searches all items by attributes
     pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> ::Result<Vec<Item>> {
         // Build dbus args
         let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
@@ -287,7 +396,6 @@ impl SecretService {
 
 #[cfg(test)]
 mod test {
-    use session::EncryptionType;
     use super::*;
     use dbus::Path;
 
