@@ -9,6 +9,7 @@ extern crate secret_service;
 
 use secret_service::SecretService;
 use secret_service::EncryptionType;
+use std::str;
 
 fn main() {
     // Initialize secret service
@@ -18,7 +19,7 @@ fn main() {
     let collection = ss.get_default_collection().unwrap();
 
     //create new item
-    collection.create_item(
+    let new_item = collection.create_item(
         "test_label", // label
         vec![("test", "test_value")], // properties
         b"test_secret", //secret
@@ -26,35 +27,20 @@ fn main() {
         "text/plain" // secret content type
     ).unwrap();
 
+    println!("New Item: {:?}", new_item);
+
     // search items by properties
     let search_items = ss.search_items(
         vec![("test", "test_value")]
     ).unwrap();
 
+    println!("Searched Item: {:?}", search_items);
+
     let item = search_items.get(0).unwrap();
 
     // retrieve secret from item
     let secret = item.get_secret().unwrap();
+    println!("Retrieved secret: {:?}", str::from_utf8(&secret).unwrap());
     assert_eq!(secret, b"test_secret");
-
-    // Clear out all items
-    let items = collection.get_all_items().unwrap();
-    let items_count = items.len();
-    println!("Count before: {:?}", items.len());
-    if items_count > 0 {
-        for item in items {
-            item.delete().unwrap();
-        }
-    }
-    let items = collection.get_all_items().unwrap();
-    println!("Count after: {:?}", items.len());
-
-    // delete Test collections
-    let collections = ss.get_all_collections().unwrap();
-    for collection in collections {
-        if collection.get_label().unwrap() == "Test" {
-            println!("{:?}", collection.collection_path);
-            collection.delete().unwrap();
-        }
-    }
+    item.delete().unwrap();
 }
