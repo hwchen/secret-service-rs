@@ -2,27 +2,23 @@
 
 Secret Service Rust library.
 
-## Documentation
+Interfaces with the Linux Secret Service API through dbus.
+
+### Documentation
 
 [Get Docs!](https://hwchen.github.io/secret-service-rs/secret_service/)
 
-Interfaces with the Linux Secret Service API through dbus.
-
-## Installation
+### Installation
 
 Requires dbus development library installed.
 
 On ubuntu, requires libdbus-1-dev.
 
-## Progress
-
-### Completed
+### Functionality
 
 - SecretService: initialize dbus, create plain/encrypted session.
 - Collections: create, delete, search.
 - Items: create, delete, search, get/set secret.
-- crypto
-- error handling
 
 ### Todo
 
