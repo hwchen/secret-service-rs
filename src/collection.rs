@@ -90,9 +90,10 @@ impl<'a> Collection<'a> {
     }
 
     pub fn ensure_unlocked(&self) -> ::Result<()> {
-        match try!(self.is_locked()) {
-            false => Ok(()),
-            true => Err(SsError::Locked),
+        if try!(self.is_locked()) {
+            Err(SsError::Locked)
+        } else {
+            Ok(())
         }
     }
 
@@ -112,7 +113,7 @@ impl<'a> Collection<'a> {
 
         // If the action requires a prompt, execute it.
         if let Some(&Array(ref lock_action, _)) = res.get(0) {
-            if lock_action.len() == 0 {
+            if lock_action.is_empty() {
                 if let Some(&ObjectPath(ref path)) = res.get(1) {
                     try!(exec_prompt(self.bus.clone(), path.clone()));
                 }
@@ -194,7 +195,7 @@ impl<'a> Collection<'a> {
         let items = try!(self.collection_interface.method("SearchItems", vec![attr_dbus_dict]));
 
         // TODO: Refactor to be clean like create_item?
-        if let &Array(ref item_array, _) = items.get(0).unwrap() {
+        if let Array(ref item_array, _) = *items.get(0).unwrap() {
             Ok(item_array.iter().filter_map(|ref item| {
                 match **item {
                     ObjectPath(ref path) => {

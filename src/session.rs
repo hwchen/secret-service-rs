@@ -112,14 +112,14 @@ impl Session {
                 );
                 let object_path: &Path = object_path_dbus.inner().unwrap();
 
-                return Ok(Session {
+                Ok(Session {
                     object_path: object_path.clone(),
                     encrypted: false,
                     server_public_key: None,
                     aes_key: None,
                     my_private_key: None,
                     my_public_key: None,
-                });
+                })
             },
             EncryptionType::Dh => {
                 // crypto: create private and public key, send public key
@@ -201,14 +201,14 @@ impl Session {
                 );
                 let object_path: &Path = object_path_dbus.inner().unwrap();
 
-                return Ok(Session {
+                Ok(Session {
                     object_path: object_path.clone(),
                     encrypted: true,
                     server_public_key: Some(server_public_key),
                     aes_key: Some(aes_key),
                     my_private_key: Some(private_key_bytes.to_vec()),
                     my_public_key: Some(public_key_bytes.to_vec()),
-                });
+                })
             },
         }
 

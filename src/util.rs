@@ -168,21 +168,18 @@ pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> ::Result<MessageItem> {
     // TODO: Find a better way to do this.
     // Also, should I return the paths in the result?
     for event in bus.iter(5000) {
-        match event {
-            Signal(message) => {
-                //println!("Incoming Signal {:?}", message);
-                let items = message.get_items();
-                if let Some(&Bool(dismissed)) = items.get(0) {
-                    //println!("Was prompt dismissed? {:?}", dismissed);
-                    if dismissed {
-                        return Err(SsError::Prompt);
-                    }
+        if let Signal(message) =  event {
+            //println!("Incoming Signal {:?}", message);
+            let items = message.get_items();
+            if let Some(&Bool(dismissed)) = items.get(0) {
+                //println!("Was prompt dismissed? {:?}", dismissed);
+                if dismissed {
+                    return Err(SsError::Prompt);
                 }
-                if let Some(&ref result) = items.get(1) {
-                    return Ok(result.clone());
-                }
-            },
-            _ => (),
+            }
+            if let Some(&ref result) = items.get(1) {
+                return Ok(result.clone());
+            }
         }
     }
     Err(SsError::Prompt)

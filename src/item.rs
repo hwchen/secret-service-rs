@@ -84,9 +84,10 @@ impl<'a> Item<'a> {
     }
 
     pub fn ensure_unlocked(&self) -> ::Result<()> {
-        match try!(self.is_locked()) {
-            false => Ok(()),
-            true => Err(SsError::Locked),
+        if try!(self.is_locked()) {
+            Err(SsError::Locked)
+        } else {
+            Ok(())
         }
     }
 
@@ -104,7 +105,7 @@ impl<'a> Item<'a> {
 
         let res = try!(self.service_interface.method(lock_action_str, vec![objects]));
         if let Some(&Array(ref unlocked, _)) = res.get(0) {
-            if unlocked.len() == 0 {
+            if unlocked.is_empty() {
                 if let Some(&ObjectPath(ref path)) = res.get(1) {
                     try!(exec_prompt(self.bus.clone(), path.clone()));
                 }
