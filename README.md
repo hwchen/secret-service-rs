@@ -12,7 +12,7 @@ Interfaces with the Linux Secret Service API through dbus.
 
 Requires dbus development library installed.
 
-On ubuntu, requires libdbus-1-dev.
+On ubuntu, requires libdbus-1-dev and libgmp-dev.
 
 ### Functionality
 
