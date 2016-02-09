@@ -33,7 +33,7 @@ $ cargo add secret-service
 
 In source code (below example is for --bin, not --lib)
 
-```
+```rust
 extern crate secret_service;
 use secret_service::SecretService;
 use secret_service::EncryptionType;
