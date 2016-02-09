@@ -4,6 +4,10 @@ Secret Service Rust library.
 
 Interfaces with the Linux Secret Service API through dbus.
 
+This library is feature complete but still in *experimental* stage.
+
+This library currently relies on cutting-edge `dbus` crate because of bugfix.
+
 ### Documentation
 
 [Get Docs!](https://hwchen.github.io/secret-service-rs/secret_service/)
@@ -21,10 +25,6 @@ On ubuntu, requires libdbus-1-dev and libgmp-dev.
 - Items: create, delete, search, get/set secret.
 
 ### Todo
-
-- publishing
-
-### Todo later
 
 - use `map_err(|_| SsError::Parse)` for `inner()`? can't `try!` because `inner()` doesn't return an Error type in the Result. Or just `unwrap()`?
 - some refactoring (a list is in lib.rs)
