@@ -18,7 +18,9 @@ Requires dbus and gmp development libraries installed.
 
 On ubuntu, requires libdbus-1-dev and libgmp-dev.
 
-In Cargo.toml:
+*Note* for the moment, because the library relies on a cutting edge version of dbus, I have not yet publised to crates.io. If you'd like to develop with this library, you will have to point the secret-service dependency entry in Cargo.toml to this repo.
+
+<strike>In Cargo.toml:
 
 ```
 [dependencies]
@@ -30,6 +32,7 @@ If you have `cargo-extras` installed, can replace above step with the command at
 ```
 $ cargo add secret-service
 ```
+</strike>
 
 In source code (below example is for --bin, not --lib)
 
