@@ -1,19 +1,17 @@
 [package]
 authors = ["Walther Chen <walther.chen@gmail.com>"]
-license = "MIT OR Apache-2.0"
-name = "secret-service"
-version = "0.2.0"
 description = "Library to interface with Secret Service API"
 documentation = "https://hwchen.github.io/secret-service-rs/secret_service"
 homepage = "https://github.com/hwchen/secret-service-rs.git"
-repository = "https://github.com/hwchen/secret-service-rs.git"
 keywords = ["secret-service", "password", "linux", "keychain"]
+license = "MIT OR Apache-2.0"
+name = "secret-service"
+repository = "https://github.com/hwchen/secret-service-rs.git"
+version = "0.2.0"
 
 [dependencies]
+dbus = "0.2.3"
 num = "0.1.30"
 rand = "0.3.13"
 rust-crypto = "0.2.34"
 rust-gmp = "0.2.10"
-
-[dependencies.dbus]
-git = "https://github.com/diwic/dbus-rs.git"
