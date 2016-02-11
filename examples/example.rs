@@ -42,5 +42,5 @@ fn main() {
     let secret = item.get_secret().unwrap();
     println!("Retrieved secret: {:?}", str::from_utf8(&secret).unwrap());
     assert_eq!(secret, b"test_secret");
-    item.delete().unwrap();
+    //item.delete().unwrap();
 }

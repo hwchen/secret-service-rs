@@ -1,0 +1,15 @@
+- inner() unwrap? Niko: Yes, just unwrap if I think it will be a bug (don't even bother
+  with expect, since you can follow the trace).
+- does it make sense to drop struct on delete in secret-service? Niko: Call the method on
+  `self` instead of `&self`, and the method takes ownership, which means nobody else
+  can use it! So exciting! Write a test for this...
+
+- related question: If struct doesn't derive Clone, does that mean that when using .get(struct).unwrap().clone(), you are just cloning the reference? But after deriving clone, it clones the stuct itself.
+
+  Ok, that was kind of a pain with the static checking. Niko suggests using swap_remove(0) to get the value at 0, and swaps in an element from another place.
+  Another option is to use a dynamic wrapper around this static check. Basically, use an Option type to wrap each item, and then use take() to swap the value out with None.
+  How does this allow the user a choice of dynamic or static checking?
+
+  Swapping!
+
+  Something to think about.

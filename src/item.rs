@@ -40,7 +40,7 @@ enum LockAction {
     Unlock,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Item<'a> {
     // TODO: Implement method for path?
     bus: Rc<Connection>,
@@ -169,7 +169,7 @@ impl<'a> Item<'a> {
     }
 
     /// Deletes dbus object, but struct instance still exists (current implementation)
-    pub fn delete(&self) -> ::Result<()> {
+    pub fn delete(self) -> ::Result<()> {
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
         try!(self.ensure_unlocked());
@@ -301,13 +301,9 @@ mod test{
             false, // replace
             "text/plain" // content_type
         ).unwrap();
-        let _ = item.item_path.clone(); // to prepare for future drop for delete?
         item.delete().unwrap();
-        // Random operation to prove that path no longer exists
-        match item.get_label() {
-            Ok(_) => panic!(),
-            Err(_) => (),
-        }
+        // Item can no longer be accessed, it's a compile-time check because
+        // of borrowing!
     }
 
     #[test]
@@ -518,9 +514,10 @@ mod test{
             let search_item = collection.search_items(
                 vec![("test_attributes_in_item_encrypt", "test")]
             ).unwrap();
-            let item = search_item.get(0).unwrap().clone();
+            let item = search_item.swap_remove(0);
             assert_eq!(item.get_secret().unwrap(), b"test_encrypted");
             item.delete().unwrap();
+            item.get_label();
         }
     }
 }
