@@ -236,7 +236,7 @@ impl<'a> Collection<'a> {
                        content_type: &str,
                        ) -> ::Result<Item> {
 
-        let secret_struct = format_secret(&self.session, secret, content_type);
+        let secret_struct = try!(format_secret(&self.session, secret, content_type));
 
         // build dbus dict
 

@@ -259,7 +259,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn set_secret(&self, secret: &[u8], content_type: &str) -> ::Result<()> {
-        let secret_struct = format_secret(&self.session, secret, content_type);
+        let secret_struct = try!(format_secret(&self.session, secret, content_type));
         self.item_interface.method("SetSecret", vec![secret_struct]).map(|_| ())
     }
 
@@ -495,6 +495,21 @@ mod test{
         let secret = item.get_secret().unwrap();
         item.delete().unwrap();
         assert_eq!(secret, b"test_encrypted");
+
+    }
+    #[test]
+    #[should_panic]
+    fn should_not_create_encrypted_item_from_empty_secret() {
+        //empty string
+        let ss = SecretService::new(EncryptionType::Dh).unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        collection.create_item(
+            "Test",
+            Vec::new(),
+            b"",
+            false, // replace
+            "text/plain" // content_type
+        ).unwrap();
     }
 
     #[test]

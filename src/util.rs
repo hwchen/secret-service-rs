@@ -112,7 +112,7 @@ impl Interface {
 pub fn format_secret(session: &Session,
                      secret: &[u8],
                      content_type: &str
-                    ) -> MessageItem {
+                    ) -> ::Result<MessageItem> {
 
     if session.is_encrypted() {
         let mut rng = OsRng::new().unwrap();
@@ -128,15 +128,16 @@ pub fn format_secret(session: &Session,
         let parameters = MessageItem::new_array(aes_iv_dbus).unwrap();
 
         let secret_dbus: Vec<_> = encrypted_secret.iter().map(|&byte| Byte(byte)).collect();
-        let value_dbus = MessageItem::new_array(secret_dbus).unwrap();
+        // This is user input, so can't unwrap on it
+        let value_dbus = try!(MessageItem::new_array(secret_dbus));
         let content_type = Str(content_type.to_owned());
 
-        Struct(vec![
+        Ok(Struct(vec![
             object_path,
             parameters,
             value_dbus,
             content_type
-        ])
+        ]))
 
     } else {
         // just Plain for now
@@ -146,12 +147,12 @@ pub fn format_secret(session: &Session,
         let value_dbus = Array(value_array, Byte(0u8).type_sig());
         let content_type = Str(content_type.to_owned());
 
-        Struct(vec![
+        Ok(Struct(vec![
             object_path,
             parameters,
             value_dbus,
             content_type
-        ])
+        ]))
     }
 }
 
