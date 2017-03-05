@@ -119,17 +119,14 @@ pub fn format_secret(session: &Session,
         let mut aes_iv = [0;16];
         rng.fill_bytes(&mut aes_iv);
 
-        let encrypted_secret = encrypt(secret, &session.get_aes_key()[..], &aes_iv).unwrap();
+        let encrypted_secret = try!(encrypt(secret, &session.get_aes_key()[..], &aes_iv));
 
         // Construct secret struct
+        // (These are all straight conversions, can't fail.
         let object_path = ObjectPath(session.object_path.clone());
-
-        let aes_iv_dbus: Vec<_> = aes_iv.iter().map(|&byte| Byte(byte)).collect();
-        let parameters = MessageItem::new_array(aes_iv_dbus).unwrap();
-
-        let secret_dbus: Vec<_> = encrypted_secret.iter().map(|&byte| Byte(byte)).collect();
-        // This is user input, so can't unwrap on it
-        let value_dbus = try!(MessageItem::new_array(secret_dbus));
+        let parameters = MessageItem::from(&aes_iv[..]);
+        // Construct an array, even if it's empty
+        let value_dbus = MessageItem::from(&encrypted_secret[..]);
         let content_type = Str(content_type.to_owned());
 
         Ok(Struct(vec![
@@ -143,8 +140,7 @@ pub fn format_secret(session: &Session,
         // just Plain for now
         let object_path = ObjectPath(session.object_path.clone());
         let parameters = Array(vec![], Byte(0u8).type_sig());
-        let value_array: Vec<_> = secret.iter().map(|&byte| Byte(byte)).collect();
-        let value_dbus = Array(value_array, Byte(0u8).type_sig());
+        let value_dbus = MessageItem::from(secret);
         let content_type = Str(content_type.to_owned());
 
         Ok(Struct(vec![

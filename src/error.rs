@@ -36,7 +36,6 @@ pub type Result<T> = ::std::result::Result<T, SsError>;
 pub enum SsError {
     Crypto(symmetriccipher::SymmetricCipherError),
     Dbus(dbus::Error),
-    DbusArray(dbus::ArrayError),
     Locked,
     NoResult,
     Parse,
@@ -49,7 +48,6 @@ impl fmt::Display for SsError {
             // crypto error does not implement Display
             SsError::Crypto(_) => write!(f, "Crypto error: Invalid Length or Padding"),
             SsError::Dbus(ref err) => write!(f, "Dbus error: {}", err),
-            SsError::DbusArray(ref err) => write!(f, "Dbus array error: {:?}", err),
             SsError::Locked => write!(f, "SS Error: object locked"),
             SsError::NoResult => write!(f, "SS error: result not returned from SS API"),
             SsError::Parse => write!(f, "SS error: could not parse Dbus output"),
@@ -63,7 +61,6 @@ impl error::Error for SsError {
         match *self {
             SsError::Crypto(_) => "crypto: Invalid Length or Padding",
             SsError::Dbus(ref err) => err.description(),
-            SsError::DbusArray(_) => "Dbus array error",
             SsError::Locked => "Object locked",
             SsError::NoResult => "Result not returned from SS API",
             SsError::Parse => "Error parsing Dbus output",
@@ -91,8 +88,3 @@ impl From<dbus::Error> for SsError {
     }
 }
 
-impl From<dbus::ArrayError> for SsError {
-    fn from(err: dbus::ArrayError) -> SsError {
-        SsError::DbusArray(err)
-    }
-}
