@@ -146,6 +146,7 @@
 
 extern crate crypto;
 extern crate dbus;
+#[cfg(feature = "gmp")]
 extern crate gmp;
 extern crate num;
 extern crate rand;

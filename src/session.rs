@@ -38,9 +38,11 @@ use dbus::MessageItem::{
     Str,
     Variant,
 };
+#[cfg(feature = "gmp")]
 use gmp::mpz::Mpz;
 use num::bigint::BigUint;
 use rand::{Rng, OsRng};
+
 use std::rc::Rc;
 
 // for key exchange
@@ -58,6 +60,7 @@ const DH_PRIME_1024_BYTES: [u8; 128] = [
 #[derive(Debug, PartialEq)]
 pub enum EncryptionType {
     Plain,
+    #[cfg(feature = "gmp")]
     Dh,
 }
 
@@ -121,6 +124,7 @@ impl Session {
                     my_public_key: None,
                 })
             },
+            #[cfg(feature = "gmp")]
             EncryptionType::Dh => {
                 // crypto: create private and public key, send public key
                 // requires some finagling to get pow() for bigints
@@ -223,12 +227,14 @@ impl Session {
     }
 }
 
+#[cfg(feature = "gmp")]
 fn bytes_to_mpz(n: &[u8]) -> Result<Mpz, ()> {
     let bigint = BigUint::from_bytes_be(n);
     let bigint_str = bigint.to_str_radix(10);
     Mpz::from_str_radix(&bigint_str, 10)
 }
 
+#[cfg(feature = "gmp")]
 fn mpz_to_bytes(mpz: Mpz) -> Vec<u8> {
     let bigint_str = mpz.to_str_radix(10);
     let bigint = bigint_str.parse::<BigUint>().unwrap(); //TODO: turn this into a try or option?
@@ -239,6 +245,7 @@ fn mpz_to_bytes(mpz: Mpz) -> Vec<u8> {
 mod test {
     use std::rc::Rc;
     use super::*;
+    #[cfg(feature = "gmp")]
     use super::{bytes_to_mpz, mpz_to_bytes};
     use dbus::{Connection, BusType};
 
@@ -249,6 +256,7 @@ mod test {
         assert!(!session.is_encrypted());
     }
 
+    #[cfg(feature = "gmp")]
     #[test]
     fn should_create_encrypted_session() {
         let bus = Connection::get_private(BusType::Session).unwrap();
@@ -258,6 +266,7 @@ mod test {
         //assert!(false);
     }
 
+    #[cfg(feature = "gmp")]
     #[test]
     fn should_convert_bytes_to_mpz() {
         assert_eq!(bytes_to_mpz(&[1u8, 1]).unwrap(), From::<u32>::from(257));
