@@ -12,7 +12,7 @@ This library is feature complete but still in *experimental* stage.
 
 ### Basic Usage
 
-Requires dbus and gmp development libraries installed.
+Requires dbus and gmp development libraries installed (see [Advanced](#advanced) section if you need to disable gmp).
 
 On ubuntu, requires libdbus-1-dev and libgmp-dev.
 
@@ -74,6 +74,23 @@ fn main() {
 - SecretService: initialize dbus, create plain/encrypted session.
 - Collections: create, delete, search.
 - Items: create, delete, search, get/set secret.
+
+### Advanced
+
+It is possible to disable the dependency on `libgmp` by disabling the default
+features in your `Cargo.toml` file:
+
+    [dependencies]
+    secret-service = { version = "^0.4", default-features = false }
+
+ 
+**Note**: this will build the library without support for creating encrypted connections 
+to `dbus`, `EncryptionType::Dh` will be unavailable. 
+
+In many cases this is OK, as `dbus` encryption is primarily intended to prevent secrets
+from being swapped to disk. 
+
+Use `EncryptionType::Plain` when `gmp` is disabled.
 
 ### Todo
 
