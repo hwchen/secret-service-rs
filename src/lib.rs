@@ -92,6 +92,12 @@
 //! SecretService::new(EncryptionType::Dh).unwrap();
 //! ```
 //!
+//! EncryptionType::Dh requires the `gmp` feature to be enabled in Cargo.toml, which is the default.
+//! This requires `libgmp` to be available.
+//!
+//! When the `gmp` feature is disabled by disabling the default features in Cargo.toml,
+//! EncryptionType::Plain will be the only one available.
+//!
 //! Once the SecretService struct is initialized, it can be used to navigate to a collection.
 //! Items can also be directly searched for without getting a collection first.
 //!
@@ -146,6 +152,7 @@
 
 extern crate crypto;
 extern crate dbus;
+#[cfg(feature = "gmp")]
 extern crate gmp;
 extern crate num;
 extern crate rand;
@@ -193,7 +200,7 @@ use std::rc::Rc;
 ///
 /// Creating a new SecretService will also initialize dbus
 /// and negotiate a new cryptographic session
-/// (`EncryptionType::Plain` or `EncryptionType::Dh`)
+/// (`EncryptionType::Plain` or `EncryptionType::Dh`, when the `gmp` feature is enabled)
 ///
 // Interfaces are the dbus namespace for methods
 #[derive(Debug)]
