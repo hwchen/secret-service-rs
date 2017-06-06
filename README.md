@@ -8,7 +8,7 @@ This library is feature complete but still in *experimental* stage.
 
 ### Documentation
 
-[Get Docs!](https://hwchen.github.io/secret-service-rs/secret_service/)
+[Get Docs!](https://docs.rs/secret-service/0.4.0/secret_service/)
 
 ### Basic Usage
 
