@@ -20,7 +20,7 @@ In Cargo.toml:
 
 ```
 [dependencies]
-secret-service = "0.2.0"
+secret-service = "0.4.0"
 ```
 
 If you have `cargo-extras` installed, can replace above step with the command at the prompt in your project directory:
@@ -91,6 +91,12 @@ In many cases this is OK, as `dbus` encryption is primarily intended to prevent 
 from being swapped to disk. 
 
 Use `EncryptionType::Plain` when `gmp` is disabled.
+
+### Changelog
+
+_0.4.0_
+- gmp is now optional dependency
+- gmp upgraded to 0.3 to fix "private-in-public" warnings which will be hard errors soon.
 
 ### Todo
 
