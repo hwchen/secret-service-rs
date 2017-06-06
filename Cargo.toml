@@ -14,7 +14,7 @@ dbus = "0.2.3"
 num = "0.1.30"
 rand = "0.3.13"
 rust-crypto = "0.2.34"
-rust-gmp = { version = "0.2.10", optional = true }
+rust-gmp = { version = "0.3", optional = true }
 
 [features]
 default = ["gmp"]
