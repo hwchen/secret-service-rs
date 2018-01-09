@@ -26,8 +26,6 @@ use ss::{
     ALGORITHM_DH,
 };
 
-use crypto::sha2::Sha256;
-use crypto::hkdf::{hkdf_extract, hkdf_expand};
 use dbus::{
     Connection,
     Message,
@@ -41,8 +39,8 @@ use dbus::MessageItem::{
 #[cfg(feature = "gmp")]
 use gmp::mpz::Mpz;
 use num::bigint::BigUint;
-use rand::{Rng, OsRng};
-
+use ring::{digest, hkdf, hmac};
+use ring::rand::{SecureRandom, SystemRandom};
 use std::rc::Rc;
 
 // for key exchange
@@ -129,10 +127,11 @@ impl Session {
                 // crypto: create private and public key, send public key
                 // requires some finagling to get pow() for bigints
                 // mpz is multiple precision integer type for gmp
-                let mut rng = OsRng::new().unwrap();
-                let mut private_key_bytes = [0;128];
-                rng.fill_bytes(&mut private_key_bytes);
-
+                let mut private_key_bytes = [0; 128];
+                {
+                    let rng = SystemRandom::new();
+                    rng.fill(&mut private_key_bytes).unwrap();
+                }
                 let private_key_mpz = bytes_to_mpz(&private_key_bytes).unwrap();
                 let two: Mpz = From::<u32>::from(2);
                 let dh_prime_mpz = bytes_to_mpz(&DH_PRIME_1024_BYTES).unwrap();
@@ -187,15 +186,14 @@ impl Session {
                 //inefficient, but ok for now
                 common_secret_padded.append(&mut common_secret);
 
-                let salt = [0u8;32]; // Why not just empty vector?
+                // null salt (not a [u8], becaus ring's hkdf is desinged to only accept SigningKey
+                // as they tend to get reused and this would result in better performance
+                // - irrelevant in this case however)
+                let salt = hmac::SigningKey::new(&digest::SHA256, &[0; 32]);
+                let mut output_block = [0; 32];
 
-                let hasher = Sha256::new();
-                let mut pseudorandom_key = [0;32];
-                let mut output_block = [0;32];
-
-                hkdf_extract(hasher, &salt, &common_secret_padded[..], &mut pseudorandom_key);
-                hkdf_expand(hasher, &pseudorandom_key, &[], &mut output_block);
-
+                // HKDF with empty info
+                hkdf::extract_and_expand(&salt, &common_secret_padded[..], &[], &mut output_block);
                 let aes_key = output_block[0..16].to_vec();
 
                 // get session path to store

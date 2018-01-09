@@ -155,7 +155,7 @@ extern crate dbus;
 #[cfg(feature = "gmp")]
 extern crate gmp;
 extern crate num;
-extern crate rand;
+extern crate ring;
 
 mod collection;
 mod error;
