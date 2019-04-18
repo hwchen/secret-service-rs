@@ -150,6 +150,8 @@
 // ss provides some constants which are paths for dbus interaction, and some other strings.
 //
 
+extern crate aes;
+extern crate block_modes;
 extern crate crypto;
 extern crate dbus;
 #[cfg(feature = "gmp")]

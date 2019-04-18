@@ -10,13 +10,17 @@ repository = "https://github.com/hwchen/secret-service-rs.git"
 version = "0.4.0"
 
 [dependencies]
+aes = "0.3.2"
+block-modes = "0.3.2"
 dbus = "0.2.3"
 num = "0.1.30"
 rand = "0.3.13"
 rust-crypto = "0.2.34"
-rust-gmp = { version = "0.3", optional = true }
+
+[dependencies.rust-gmp]
+optional = true
+version = "0.3"
 
 [features]
 default = ["gmp"]
-
 gmp = ["rust-gmp"]
