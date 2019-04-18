@@ -152,12 +152,13 @@
 
 extern crate aes;
 extern crate block_modes;
-extern crate crypto;
 extern crate dbus;
 #[cfg(feature = "gmp")]
 extern crate gmp;
+extern crate hkdf;
 extern crate num;
 extern crate rand;
+extern crate sha2;
 
 mod collection;
 mod error;

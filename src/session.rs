@@ -26,8 +26,8 @@ use ss::{
     ALGORITHM_DH,
 };
 
-use crypto::sha2::Sha256;
-use crypto::hkdf::{hkdf_extract, hkdf_expand};
+use sha2::Sha256;
+use hkdf::Hkdf;
 use dbus::{
     Connection,
     Message,
@@ -187,16 +187,20 @@ impl Session {
                 //inefficient, but ok for now
                 common_secret_padded.append(&mut common_secret);
 
-                let salt = [0u8;32]; // Why not just empty vector?
+                // hkdf
 
-                let hasher = Sha256::new();
-                let mut pseudorandom_key = [0;32];
-                let mut output_block = [0;32];
+                // input_keying_material
+                let ikm = common_secret_padded;
+                let salt = None;
+                let info = [];
 
-                hkdf_extract(hasher, &salt, &common_secret_padded[..], &mut pseudorandom_key);
-                hkdf_expand(hasher, &pseudorandom_key, &[], &mut output_block);
+                // output keying material
+                let mut okm = [0;16];
 
-                let aes_key = output_block[0..16].to_vec();
+                let hk = Hkdf::<Sha256>::extract(salt, &ikm);
+                hk.expand(&info, &mut okm).expect("hkdf expand should never fail");
+
+                let aes_key = okm.to_vec();
 
                 // get session path to store
                 let object_path_dbus = try!(items
