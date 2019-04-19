@@ -449,6 +449,22 @@ mod test{
     }
 
     #[test]
+    fn should_create_and_get_secret_encrypted() {
+        let ss = SecretService::new(EncryptionType::Dh).unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        let item = collection.create_item(
+            "Test",
+            Vec::new(),
+            b"test",
+            false, // replace
+            "text/plain" // content_type
+        ).unwrap();
+        let secret = item.get_secret().unwrap();
+        item.delete().unwrap();
+        assert_eq!(secret, b"test");
+    }
+
+    #[test]
     fn should_get_secret_content_type() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
@@ -496,23 +512,24 @@ mod test{
         let secret = item.get_secret().unwrap();
         item.delete().unwrap();
         assert_eq!(secret, b"test_encrypted");
-
     }
 
     #[cfg(feature = "gmp")]
     #[test]
-    #[should_panic]
-    fn should_not_create_encrypted_item_from_empty_secret() {
+    fn should_create_encrypted_item_from_empty_secret() {
         //empty string
         let ss = SecretService::new(EncryptionType::Dh).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        collection.create_item(
+        let item = collection.create_item(
             "Test",
             Vec::new(),
             b"",
             false, // replace
             "text/plain" // content_type
-        ).unwrap();
+        ).expect("Error on item creation");
+        let secret = item.get_secret().unwrap();
+        item.delete().unwrap();
+        assert_eq!(secret, b"");
     }
 
     #[cfg(feature = "gmp")]

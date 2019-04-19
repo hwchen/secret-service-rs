@@ -150,12 +150,15 @@
 // ss provides some constants which are paths for dbus interaction, and some other strings.
 //
 
-extern crate crypto;
+extern crate aes;
+extern crate block_modes;
 extern crate dbus;
-#[cfg(feature = "gmp")]
-extern crate gmp;
+extern crate hkdf;
+#[macro_use]
+extern crate lazy_static;
 extern crate num;
 extern crate rand;
+extern crate sha2;
 
 mod collection;
 mod error;

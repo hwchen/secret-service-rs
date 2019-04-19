@@ -22,7 +22,6 @@
 // - locked (currently custom dbus error)
 // - prompt dismissed (not an error?) (currently custom dbus error)
 
-use crypto::symmetriccipher;
 use dbus;
 use std::error;
 use std::fmt;
@@ -34,7 +33,7 @@ pub type Result<T> = ::std::result::Result<T, SsError>;
 
 #[derive(Debug)]
 pub enum SsError {
-    Crypto(symmetriccipher::SymmetricCipherError),
+    Crypto(String),
     Dbus(dbus::Error),
     Locked,
     NoResult,
@@ -76,9 +75,15 @@ impl error::Error for SsError {
     }
 }
 
-impl From<symmetriccipher::SymmetricCipherError> for SsError {
-    fn from(err: symmetriccipher::SymmetricCipherError) -> SsError {
-        SsError::Crypto(err)
+impl From<block_modes::BlockModeError> for SsError {
+    fn from(_err: block_modes::BlockModeError) -> SsError {
+        SsError::Crypto("Block mode error".into())
+    }
+}
+
+impl From<block_modes::InvalidKeyIvLength> for SsError {
+    fn from(_err: block_modes::InvalidKeyIvLength) -> SsError {
+        SsError::Crypto("Invalid Key Iv Lengt".into())
     }
 }
 

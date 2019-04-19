@@ -8,55 +8,22 @@
 // Contains encryption and decryption using aes.
 // Could also contain setting aes key
 
-use crypto::{ buffer, aes, blockmodes };
-use crypto::buffer::{ ReadBuffer, WriteBuffer, BufferResult };
+use aes::Aes128;
+use block_modes::{BlockMode, Cbc};
+use block_modes::block_padding::Pkcs7;
 
-//use rand::{ Rng, OsRng };
+type Aes128Cbc = Cbc<Aes128, Pkcs7>;
 
 pub fn encrypt(data: &[u8], key: &[u8], iv: &[u8]) -> ::Result<Vec<u8>> {
-    let mut encryptor = aes::cbc_encryptor(
-        aes::KeySize::KeySize128,
-        key,
-        iv,
-        blockmodes::PkcsPadding);
+    let cipher = Aes128Cbc::new_var(key, iv)?;
+    let cipher_text = cipher.encrypt_vec(data);
 
-    let mut final_result = Vec::<u8>::new();
-    let mut read_buffer = buffer::RefReadBuffer::new(data);
-    let mut buffer = [0; 2048]; // 4096 in example implementation with keysize 256
-    let mut write_buffer = buffer::RefWriteBuffer::new(&mut buffer);
-
-    loop {
-        let result = try!(encryptor.encrypt(&mut read_buffer, &mut write_buffer, true));
-        final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().cloned());
-
-        match result {
-            BufferResult::BufferUnderflow => break,
-            BufferResult::BufferOverflow => { },
-        }
-    }
-    Ok(final_result)
+    Ok(cipher_text)
 }
 
 pub fn decrypt(encrypted_data: &[u8], key: &[u8], iv: &[u8]) -> ::Result<Vec<u8>> {
-    let mut decryptor = aes::cbc_decryptor(
-        aes::KeySize::KeySize128,
-        key,
-        iv,
-        blockmodes::PkcsPadding);
+    let cipher = Aes128Cbc::new_var(key, iv)?;
+    let decrypted = cipher.decrypt_vec(encrypted_data)?;
 
-    let mut final_result = Vec::<u8>::new();
-    let mut read_buffer = buffer::RefReadBuffer::new(encrypted_data);
-    let mut buffer = [0; 2048]; // 4096 in example implementation with keysize 256
-    let mut write_buffer = buffer::RefWriteBuffer::new(&mut buffer);
-
-    loop {
-        let result = try!(decryptor.decrypt(&mut read_buffer, &mut write_buffer, true));
-        final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().cloned());
-
-        match result {
-            BufferResult::BufferUnderflow => break,
-            BufferResult::BufferOverflow => { },
-        }
-    }
-    Ok(final_result)
+    Ok(decrypted)
 }
