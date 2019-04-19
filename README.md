@@ -4,23 +4,23 @@ Secret Service Rust library.
 
 Interfaces with the Linux Secret Service API through dbus.
 
-This library is feature complete but still in *experimental* stage.
+This library is feature complete, has stabilized its API, and has removed extraneous dependencies, so I've made it 1.0.
 
 ### Documentation
 
-[Get Docs!](https://docs.rs/secret-service/0.4.0/secret_service/)
+[Get Docs!](https://docs.rs/secret-service/1.0.0/secret_service/)
 
 ### Basic Usage
 
-Requires dbus and gmp development libraries installed (see [Advanced](#advanced) section if you need to disable gmp).
+Requires dbus library.
 
-On ubuntu, requires libdbus-1-dev and libgmp-dev.
+On ubuntu, this is libdbus-1-dev when building, and libdbus-1-3 when running.
 
 In Cargo.toml:
 
 ```
 [dependencies]
-secret-service = "0.4.0"
+secret-service = "1.0.0"
 ```
 
 If you have `cargo-extras` installed, can replace above step with the command at the prompt in your project directory:
@@ -35,14 +35,15 @@ In source code (below example is for --bin, not --lib)
 extern crate secret_service;
 use secret_service::SecretService;
 use secret_service::EncryptionType;
+use std::error::Error;
 
-fn main() {
+fn main() -> Result<(), Box<Error>> {
 
     // initialize secret service (dbus connection and encryption session)
-    let ss = SecretService::new(EncryptionType::Dh).unwrap();
+    let ss = SecretService::new(EncryptionType::Dh)?;
 
     // get default collection
-    let collection = ss.get_default_collection().unwrap();
+    let collection = ss.get_default_collection()?;
 
     //create new item
     collection.create_item(
@@ -51,21 +52,21 @@ fn main() {
         b"test_secret", //secret
         false, // replace item with same attributes
         "text/plain" // secret content type
-    ).unwrap();
+    )?;
 
     // search items by properties
     let search_items = ss.search_items(
         vec![("test", "test_value")]
-    ).unwrap();
+    )?;
 
-    let item = search_items.get(0).unwrap();
+    let item = search_items.get(0)?;
 
     // retrieve secret from item
-    let secret = item.get_secret().unwrap();
+    let secret = item.get_secret()?;
     assert_eq!(secret, b"test_secret");
 
     // delete item (deletes the dbus object, not the struct instance)
-    item.delete().unwrap()
+    item.delete()?;
 }
 ```
 
@@ -75,36 +76,17 @@ fn main() {
 - Collections: create, delete, search.
 - Items: create, delete, search, get/set secret.
 
-### Advanced
-
-It is possible to disable the dependency on `libgmp` by disabling the default
-features in your `Cargo.toml` file:
-
-    [dependencies]
-    secret-service = { version = "^0.4", default-features = false }
-
- 
-**Note**: this will build the library without support for creating encrypted connections 
-to `dbus`, `EncryptionType::Dh` will be unavailable. 
-
-In many cases this is OK, as `dbus` encryption is primarily intended to prevent secrets
-from being swapped to disk. 
-
-Use `EncryptionType::Plain` when `gmp` is disabled.
 
 ### Changelog
+_0.1.0_
+- dependency on gmp is removed.
+- rust-crypto replaced by RustCrypto.
+- as a result of above, error on encrypting and decrypting blank input is fixed.
 
 _0.4.0_
-- gmp is now optional dependency
+- gmp is now optional dependency.
 - gmp upgraded to 0.3 to fix "private-in-public" warnings which will be hard errors soon.
 
-### Todo
-
-- use `map_err(|_| SsError::Parse)` for `inner()`? can't `try!` because `inner()` doesn't return an Error type in the Result. Or just `unwrap()`?
-- some refactoring (a list is in lib.rs)
-- clear failed tests? (there is no "after" currently)
-- move tests to integration tests?
-- Should/can struct instances be deleted when dbus object is deleted?
 
 ## License
 
