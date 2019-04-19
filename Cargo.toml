@@ -7,7 +7,7 @@ keywords = ["secret-service", "password", "linux", "keychain"]
 license = "MIT OR Apache-2.0"
 name = "secret-service"
 repository = "https://github.com/hwchen/secret-service-rs.git"
-version = "0.4.0"
+version = "1.0.0"
 
 [dependencies]
 aes = "0.3.2"
