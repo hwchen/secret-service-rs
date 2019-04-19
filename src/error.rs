@@ -76,13 +76,13 @@ impl error::Error for SsError {
 }
 
 impl From<block_modes::BlockModeError> for SsError {
-    fn from(err: block_modes::BlockModeError) -> SsError {
+    fn from(_err: block_modes::BlockModeError) -> SsError {
         SsError::Crypto("Block mode error".into())
     }
 }
 
 impl From<block_modes::InvalidKeyIvLength> for SsError {
-    fn from(err: block_modes::InvalidKeyIvLength) -> SsError {
+    fn from(_err: block_modes::InvalidKeyIvLength) -> SsError {
         SsError::Crypto("Invalid Key Iv Lengt".into())
     }
 }
