@@ -449,6 +449,22 @@ mod test{
     }
 
     #[test]
+    fn should_create_and_get_secret_encrypted() {
+        let ss = SecretService::new(EncryptionType::Dh).unwrap();
+        let collection = ss.get_default_collection().unwrap();
+        let item = collection.create_item(
+            "Test",
+            Vec::new(),
+            b"test",
+            false, // replace
+            "text/plain" // content_type
+        ).unwrap();
+        let secret = item.get_secret().unwrap();
+        item.delete().unwrap();
+        assert_eq!(secret, b"test");
+    }
+
+    #[test]
     fn should_get_secret_content_type() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();

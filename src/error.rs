@@ -22,7 +22,6 @@
 // - locked (currently custom dbus error)
 // - prompt dismissed (not an error?) (currently custom dbus error)
 
-use block_modes::{BlockModeError, InvalidKeyIvLength};
 use dbus;
 use std::error;
 use std::fmt;
