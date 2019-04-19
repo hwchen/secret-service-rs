@@ -42,7 +42,7 @@ use num::bigint::BigUint;
 use num::traits::{One, Zero};
 use num::integer::Integer;
 use num::FromPrimitive;
-use rand::{Rng, OsRng};
+use rand::{Rng, rngs::OsRng};
 
 use std::rc::Rc;
 use std::ops::{Mul, Rem, Shr};
@@ -134,7 +134,7 @@ impl Session {
                 // mpz is multiple precision integer type for gmp
                 let mut rng = OsRng::new().unwrap();
                 let mut private_key_bytes = [0;128];
-                rng.fill_bytes(&mut private_key_bytes);
+                rng.fill(&mut private_key_bytes);
 
                 let private_key = BigUint::from_bytes_be(&private_key_bytes);
                 let public_key = powm(&DH_GENERATOR, &private_key, &DH_PRIME);

@@ -40,7 +40,7 @@ use dbus::MessageItem::{
     Str,
     Struct,
 };
-use rand::{Rng, OsRng};
+use rand::{Rng, rngs::OsRng};
 use std::rc::Rc;
 
 #[derive(Debug, Clone)]
@@ -117,7 +117,7 @@ pub fn format_secret(session: &Session,
     if session.is_encrypted() {
         let mut rng = OsRng::new().unwrap();
         let mut aes_iv = [0;16];
-        rng.fill_bytes(&mut aes_iv);
+        rng.fill(&mut aes_iv);
 
         let encrypted_secret = try!(encrypt(secret, &session.get_aes_key()[..], &aes_iv));
 
