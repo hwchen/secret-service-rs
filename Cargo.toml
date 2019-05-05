@@ -12,7 +12,7 @@ version = "1.0.0"
 [dependencies]
 aes = "0.3.2"
 block-modes = "0.3.2"
-dbus = "0.2.3"
+dbus = "0.6"
 hkdf = "0.7.0"
 lazy_static = "1.3.0"
 num = "0.2.0"
