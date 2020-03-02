@@ -263,11 +263,15 @@ impl SecretService {
 
         let res = try!(self.service_interface.method("ReadAlias", vec![name]));
         if let ObjectPath(ref path) = res[0] {
-            Ok(Collection::new(
-                self.bus.clone(),
-                &self.session,
-                path.clone()
-            ))
+            if &**path == "/" {
+                Err(SsError::NoResult)
+            } else {
+                Ok(Collection::new(
+                    self.bus.clone(),
+                    &self.session,
+                    path.clone()
+                ))
+            }
         } else {
             Err(SsError::Parse)
         }
