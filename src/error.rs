@@ -67,7 +67,7 @@ impl error::Error for SsError {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             SsError::Dbus(ref err) => Some(err),
             _ => None,

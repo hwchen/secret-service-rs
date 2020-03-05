@@ -58,10 +58,10 @@ impl Interface {
                interface: InterfaceName) -> Self {
 
         Interface {
-            bus: bus,
-            name: name,
-            path: path,
-            interface: interface,
+            bus,
+            name,
+            path,
+            interface,
         }
     }
 
@@ -79,7 +79,7 @@ impl Interface {
         m.append_items(&args);
 
         // could use and_then?
-        let r = try!(self.bus.send_with_reply_and_block(m, 2000));
+        let r = self.bus.send_with_reply_and_block(m, 2000)?;
 
         Ok(r.get_items())
     }
@@ -93,7 +93,7 @@ impl Interface {
             2000
         );
 
-        Ok(try!(p.get(prop_name)))
+        Ok(p.get(prop_name)?)
     }
 
     pub fn set_props(&self, prop_name: &str, value: MessageItem) -> ::Result<()> {
@@ -105,7 +105,7 @@ impl Interface {
             2000
         );
 
-        Ok(try!(p.set(prop_name, value)))
+        Ok(p.set(prop_name, value)?)
     }
 }
 
@@ -119,7 +119,7 @@ pub fn format_secret(session: &Session,
         let mut aes_iv = [0;16];
         rng.fill(&mut aes_iv);
 
-        let encrypted_secret = try!(encrypt(secret, &session.get_aes_key()[..], &aes_iv));
+        let encrypted_secret = encrypt(secret, &session.get_aes_key()[..], &aes_iv)?;
 
         // Construct secret struct
         // (These are all straight conversions, can't fail.
@@ -159,7 +159,7 @@ pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> ::Result<MessageItem> {
         prompt,
         InterfaceName::new(SS_INTERFACE_PROMPT).unwrap()
     );
-    try!(prompt_interface.method("Prompt", vec![Str("".to_owned())]));
+    prompt_interface.method("Prompt", vec![Str("".to_owned())])?;
 
     // check to see if prompt is dismissed or accepted
     // TODO: Find a better way to do this.

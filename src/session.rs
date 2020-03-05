@@ -99,24 +99,22 @@ impl Session {
                 .append(Variant(Box::new(Str("".to_owned()))));
 
                 // Call to session
-                let r = try!(bus.send_with_reply_and_block(m, 2000));
+                let r = bus.send_with_reply_and_block(m, 2000)?;
                 let items = r.get_items();
 
                 // Get session output
-                let session_output_dbus = try!(items
+                let session_output_dbus = items
                     .get(0)
-                    .ok_or(SsError::NoResult)
-                );
+                    .ok_or(SsError::NoResult)?;
                 let session_output_variant_dbus: &MessageItem = session_output_dbus.inner().unwrap();
 
                 // check session output is str
                 session_output_variant_dbus.inner::<&str>().unwrap();
 
                 // get session path
-                let object_path_dbus = try!(items
+                let object_path_dbus = items
                     .get(1)
-                    .ok_or(SsError::NoResult)
-                );
+                    .ok_or(SsError::NoResult)?;
                 let object_path: &Path = object_path_dbus.inner().unwrap();
 
                 Ok(Session {
@@ -156,22 +154,20 @@ impl Session {
                 .append(Variant(Box::new(MessageItem::new_array(public_key_bytes_dbus).unwrap())));
 
                 // Call to session
-                let r = try!(bus.send_with_reply_and_block(m, 2000));
+                let r = bus.send_with_reply_and_block(m, 2000)?;
                 let items = r.get_items();
 
                 // Get session output (which is the server public key when using encryption)
-                let session_output_dbus = try!(items
+                let session_output_dbus = items
                     .get(0)
-                    .ok_or(SsError::NoResult)
-                );
+                    .ok_or(SsError::NoResult)?;
                 let session_output_variant_dbus: &MessageItem = session_output_dbus.inner().unwrap();
 
                 // Since encrypted Variant should be a vector of bytes
-                let session_output_array_dbus: &Vec<_> = try!(session_output_variant_dbus
+                let session_output_array_dbus: &Vec<_> = session_output_variant_dbus
                     .inner()
                     // inner does not return an Error type, so have to manually map
-                    .map_err(|_| SsError::Parse)
-                );
+                    .map_err(|_| SsError::Parse)?;
 
                 let server_public_key: Vec<_> = session_output_array_dbus
                     .iter()
@@ -205,10 +201,9 @@ impl Session {
                 let aes_key = okm.to_vec();
 
                 // get session path to store
-                let object_path_dbus = try!(items
+                let object_path_dbus = items
                     .get(1)
-                    .ok_or(SsError::NoResult)
-                );
+                    .ok_or(SsError::NoResult)?;
                 let object_path: &Path = object_path_dbus.inner().unwrap();
 
                 Ok(Session {

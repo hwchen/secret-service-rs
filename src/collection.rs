@@ -74,11 +74,11 @@ impl<'a> Collection<'a> {
             InterfaceName::new(SS_INTERFACE_SERVICE).unwrap()
         );
         Collection {
-            bus: bus,
-            session: session,
-            collection_path: collection_path,
-            collection_interface: collection_interface,
-            service_interface: service_interface,
+            bus,
+            session,
+            collection_path,
+            collection_interface,
+            service_interface,
         }
     }
 
@@ -90,7 +90,7 @@ impl<'a> Collection<'a> {
     }
 
     pub fn ensure_unlocked(&self) -> ::Result<()> {
-        if try!(self.is_locked()) {
+        if self.is_locked()? {
             Err(SsError::Locked)
         } else {
             Ok(())
@@ -109,13 +109,13 @@ impl<'a> Collection<'a> {
             LockAction::Unlock => "Unlock",
         };
 
-        let res = try!(self.service_interface.method(lock_action_str, vec![objects]));
+        let res = self.service_interface.method(lock_action_str, vec![objects])?;
 
         // If the action requires a prompt, execute it.
         if let Some(&Array(ref lock_action, _)) = res.get(0) {
             if lock_action.is_empty() {
                 if let Some(&ObjectPath(ref path)) = res.get(1) {
-                    try!(exec_prompt(self.bus.clone(), path.clone()));
+                    exec_prompt(self.bus.clone(), path.clone())?;
                 }
             }
         }
@@ -135,13 +135,13 @@ impl<'a> Collection<'a> {
     pub fn delete(&self) -> ::Result<()> {
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
-        try!(self.ensure_unlocked());
-        let prompt = try!(self.collection_interface.method("Delete", vec![]));
+        self.ensure_unlocked()?;
+        let prompt = self.collection_interface.method("Delete", vec![])?;
 
         // Returns prompt path. If there's a non-trivial prompt path, execute it.
         if let Some(&ObjectPath(ref prompt_path)) = prompt.get(0) {
             if &**prompt_path != "/" {
-                    let del_res = try!(exec_prompt(self.bus.clone(), prompt_path.clone()));
+                    let del_res = exec_prompt(self.bus.clone(), prompt_path.clone())?;
                     println!("{:?}", del_res);
                     return Ok(());
             } else {
@@ -154,7 +154,7 @@ impl<'a> Collection<'a> {
 
     // TODO: Refactor to clean up indents?
     pub fn get_all_items(&self) -> ::Result<Vec<Item>> {
-        let items = try!(self.collection_interface.get_props("Items"));
+        let items = self.collection_interface.get_props("Items")?;
 
         // map array of item paths to Item
         if let Array(item_array, _) = items {
@@ -192,7 +192,7 @@ impl<'a> Collection<'a> {
         );
 
         // Method call to SearchItem
-        let items = try!(self.collection_interface.method("SearchItems", vec![attr_dbus_dict]));
+        let items = self.collection_interface.method("SearchItems", vec![attr_dbus_dict])?;
 
         // TODO: Refactor to be clean like create_item?
         if let Array(ref item_array, _) = *items.get(0).unwrap() {
@@ -215,7 +215,7 @@ impl<'a> Collection<'a> {
     }
 
     pub fn get_label(&self) -> ::Result<String> {
-        let label = try!(self.collection_interface.get_props("Label"));
+        let label = self.collection_interface.get_props("Label")?;
         // TODO: switch to inner()?
         if let Str(label_str) = label {
             Ok(label_str)
@@ -236,7 +236,7 @@ impl<'a> Collection<'a> {
                        content_type: &str,
                        ) -> ::Result<Item> {
 
-        let secret_struct = try!(format_secret(&self.session, secret, content_type));
+        let secret_struct = format_secret(&self.session, secret, content_type)?;
 
         // build dbus dict
 
@@ -272,34 +272,32 @@ impl<'a> Collection<'a> {
         let properties_dbus_dict = MessageItem::new_array(properties).unwrap();
 
         // Method call to CreateItem
-        let res = try!(self.collection_interface.method("CreateItem", vec![
+        let res = self.collection_interface.method("CreateItem", vec![
             properties_dbus_dict,
             secret_struct,
             Bool(replace)
-        ]));
+        ])?;
 
         // This prompt handling is practically identical to create_collection
         // TODO: refactor
         let item_path: Path = {
             // Get path of created object
-            let created_object_path = try!(res
+            let created_object_path = res
                 .get(0)
-                .ok_or(SsError::NoResult)
-            );
+                .ok_or(SsError::NoResult)?;
             let created_path: &Path = created_object_path.inner().unwrap();
 
             // Check if that path is "/", if so should execute a prompt
             if &**created_path == "/" {
-                let prompt_object_path = try!(res
+                let prompt_object_path = res
                     .get(1)
-                    .ok_or(SsError::NoResult)
-                );
+                    .ok_or(SsError::NoResult)?;
                 let prompt_path: &Path = prompt_object_path.inner().unwrap();
 
                 // Exec prompt and parse result
-                let var_obj_path = try!(exec_prompt(self.bus.clone(), prompt_path.clone()));
+                let var_obj_path = exec_prompt(self.bus.clone(), prompt_path.clone())?;
                 let obj_path: &MessageItem = var_obj_path.inner().unwrap();
-                let path: &Path = obj_path.inner().unwrap();
+                let path: &Path = obj_path.inner().expect("getting path cannot fail");
                 path.clone()
             } else {
                 // if not, just return created path

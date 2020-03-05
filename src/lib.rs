@@ -223,8 +223,8 @@ impl SecretService {
     /// let ss = SecretService::new(EncryptionType::Dh).unwrap();
     /// ```
     pub fn new(encryption: EncryptionType) -> ::Result<Self> {
-        let bus = Rc::new(try!(Connection::get_private(BusType::Session)));
-        let session = try!(Session::new(bus.clone(), encryption));
+        let bus = Rc::new(Connection::get_private(BusType::Session)?);
+        let session = Session::new(bus.clone(), encryption)?;
         let service_interface = Interface::new(
             bus.clone(),
             BusName::new(SS_DBUS_NAME).unwrap(),
@@ -234,14 +234,14 @@ impl SecretService {
 
         Ok(SecretService {
             bus: bus.clone(),
-            session: session,
-            service_interface: service_interface,
+            session,
+            service_interface,
         })
     }
 
     /// Get all collections
     pub fn get_all_collections(&self) -> ::Result<Vec<Collection>> {
-        let res = try!(self.service_interface.get_props("Collections"));
+        let res = self.service_interface.get_props("Collections")?;
         let collections: &Vec<_> = res.inner().unwrap();
         Ok(collections.iter().map(|object_path| {
             let path: &Path = object_path.inner().unwrap();
@@ -260,7 +260,7 @@ impl SecretService {
     pub fn get_collection_by_alias(&self, alias: &str) -> ::Result<Collection>{
         let name = Str(alias.to_owned());
 
-        let res = try!(self.service_interface.method("ReadAlias", vec![name]));
+        let res = self.service_interface.method("ReadAlias", vec![name])?;
         if let ObjectPath(ref path) = res[0] {
             if &**path == "/" {
                 Err(SsError::NoResult)
@@ -294,7 +294,7 @@ impl SecretService {
             .or_else(|_| {
                 self.get_collection_by_alias("session")
             }).or_else(|_| {
-                let collections = try!(self.get_all_collections());
+                let collections = self.get_all_collections()?;
                 collections
                     .get(0)
                     .ok_or(SsError::NoResult)
@@ -314,27 +314,25 @@ impl SecretService {
         let alias = Str(alias.to_owned());
 
         // Call the dbus method
-        let res = try!(self.service_interface.method("CreateCollection", vec![properties, alias]));
+        let res = self.service_interface.method("CreateCollection", vec![properties, alias])?;
 
         // parse the result
         let collection_path: Path = {
             // Get path of created object
-            let created_object_path = try!(res
+            let created_object_path = res
                 .get(0)
-                .ok_or(SsError::NoResult)
-            );
+                .ok_or(SsError::NoResult)?;
             let created_path: &Path = created_object_path.inner().unwrap();
 
             // Check if that path is "/", if so should execute a prompt
             if &**created_path == "/" {
-                let prompt_object_path = try!(res
+                let prompt_object_path = res
                     .get(1)
-                    .ok_or(SsError::NoResult)
-                );
+                    .ok_or(SsError::NoResult)?;
                 let prompt_path: &Path = prompt_object_path.inner().unwrap();
 
                 // Exec prompt and parse result
-                let var_obj_path = try!(exec_prompt(self.bus.clone(), prompt_path.clone()));
+                let var_obj_path = exec_prompt(self.bus.clone(), prompt_path.clone())?;
                 let obj_path: &MessageItem = var_obj_path.inner().unwrap();
                 let path: &Path = obj_path.inner().unwrap();
                 path.clone()
@@ -368,7 +366,7 @@ impl SecretService {
         );
 
         // Method call to SearchItem
-        let res = try!(self.service_interface.method("SearchItems", vec![attr_dbus_dict]));
+        let res = self.service_interface.method("SearchItems", vec![attr_dbus_dict])?;
 
         // The result is unlocked and unlocked items.
         // Currently, I just concatenate and return all.

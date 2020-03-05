@@ -68,11 +68,11 @@ impl<'a> Item<'a> {
             InterfaceName::new(SS_INTERFACE_SERVICE).unwrap()
         );
         Item {
-            bus: bus,
-            session: session,
-            item_path: item_path,
-            item_interface: item_interface,
-            service_interface: service_interface,
+            bus,
+            session,
+            item_path,
+            item_interface,
+            service_interface,
         }
     }
 
@@ -84,7 +84,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn ensure_unlocked(&self) -> ::Result<()> {
-        if try!(self.is_locked()) {
+        if self.is_locked()? {
             Err(SsError::Locked)
         } else {
             Ok(())
@@ -103,11 +103,11 @@ impl<'a> Item<'a> {
             LockAction::Unlock => "Unlock",
         };
 
-        let res = try!(self.service_interface.method(lock_action_str, vec![objects]));
+        let res = self.service_interface.method(lock_action_str, vec![objects])?;
         if let Some(&Array(ref unlocked, _)) = res.get(0) {
             if unlocked.is_empty() {
                 if let Some(&ObjectPath(ref path)) = res.get(1) {
-                    try!(exec_prompt(self.bus.clone(), path.clone()));
+                    exec_prompt(self.bus.clone(), path.clone())?;
                 }
             }
         }
@@ -124,7 +124,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn get_attributes(&self) -> ::Result<Vec<(String, String)>> {
-        let res = try!(self.item_interface.get_props("Attributes"));
+        let res = self.item_interface.get_props("Attributes")?;
 
         if let Array(attributes, _) = res {
             return Ok(attributes.iter().map(|ref dict_entry| {
@@ -156,7 +156,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn get_label(&self) -> ::Result<String> {
-        let label = try!(self.item_interface.get_props("Label"));
+        let label = self.item_interface.get_props("Label")?;
         if let Str(label_str) = label {
             Ok(label_str)
         } else {
@@ -172,12 +172,12 @@ impl<'a> Item<'a> {
     pub fn delete(&self) -> ::Result<()> {
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
-        try!(self.ensure_unlocked());
-        let prompt = try!(self.item_interface.method("Delete", vec![]));
+        self.ensure_unlocked()?;
+        let prompt = self.item_interface.method("Delete", vec![])?;
 
         if let Some(&ObjectPath(ref prompt_path)) = prompt.get(0) {
             if &**prompt_path != "/" {
-                    let del_res = try!(exec_prompt(self.bus.clone(), prompt_path.clone()));
+                    let del_res = exec_prompt(self.bus.clone(), prompt_path.clone())?;
                     println!("{:?}", del_res);
                     return Ok(());
             } else {
@@ -190,22 +190,20 @@ impl<'a> Item<'a> {
 
     pub fn get_secret(&self) -> ::Result<Vec<u8>> {
         let session = MessageItem::from(self.session.object_path.clone());
-        let res = try!(self.item_interface.method("GetSecret", vec![session]));
+        let res = self.item_interface.method("GetSecret", vec![session])?;
         // No secret would be an error, so try! instead of option
-        let secret_struct = try!(res
+        let secret_struct = res
             .get(0)
-            .ok_or(SsError::NoResult)
-        );
+            .ok_or(SsError::NoResult)?;
 
         // parse out secret
 
         // get "secret" field out of secret struct
         // secret should always be index 2
         let secret_vec: &Vec<_> = secret_struct.inner().unwrap();
-        let secret_dbus = try!(secret_vec
+        let secret_dbus = secret_vec
             .get(2)
-            .ok_or(SsError::NoResult)
-        );
+            .ok_or(SsError::NoResult)?;
 
         // get array of dbus bytes
         let secret_bytes_dbus: &Vec<_> = secret_dbus.inner().unwrap();
@@ -218,10 +216,9 @@ impl<'a> Item<'a> {
         } else {
             // get "param" (aes_iv) field out of secret struct
             // param should always be index 1
-            let aes_iv_dbus = try!(secret_vec
+            let aes_iv_dbus = secret_vec
                 .get(1)
-                .ok_or(SsError::NoResult)
-            );
+                .ok_or(SsError::NoResult)?;
             // get array of dbus bytes
             let aes_iv_bytes_dbus: &Vec<_> = aes_iv_dbus.inner().unwrap();
             // map dbus bytes to u8
@@ -235,22 +232,20 @@ impl<'a> Item<'a> {
 
     pub fn get_secret_content_type(&self) -> ::Result<String> {
         let session = MessageItem::from(self.session.object_path.clone());
-        let res = try!(self.item_interface.method("GetSecret", vec![session]));
+        let res = self.item_interface.method("GetSecret", vec![session])?;
         // No secret content type would be a bug, so try!
-        let secret_struct = try!(res
+        let secret_struct = res
             .get(0)
-            .ok_or(SsError::NoResult)
-        );
+            .ok_or(SsError::NoResult)?;
 
         // parse out secret content type
 
         // get "content type" field out of secret struct
         // content type should always be index 3
         let secret_vec: &Vec<_> = secret_struct.inner().unwrap();
-        let content_type_dbus = try!(secret_vec
+        let content_type_dbus = secret_vec
             .get(3)
-            .ok_or(SsError::NoResult)
-        );
+            .ok_or(SsError::NoResult)?;
 
         // Get value out of DBus value
         let content_type: &String = content_type_dbus.inner().unwrap();
@@ -259,7 +254,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn set_secret(&self, secret: &[u8], content_type: &str) -> ::Result<()> {
-        let secret_struct = try!(format_secret(&self.session, secret, content_type));
+        let secret_struct = format_secret(&self.session, secret, content_type)?;
         self.item_interface.method("SetSecret", vec![secret_struct]).map(|_| ())
     }
 
