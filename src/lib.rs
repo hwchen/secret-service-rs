@@ -18,8 +18,7 @@
 // Move similar methods to common interface: locking, attributes, del, label?
 // Reorg imports, format function params to be consistent
 // Refactor to make str and String function params consistent
-// Abstract prompts for creating items. Can I abstract other prompts?
-// in all tests, make sure that check for structs
+// Abstract prompts for creating items. Can I abstract other prompts? in all tests, make sure that check for structs
 // Change all MessageItems initialization to use MessageItem::from()
 // TODO: Could factor out some fns into utils: lock/unlock, more prompts.
 // TODO: Util also contains format_secret, but this may be moved to ss_crypto.
@@ -434,6 +433,16 @@ mod test {
     fn should_get_collection_by_alias() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         ss.get_collection_by_alias("session").unwrap();
+    }
+
+    #[test]
+    fn should_return_error_if_collection_doesnt_exist() {
+        let ss = SecretService::new(EncryptionType::Plain).unwrap();
+
+        match ss.get_collection_by_alias("definitely_defintely_does_not_exist") {
+            Err(SsError::NoResult) => println!("worked"),
+            _ => panic!(),
+        }
     }
 
     #[test]
