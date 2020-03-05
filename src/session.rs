@@ -199,7 +199,7 @@ impl Session {
                 // output keying material
                 let mut okm = [0;16];
 
-                let hk = Hkdf::<Sha256>::extract(salt, &ikm);
+                let (_, hk) = Hkdf::<Sha256>::extract(salt, &ikm);
                 hk.expand(&info, &mut okm).expect("hkdf expand should never fail");
 
                 let aes_key = okm.to_vec();
