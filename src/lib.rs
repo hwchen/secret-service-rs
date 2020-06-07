@@ -223,11 +223,24 @@ impl SecretService {
     /// let ss = SecretService::new(EncryptionType::Dh).unwrap();
     /// ```
     pub fn new(encryption: EncryptionType) -> ::Result<Self> {
+        Self::new_with_dbus_name(encryption, SS_DBUS_NAME)
+    }
+
+    /// Create a new `SecretService` instance with Dbus name
+    ///
+    /// # Example
+    /// 
+    /// ```
+    /// # use secret_service::SecretService;
+    /// # use secret_service::EncryptionType;
+    /// let ss = SecretService::new_with_dbus_name(EncryptionType::Dh, "org.freedesktop.secrets").unwrap();
+    /// ```
+    pub fn new_with_dbus_name(encryption: EncryptionType, dbus_name: &str) -> ::Result<Self> {
         let bus = Rc::new(Connection::get_private(BusType::Session)?);
         let session = Session::new(bus.clone(), encryption)?;
         let service_interface = Interface::new(
             bus.clone(),
-            BusName::new(SS_DBUS_NAME).unwrap(),
+            BusName::new(dbus_name).unwrap(),
             Path::new(SS_PATH).unwrap(),
             InterfaceName::new(SS_INTERFACE_SERVICE).unwrap()
         );
