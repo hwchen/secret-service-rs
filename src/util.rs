@@ -115,7 +115,7 @@ pub fn format_secret(session: &Session,
                     ) -> ::Result<MessageItem> {
 
     if session.is_encrypted() {
-        let mut rng = OsRng::new().unwrap();
+        let mut rng = OsRng {};
         let mut aes_iv = [0;16];
         rng.fill(&mut aes_iv);
 
