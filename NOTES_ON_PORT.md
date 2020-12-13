@@ -12,3 +12,10 @@ With zbus, I would instead have:
 - This means that with zbus, I should be able to get rid of `Interface`.
 
 So, my first step should be to replace usage of the `Item` proxy.
+
+## First Pass
+Creating proxy was nice, and removed a lot of my boilerplate.
+
+One issue was lifetimes for using a path in creating a new proxy. I had wanted to store the proxy in the `Item` struct, but I needed to borrow the `item_path`, which wouldn't live long enough. I ended up instantiating a new proxy on each `Item` method, which didn't feel as good.
+
+Now, getting some test errors. One is that session doesn't exist.
