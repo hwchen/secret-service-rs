@@ -20,7 +20,7 @@ In Cargo.toml:
 
 ```
 [dependencies]
-secret-service = "1.1.2"
+secret-service = "1.1.3"
 ```
 
 If you have `cargo-extras` installed, can replace above step with the command at the prompt in your project directory:
