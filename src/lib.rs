@@ -208,7 +208,7 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub struct SecretService {
     bus: Rc<Connection>,
-    zbus: Rc<zbus::Connection>,
+    zbus: zbus::Connection,
     session: Session,
     service_interface: Interface,
 }
@@ -225,7 +225,7 @@ impl SecretService {
     /// ```
     pub fn new(encryption: EncryptionType) -> ::Result<Self> {
         let bus = Rc::new(Connection::get_private(BusType::Session)?);
-        let zbus = Rc::new(zbus::Connection::new_session().unwrap());
+        let zbus = zbus::Connection::new_session().unwrap();
         let session = Session::new(bus.clone(), encryption)?;
         let service_interface = Interface::new(
             bus.clone(),

@@ -44,20 +44,25 @@ enum LockAction {
 pub struct Item<'a> {
     // TODO: Implement method for path?
     bus: Rc<Connection>,
-    zbus: Rc<zbus::Connection>,
+    zbus: zbus::Connection,
     session: &'a Session,
     pub item_path: Path,
-    // TODO currently instantiating on demand because of lifetime issues on item_path
-    //item_interface: ItemInterfaceProxy<'a>,
+    item_interface: ItemInterfaceProxy<'a>,
     service_interface: Interface,
 }
 
 impl<'a> Item<'a> {
     pub fn new(bus: Rc<Connection>,
-               zbus: Rc<zbus::Connection>,
+               zbus: zbus::Connection,
                session: &'a Session,
                item_path: Path
                ) -> Self {
+        let item_interface = ItemInterfaceProxy::new_for_owned(
+            zbus.clone(),
+            SS_DBUS_NAME.to_owned(),
+            item_path.to_string(),
+            )
+            .unwrap();
         let service_interface = Interface::new(
             bus.clone(),
             BusName::new(SS_DBUS_NAME).unwrap(),
@@ -69,18 +74,13 @@ impl<'a> Item<'a> {
             zbus,
             session,
             item_path,
+            item_interface,
             service_interface,
         }
     }
 
     pub fn is_locked(&self) -> ::Result<bool> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
-        Ok(item_interface.locked()?)
+        Ok(self.item_interface.locked()?)
     }
 
     pub fn ensure_unlocked(&self) -> ::Result<()> {
@@ -123,13 +123,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn get_attributes(&self) -> ::Result<Vec<(String, String)>> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
-        let attributes = item_interface.attributes()?;
+        let attributes = self.item_interface.attributes()?;
         let attributes: HashMap<String, String> = attributes.try_into().map_err(|_| SsError::Parse)?;
 
         let res = attributes.iter()
@@ -141,52 +135,28 @@ impl<'a> Item<'a> {
 
     // Probably best example of creating dict
     pub fn set_attributes(&self, attributes: Vec<(&str, &str)>) -> ::Result<()> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
         if !attributes.is_empty() {
             let attributes: HashMap<&str, &str> = attributes.into_iter().collect();
-            Ok(item_interface.set_attributes(attributes.into())?)
+            Ok(self.item_interface.set_attributes(attributes.into())?)
         } else {
             Ok(())
         }
     }
 
     pub fn get_label(&self) -> ::Result<String> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
-        Ok(item_interface.label()?)
+        Ok(self.item_interface.label()?)
     }
 
     pub fn set_label(&self, new_label: &str) -> ::Result<()> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
-        Ok(item_interface.set_label(new_label)?)
+        Ok(self.item_interface.set_label(new_label)?)
     }
 
     /// Deletes dbus object, but struct instance still exists (current implementation)
     pub fn delete(&self) -> ::Result<()> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
         self.ensure_unlocked()?;
-        let prompt_path = item_interface.delete()?;
+        let prompt_path = self.item_interface.delete()?;
 
         if prompt_path.as_str() != "/" {
                 exec_prompt(self.bus.clone(), dbus::Path::new(prompt_path.as_str()).unwrap())?;
@@ -198,14 +168,8 @@ impl<'a> Item<'a> {
     }
 
     pub fn get_secret(&self) -> ::Result<Vec<u8>> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
         let session = zvariant::ObjectPath::try_from(self.session.object_path.to_string()).expect("remove this expect later");
-        let secret_struct = item_interface.get_secret(session)?;
+        let secret_struct = self.item_interface.get_secret(session)?;
         let secret = secret_struct.value;
 
         if !self.session.is_encrypted() {
@@ -222,48 +186,24 @@ impl<'a> Item<'a> {
     }
 
     pub fn get_secret_content_type(&self) -> ::Result<String> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
         let session = zvariant::ObjectPath::try_from(self.session.object_path.to_string()).expect("remove this expect later");
-        let secret_struct = item_interface.get_secret(session)?;
+        let secret_struct = self.item_interface.get_secret(session)?;
         let content_type = secret_struct.content_type;
 
         Ok(content_type.clone())
     }
 
     pub fn set_secret(&self, secret: &[u8], content_type: &str) -> ::Result<()> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
         let secret_struct = format_secret_zbus(&self.session, secret, content_type)?;
-        Ok(item_interface.set_secret(secret_struct)?)
+        Ok(self.item_interface.set_secret(secret_struct)?)
     }
 
     pub fn get_created(&self) -> ::Result<u64> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
-        Ok(item_interface.created()?)
+        Ok(self.item_interface.created()?)
     }
 
     pub fn get_modified(&self) -> ::Result<u64> {
-        let item_interface = ItemInterfaceProxy::new_for(
-            &self.zbus,
-            SS_DBUS_NAME,
-            &self.item_path[..],
-            )
-            .unwrap();
-        Ok(item_interface.modified()?)
+        Ok(self.item_interface.modified()?)
     }
 }
 

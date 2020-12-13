@@ -53,7 +53,7 @@ enum LockAction {
 pub struct Collection<'a> {
     // TODO: Implement method for path?
     bus: Rc<Connection>,
-    zbus: Rc<zbus::Connection>,
+    zbus: zbus::Connection,
     session: &'a Session,
     pub collection_path: Path,
     collection_interface: Interface,
@@ -61,7 +61,7 @@ pub struct Collection<'a> {
 }
 
 impl<'a> Collection<'a> {
-    pub fn new(bus: Rc<Connection>, zbus: Rc<zbus::Connection>, session: &'a Session, collection_path: Path) -> Self {
+    pub fn new(bus: Rc<Connection>, zbus: zbus::Connection, session: &'a Session, collection_path: Path) -> Self {
         let collection_interface = Interface::new(
             bus.clone(),
             BusName::new(SS_DBUS_NAME).unwrap(),
