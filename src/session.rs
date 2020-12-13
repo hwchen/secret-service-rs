@@ -129,7 +129,6 @@ impl Session {
             EncryptionType::Dh => {
                 // crypto: create private and public key, send public key
                 // requires some finagling to get pow() for bigints
-                // mpz is multiple precision integer type for gmp
                 let mut rng = OsRng {};
                 let mut private_key_bytes = [0;128];
                 rng.fill(&mut private_key_bytes);

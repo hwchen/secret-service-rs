@@ -492,7 +492,6 @@ mod test{
         assert_eq!(secret, b"new_test");
     }
 
-    #[cfg(feature = "gmp")]
     #[test]
     fn should_create_encrypted_item() {
         let ss = SecretService::new(EncryptionType::Dh).unwrap();
@@ -509,7 +508,6 @@ mod test{
         assert_eq!(secret, b"test_encrypted");
     }
 
-    #[cfg(feature = "gmp")]
     #[test]
     fn should_create_encrypted_item_from_empty_secret() {
         //empty string
@@ -527,7 +525,6 @@ mod test{
         assert_eq!(secret, b"");
     }
 
-    #[cfg(feature = "gmp")]
     #[test]
     fn should_get_encrypted_secret_across_dbus_connections() {
         {
