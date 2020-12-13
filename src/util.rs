@@ -21,6 +21,7 @@ use ss::{
     SS_INTERFACE_PROMPT,
 };
 use ss_crypto::encrypt;
+use item_proxy::SecretStruct;
 
 use dbus::{
     BusName,
@@ -41,6 +42,7 @@ use dbus::MessageItem::{
     Struct,
 };
 use rand::{Rng, rngs::OsRng};
+use std::convert::TryFrom;
 use std::rc::Rc;
 
 #[derive(Debug, Clone)]
@@ -149,6 +151,47 @@ pub fn format_secret(session: &Session,
             value_dbus,
             content_type
         ]))
+    }
+}
+
+pub(crate) fn format_secret_zbus(
+    session: &Session,
+    secret: &[u8],
+    content_type: &str
+    ) -> ::Result<SecretStruct>
+{
+    let session_path = zvariant::ObjectPath::try_from(session.object_path.to_string()).expect("remove this");
+    let content_type = content_type.to_owned();
+
+    if session.is_encrypted() {
+        let mut rng = OsRng {};
+        let mut aes_iv = [0;16];
+        rng.fill(&mut aes_iv);
+
+        let encrypted_secret = encrypt(secret, &session.get_aes_key()[..], &aes_iv)?;
+
+        // Construct secret struct
+        let parameters = aes_iv.to_vec();
+        let value = encrypted_secret;
+
+        Ok(SecretStruct {
+            session: session_path.into(),
+            parameters,
+            value,
+            content_type
+        })
+
+    } else {
+        // just Plain for now
+        let parameters = Vec::new();
+        let value = secret.to_vec();
+
+        Ok(SecretStruct {
+            session: session_path.into(),
+            parameters,
+            value,
+            content_type
+        })
     }
 }
 

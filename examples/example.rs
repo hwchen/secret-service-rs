@@ -27,14 +27,14 @@ fn main() {
         "text/plain" // secret content type
     ).unwrap();
 
-    println!("New Item: {:?}", new_item);
+    //println!("New Item: {:?}", new_item);
 
     // search items by properties
     let search_items = ss.search_items(
         vec![("test", "test_value")]
     ).unwrap();
 
-    println!("Searched Item: {:?}", search_items);
+    //println!("Searched Item: {:?}", search_items);
 
     let item = search_items.get(0).unwrap();
 

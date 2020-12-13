@@ -7,15 +7,15 @@
 
 //! A dbus proxy for speaking with secret service's `Item` Interface.
 
+use serde::{Deserialize, Serialize};
 use zbus;
 use zbus_macros::dbus_proxy;
 use zvariant::{Dict, ObjectPath};
+use zvariant_derive::Type;
 
 /// This will derive ItemInterfaceProxy
 #[dbus_proxy(
     interface = "org.freedesktop.Secret.Item",
-    default_service = "org.freedesktop.secrets",
-    default_path = "/org/freedesktop/secrets",
 )]
 trait ItemInterface {
     /// returns `Prompt` ObjectPath
@@ -23,9 +23,12 @@ trait ItemInterface {
     fn delete(&self) -> zbus::Result<String>;
 
     /// returns `Secret`
-    fn get_secret(&self, session: ObjectPath) -> zbus::Result<Vec<u8>>;
+    fn get_secret(&self, session: ObjectPath) -> zbus::Result<SecretStruct>;
 
-    fn set_secret(&self, secret: &[u8]) -> zbus::Result<()>;
+    fn set_secret(&self, secret: SecretStruct) -> zbus::Result<()>;
+
+    #[dbus_proxy(property)]
+    fn locked(&self) -> zbus::fdo::Result<bool>;
 
     // Looks like the Dict has to be transformed into HashMap<String, String> in separate step?
     #[dbus_proxy(property)]
@@ -45,4 +48,12 @@ trait ItemInterface {
 
     #[dbus_proxy(property)]
     fn modified(&self) -> zbus::fdo::Result<u64>;
+}
+
+#[derive(Debug, Serialize, Deserialize, Type)]
+pub struct SecretStruct {
+    pub(crate) session: zvariant::OwnedObjectPath,
+    pub(crate) parameters: Vec<u8>,
+    pub(crate) value: Vec<u8>,
+    pub(crate) content_type: String,
 }

@@ -37,6 +37,7 @@ pub enum SsError {
     Crypto(String),
     Dbus(dbus::Error),
     Zbus(zbus::Error),
+    ZbusFdo(zbus::fdo::Error),
     Locked,
     NoResult,
     Parse,
@@ -50,6 +51,7 @@ impl fmt::Display for SsError {
             SsError::Crypto(_) => write!(f, "Crypto error: Invalid Length or Padding"),
             SsError::Dbus(ref err) => write!(f, "Dbus error: {}", err),
             SsError::Zbus(ref err) => write!(f, "zbus error: {}", err),
+            SsError::ZbusFdo(ref err) => write!(f, "zbus fdo error: {}", err),
             SsError::Locked => write!(f, "SS Error: object locked"),
             SsError::NoResult => write!(f, "SS error: result not returned from SS API"),
             SsError::Parse => write!(f, "SS error: could not parse Dbus output"),
@@ -64,6 +66,7 @@ impl error::Error for SsError {
             SsError::Crypto(_) => "crypto: Invalid Length or Padding",
             SsError::Dbus(ref err) => err.description(),
             SsError::Zbus(ref err) => err.description(),
+            SsError::ZbusFdo(ref err) => err.description(),
             SsError::Locked => "Object locked",
             SsError::NoResult => "Result not returned from SS API",
             SsError::Parse => "Error parsing Dbus output",
@@ -101,5 +104,11 @@ impl From<dbus::Error> for SsError {
 impl From<zbus::Error> for SsError {
     fn from(err: zbus::Error) -> SsError {
         SsError::Zbus(err)
+    }
+}
+
+impl From<zbus::fdo::Error> for SsError {
+    fn from(err: zbus::fdo::Error) -> SsError {
+        SsError::ZbusFdo(err)
     }
 }

@@ -53,6 +53,7 @@ enum LockAction {
 pub struct Collection<'a> {
     // TODO: Implement method for path?
     bus: Rc<Connection>,
+    zbus: Rc<zbus::Connection>,
     session: &'a Session,
     pub collection_path: Path,
     collection_interface: Interface,
@@ -60,7 +61,7 @@ pub struct Collection<'a> {
 }
 
 impl<'a> Collection<'a> {
-    pub fn new(bus: Rc<Connection>, session: &'a Session, collection_path: Path) -> Self {
+    pub fn new(bus: Rc<Connection>, zbus: Rc<zbus::Connection>, session: &'a Session, collection_path: Path) -> Self {
         let collection_interface = Interface::new(
             bus.clone(),
             BusName::new(SS_DBUS_NAME).unwrap(),
@@ -75,6 +76,7 @@ impl<'a> Collection<'a> {
         );
         Collection {
             bus,
+            zbus,
             session,
             collection_path,
             collection_interface,
@@ -163,6 +165,7 @@ impl<'a> Collection<'a> {
                     ObjectPath(ref path) => {
                         Some(Item::new(
                             self.bus.clone(),
+                            self.zbus.clone(),
                             &self.session,
                             path.clone()
                         ))
@@ -201,6 +204,7 @@ impl<'a> Collection<'a> {
                     ObjectPath(ref path) => {
                         Some(Item::new(
                             self.bus.clone(),
+                            self.zbus.clone(),
                             &self.session,
                             path.clone()
                         ))
@@ -307,6 +311,7 @@ impl<'a> Collection<'a> {
 
         Ok(Item::new(
             self.bus.clone(),
+            self.zbus.clone(),
             &self.session,
             item_path.clone()
         ))
@@ -379,7 +384,7 @@ mod test{
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
         let items = collection.get_all_items().unwrap();
-        println!("{:?}", items);
+        //println!("{:?}", items);
     }
 
     #[test]

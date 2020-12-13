@@ -151,10 +151,12 @@ extern crate hkdf;
 extern crate lazy_static;
 extern crate num;
 extern crate rand;
+extern crate serde;
 extern crate sha2;
 extern crate zbus;
 extern crate zbus_macros;
 extern crate zvariant;
+extern crate zvariant_derive;
 
 mod collection;
 mod error;
@@ -206,6 +208,7 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub struct SecretService {
     bus: Rc<Connection>,
+    zbus: Rc<zbus::Connection>,
     session: Session,
     service_interface: Interface,
 }
@@ -222,6 +225,7 @@ impl SecretService {
     /// ```
     pub fn new(encryption: EncryptionType) -> ::Result<Self> {
         let bus = Rc::new(Connection::get_private(BusType::Session)?);
+        let zbus = Rc::new(zbus::Connection::new_session().unwrap());
         let session = Session::new(bus.clone(), encryption)?;
         let service_interface = Interface::new(
             bus.clone(),
@@ -232,6 +236,7 @@ impl SecretService {
 
         Ok(SecretService {
             bus: bus.clone(),
+            zbus: zbus.clone(),
             session,
             service_interface,
         })
@@ -245,6 +250,7 @@ impl SecretService {
             let path: &Path = object_path.inner().unwrap();
             Collection::new(
                 self.bus.clone(),
+                self.zbus.clone(),
                 &self.session,
                 path.clone()
             )
@@ -265,6 +271,7 @@ impl SecretService {
             } else {
                 Ok(Collection::new(
                     self.bus.clone(),
+                    self.zbus.clone(),
                     &self.session,
                     path.clone()
                 ))
@@ -342,6 +349,7 @@ impl SecretService {
 
         Ok(Collection::new(
             self.bus.clone(),
+            self.zbus.clone(),
             &self.session,
             collection_path.clone()
         ))
@@ -396,8 +404,9 @@ impl SecretService {
 
             Item::new(
                 self.bus.clone(),
+                self.zbus.clone(),
                 &self.session,
-                path.clone()
+                path.clone(),
             )
         }).collect::<Vec<_>>())
     }

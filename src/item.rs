@@ -6,17 +6,17 @@
 // copied, modified, or distributed except according to those terms.
 
 use error::SsError;
+use item_proxy::ItemInterfaceProxy;
 use session::Session;
 use ss::{
     SS_DBUS_NAME,
-    SS_INTERFACE_ITEM,
     SS_INTERFACE_SERVICE,
     SS_PATH,
 };
 use ss_crypto::decrypt;
 use util::{
     exec_prompt,
-    format_secret,
+    format_secret_zbus,
     Interface,
 };
 
@@ -29,9 +29,10 @@ use dbus::{
 use dbus::MessageItem::{
     Array,
     ObjectPath,
-    Str,
 };
 use dbus::Interface as InterfaceName;
+use std::collections::HashMap;
+use std::convert::{TryFrom, TryInto};
 use std::rc::Rc;
 
 // Helper enum for locking
@@ -40,27 +41,23 @@ enum LockAction {
     Unlock,
 }
 
-#[derive(Debug)]
 pub struct Item<'a> {
     // TODO: Implement method for path?
     bus: Rc<Connection>,
+    zbus: Rc<zbus::Connection>,
     session: &'a Session,
     pub item_path: Path,
-    item_interface: Interface,
+    // TODO currently instantiating on demand because of lifetime issues on item_path
+    //item_interface: ItemInterfaceProxy<'a>,
     service_interface: Interface,
 }
 
 impl<'a> Item<'a> {
     pub fn new(bus: Rc<Connection>,
+               zbus: Rc<zbus::Connection>,
                session: &'a Session,
                item_path: Path
                ) -> Self {
-        let item_interface = Interface::new(
-            bus.clone(),
-            BusName::new(SS_DBUS_NAME).unwrap(),
-            item_path.clone(),
-            InterfaceName::new(SS_INTERFACE_ITEM).unwrap()
-        );
         let service_interface = Interface::new(
             bus.clone(),
             BusName::new(SS_DBUS_NAME).unwrap(),
@@ -69,18 +66,21 @@ impl<'a> Item<'a> {
         );
         Item {
             bus,
+            zbus,
             session,
             item_path,
-            item_interface,
             service_interface,
         }
     }
 
     pub fn is_locked(&self) -> ::Result<bool> {
-        self.item_interface.get_props("Locked")
-            .map(|locked| {
-                locked.inner().unwrap()
-            })
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
+        Ok(item_interface.locked()?)
     }
 
     pub fn ensure_unlocked(&self) -> ::Result<()> {
@@ -119,157 +119,153 @@ impl<'a> Item<'a> {
     }
 
     pub fn lock(&self) -> ::Result<()> {
-        println!("locked!");
         self.lock_or_unlock(LockAction::Lock)
     }
 
     pub fn get_attributes(&self) -> ::Result<Vec<(String, String)>> {
-        let res = self.item_interface.get_props("Attributes")?;
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
+        let attributes = item_interface.attributes()?;
+        let attributes: HashMap<String, String> = attributes.try_into().map_err(|_| SsError::Parse)?;
 
-        if let Array(attributes, _) = res {
-            return Ok(attributes.iter().map(|ref dict_entry| {
-                let entry: (&MessageItem, &MessageItem) = dict_entry.inner().unwrap();
-                let key: &String = entry.0.inner().unwrap();
-                let value: &String= entry.1.inner().unwrap();
-                (key.clone(), value.clone())
-            }).collect::<Vec<(String, String)>>())
-        } else {
-            Err(SsError::Parse)
-        }
+        let res = attributes.iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect::<Vec<(String, String)>>();
+
+        Ok(res)
     }
 
     // Probably best example of creating dict
     pub fn set_attributes(&self, attributes: Vec<(&str, &str)>) -> ::Result<()> {
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
         if !attributes.is_empty() {
-            let attributes_dict_entries: Vec<_> = attributes.iter().map(|&(ref key, ref value)| {
-                let dict_entry = (
-                    MessageItem::from(*key),
-                    MessageItem::from(*value)
-                );
-                MessageItem::from(dict_entry)
-            }).collect();
-            let attributes_dict = MessageItem::new_array(attributes_dict_entries).unwrap();
-            self.item_interface.set_props("Attributes", attributes_dict)
+            let attributes: HashMap<&str, &str> = attributes.into_iter().collect();
+            Ok(item_interface.set_attributes(attributes.into())?)
         } else {
             Ok(())
         }
     }
 
     pub fn get_label(&self) -> ::Result<String> {
-        let label = self.item_interface.get_props("Label")?;
-        if let Str(label_str) = label {
-            Ok(label_str)
-        } else {
-            Err(SsError::Parse)
-        }
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
+        Ok(item_interface.label()?)
     }
 
     pub fn set_label(&self, new_label: &str) -> ::Result<()> {
-        self.item_interface.set_props("Label", Str(new_label.to_owned()))
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
+        Ok(item_interface.set_label(new_label)?)
     }
 
     /// Deletes dbus object, but struct instance still exists (current implementation)
     pub fn delete(&self) -> ::Result<()> {
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
         //Because of ensure_unlocked, no prompt is really necessary
         //basically,you must explicitly unlock first
         self.ensure_unlocked()?;
-        let prompt = self.item_interface.method("Delete", vec![])?;
+        let prompt_path = item_interface.delete()?;
 
-        if let Some(&ObjectPath(ref prompt_path)) = prompt.get(0) {
-            if &**prompt_path != "/" {
-                    let del_res = exec_prompt(self.bus.clone(), prompt_path.clone())?;
-                    println!("{:?}", del_res);
-                    return Ok(());
-            } else {
-                return Ok(());
-            }
+        if prompt_path != "/" {
+                exec_prompt(self.bus.clone(), dbus::Path::new(prompt_path.clone()).unwrap())?;
+        } else {
+            return Ok(());
         }
         // If for some reason the patterns don't match, return error
         Err(SsError::Parse)
     }
 
     pub fn get_secret(&self) -> ::Result<Vec<u8>> {
-        let session = MessageItem::from(self.session.object_path.clone());
-        let res = self.item_interface.method("GetSecret", vec![session])?;
-        // No secret would be an error, so try! instead of option
-        let secret_struct = res
-            .get(0)
-            .ok_or(SsError::NoResult)?;
-
-        // parse out secret
-
-        // get "secret" field out of secret struct
-        // secret should always be index 2
-        let secret_vec: &Vec<_> = secret_struct.inner().unwrap();
-        let secret_dbus = secret_vec
-            .get(2)
-            .ok_or(SsError::NoResult)?;
-
-        // get array of dbus bytes
-        let secret_bytes_dbus: &Vec<_> = secret_dbus.inner().unwrap();
-
-        // map dbus bytes to u8
-        let secret: Vec<_> = secret_bytes_dbus.iter().map(|byte| byte.inner::<u8>().unwrap()).collect();
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
+        let session = zvariant::ObjectPath::try_from(self.session.object_path.to_string()).expect("remove this expect later");
+        dbg!(session.to_string());
+        let secret_struct = item_interface.get_secret(session)?;
+        dbg!("hit");
+        let secret = secret_struct.value;
 
         if !self.session.is_encrypted() {
             Ok(secret)
         } else {
             // get "param" (aes_iv) field out of secret struct
-            // param should always be index 1
-            let aes_iv_dbus = secret_vec
-                .get(1)
-                .ok_or(SsError::NoResult)?;
-            // get array of dbus bytes
-            let aes_iv_bytes_dbus: &Vec<_> = aes_iv_dbus.inner().unwrap();
-            // map dbus bytes to u8
-            let aes_iv: Vec<_> = aes_iv_bytes_dbus.iter().map(|byte| byte.inner::<u8>().unwrap()).collect();
+            let aes_iv = secret_struct.parameters;
 
             // decrypt
             let decrypted_secret = decrypt(&secret[..], &self.session.get_aes_key()[..], &aes_iv[..]).unwrap();
+
             Ok(decrypted_secret)
         }
     }
 
     pub fn get_secret_content_type(&self) -> ::Result<String> {
-        let session = MessageItem::from(self.session.object_path.clone());
-        let res = self.item_interface.method("GetSecret", vec![session])?;
-        // No secret content type would be a bug, so try!
-        let secret_struct = res
-            .get(0)
-            .ok_or(SsError::NoResult)?;
-
-        // parse out secret content type
-
-        // get "content type" field out of secret struct
-        // content type should always be index 3
-        let secret_vec: &Vec<_> = secret_struct.inner().unwrap();
-        let content_type_dbus = secret_vec
-            .get(3)
-            .ok_or(SsError::NoResult)?;
-
-        // Get value out of DBus value
-        let content_type: &String = content_type_dbus.inner().unwrap();
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
+        let session = zvariant::ObjectPath::try_from(self.session.object_path.to_string()).expect("remove this expect later");
+        let secret_struct = item_interface.get_secret(session)?;
+        let content_type = secret_struct.content_type;
 
         Ok(content_type.clone())
     }
 
     pub fn set_secret(&self, secret: &[u8], content_type: &str) -> ::Result<()> {
-        let secret_struct = format_secret(&self.session, secret, content_type)?;
-        self.item_interface.method("SetSecret", vec![secret_struct]).map(|_| ())
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
+        let secret_struct = format_secret_zbus(&self.session, secret, content_type)?;
+        Ok(item_interface.set_secret(secret_struct)?)
     }
 
     pub fn get_created(&self) -> ::Result<u64> {
-        self.item_interface.get_props("Created")
-            .map(|locked| {
-                locked.inner::<u64>().unwrap()
-            })
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
+        Ok(item_interface.created()?)
     }
 
     pub fn get_modified(&self) -> ::Result<u64> {
-        self.item_interface.get_props("Modified")
-            .map(|locked| {
-                locked.inner::<u64>().unwrap()
-            })
+        let item_interface = ItemInterfaceProxy::new_for(
+            &self.zbus,
+            SS_DBUS_NAME,
+            &self.item_path[..],
+            )
+            .unwrap();
+        Ok(item_interface.modified()?)
     }
 }
 
