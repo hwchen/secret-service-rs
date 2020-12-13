@@ -25,6 +25,7 @@
 use dbus;
 use std::error;
 use std::fmt;
+use zbus;
 
 /// Result type often returned from methods that have SsError.
 /// Fns in this library return ::Result<T> when using this alias.
@@ -35,6 +36,7 @@ pub type Result<T> = ::std::result::Result<T, SsError>;
 pub enum SsError {
     Crypto(String),
     Dbus(dbus::Error),
+    Zbus(zbus::Error),
     Locked,
     NoResult,
     Parse,
@@ -47,6 +49,7 @@ impl fmt::Display for SsError {
             // crypto error does not implement Display
             SsError::Crypto(_) => write!(f, "Crypto error: Invalid Length or Padding"),
             SsError::Dbus(ref err) => write!(f, "Dbus error: {}", err),
+            SsError::Zbus(ref err) => write!(f, "zbus error: {}", err),
             SsError::Locked => write!(f, "SS Error: object locked"),
             SsError::NoResult => write!(f, "SS error: result not returned from SS API"),
             SsError::Parse => write!(f, "SS error: could not parse Dbus output"),
@@ -60,6 +63,7 @@ impl error::Error for SsError {
         match *self {
             SsError::Crypto(_) => "crypto: Invalid Length or Padding",
             SsError::Dbus(ref err) => err.description(),
+            SsError::Zbus(ref err) => err.description(),
             SsError::Locked => "Object locked",
             SsError::NoResult => "Result not returned from SS API",
             SsError::Parse => "Error parsing Dbus output",
@@ -70,6 +74,7 @@ impl error::Error for SsError {
     fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             SsError::Dbus(ref err) => Some(err),
+            SsError::Zbus(ref err) => Some(err),
             _ => None,
         }
     }
@@ -93,3 +98,8 @@ impl From<dbus::Error> for SsError {
     }
 }
 
+impl From<zbus::Error> for SsError {
+    fn from(err: zbus::Error) -> SsError {
+        SsError::Zbus(err)
+    }
+}
