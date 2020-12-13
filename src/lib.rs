@@ -152,10 +152,14 @@ extern crate lazy_static;
 extern crate num;
 extern crate rand;
 extern crate sha2;
+extern crate zbus;
+extern crate zbus_macros;
+extern crate zvariant;
 
 mod collection;
 mod error;
 mod item;
+mod item_proxy;
 mod session;
 mod ss;
 mod ss_crypto;
