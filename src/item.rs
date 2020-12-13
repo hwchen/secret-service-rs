@@ -188,8 +188,8 @@ impl<'a> Item<'a> {
         self.ensure_unlocked()?;
         let prompt_path = item_interface.delete()?;
 
-        if prompt_path != "/" {
-                exec_prompt(self.bus.clone(), dbus::Path::new(prompt_path.clone()).unwrap())?;
+        if prompt_path.as_str() != "/" {
+                exec_prompt(self.bus.clone(), dbus::Path::new(prompt_path.as_str()).unwrap())?;
         } else {
             return Ok(());
         }

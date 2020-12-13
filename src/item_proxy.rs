@@ -10,7 +10,7 @@
 use serde::{Deserialize, Serialize};
 use zbus;
 use zbus_macros::dbus_proxy;
-use zvariant::{Dict, ObjectPath};
+use zvariant::{Dict, ObjectPath, OwnedObjectPath};
 use zvariant_derive::Type;
 
 /// This will derive ItemInterfaceProxy
@@ -18,9 +18,7 @@ use zvariant_derive::Type;
     interface = "org.freedesktop.Secret.Item",
 )]
 trait ItemInterface {
-    /// returns `Prompt` ObjectPath
-    /// TODO check with zbus maintaineres if ObjectPath should be allowed as result
-    fn delete(&self) -> zbus::Result<String>;
+    fn delete(&self) -> zbus::Result<OwnedObjectPath>;
 
     /// returns `Secret`
     fn get_secret(&self, session: ObjectPath) -> zbus::Result<SecretStruct>;
@@ -52,7 +50,7 @@ trait ItemInterface {
 
 #[derive(Debug, Serialize, Deserialize, Type)]
 pub struct SecretStruct {
-    pub(crate) session: zvariant::OwnedObjectPath,
+    pub(crate) session: OwnedObjectPath,
     pub(crate) parameters: Vec<u8>,
     pub(crate) value: Vec<u8>,
     pub(crate) content_type: String,
