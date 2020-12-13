@@ -23,7 +23,7 @@ trait ItemInterface {
     /// returns `Secret`
     fn get_secret(&self, session: ObjectPath) -> zbus::Result<SecretStruct>;
 
-    fn set_secret(&self, secret: SecretStruct) -> zbus::Result<()>;
+    fn set_secret(&self, secret: SecretStructInput) -> zbus::Result<()>;
 
     #[dbus_proxy(property)]
     fn locked(&self) -> zbus::fdo::Result<bool>;
@@ -54,4 +54,9 @@ pub struct SecretStruct {
     pub(crate) parameters: Vec<u8>,
     pub(crate) value: Vec<u8>,
     pub(crate) content_type: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Type)]
+pub struct SecretStructInput {
+    pub(crate) inner: SecretStruct,
 }

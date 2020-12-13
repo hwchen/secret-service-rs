@@ -21,7 +21,7 @@ use ss::{
     SS_INTERFACE_PROMPT,
 };
 use ss_crypto::encrypt;
-use item_proxy::SecretStruct;
+use item_proxy::{SecretStruct, SecretStructInput};
 
 use dbus::{
     BusName,
@@ -158,7 +158,7 @@ pub(crate) fn format_secret_zbus(
     session: &Session,
     secret: &[u8],
     content_type: &str
-    ) -> ::Result<SecretStruct>
+    ) -> ::Result<SecretStructInput>
 {
     let session_path = zvariant::ObjectPath::try_from(session.object_path.to_string()).expect("remove this");
     let content_type = content_type.to_owned();
@@ -174,23 +174,26 @@ pub(crate) fn format_secret_zbus(
         let parameters = aes_iv.to_vec();
         let value = encrypted_secret;
 
-        Ok(SecretStruct {
-            session: session_path.into(),
-            parameters,
-            value,
-            content_type
+        Ok(SecretStructInput {
+            inner: SecretStruct {
+                session: session_path.into(),
+                parameters,
+                value,
+                content_type,
+            }
         })
-
     } else {
         // just Plain for now
         let parameters = Vec::new();
         let value = secret.to_vec();
 
-        Ok(SecretStruct {
-            session: session_path.into(),
-            parameters,
-            value,
-            content_type
+        Ok(SecretStructInput {
+            inner: SecretStruct {
+                session: session_path.into(),
+                parameters,
+                value,
+                content_type,
+            }
         })
     }
 }

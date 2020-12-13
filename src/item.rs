@@ -205,9 +205,7 @@ impl<'a> Item<'a> {
             )
             .unwrap();
         let session = zvariant::ObjectPath::try_from(self.session.object_path.to_string()).expect("remove this expect later");
-        dbg!(session.to_string());
         let secret_struct = item_interface.get_secret(session)?;
-        dbg!("hit");
         let secret = secret_struct.value;
 
         if !self.session.is_encrypted() {
