@@ -21,7 +21,7 @@ use ss::{
     SS_INTERFACE_PROMPT,
 };
 use ss_crypto::encrypt;
-use item_proxy::{SecretStruct, SecretStructInput};
+use proxy::item::{SecretStruct, SecretStructInput};
 
 use dbus::{
     BusName,

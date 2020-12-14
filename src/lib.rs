@@ -161,7 +161,7 @@ extern crate zvariant_derive;
 mod collection;
 mod error;
 mod item;
-mod item_proxy;
+mod proxy;
 mod session;
 mod ss;
 mod ss_crypto;

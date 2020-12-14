@@ -6,7 +6,7 @@
 // copied, modified, or distributed except according to those terms.
 
 use error::SsError;
-use item_proxy::ItemInterfaceProxy;
+use proxy::item::ItemInterfaceProxy;
 use session::Session;
 use ss::{
     SS_DBUS_NAME,
