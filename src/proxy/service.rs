@@ -43,9 +43,10 @@ trait ServiceInterface {
     fn set_alias(&self, name: String, collection: ObjectPath) -> zbus::Result<()>;
 
     /// Returns collections
-    /// TODO patch zvariant to allow Vec<OwnedObjectPath>
+    // TODO Not sure why ObjectPath would be allowed but OwnedObjectPath would not be? Should Owned
+    // be preferred here?
     #[dbus_proxy(property)]
-    fn collections(&self) -> zbus::fdo::Result<zvariant::Array>;
+    fn collections(&self) -> zbus::fdo::Result<Vec<ObjectPath>>;
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
