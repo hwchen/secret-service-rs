@@ -13,6 +13,10 @@ use zbus_macros::dbus_proxy;
 use zvariant::{Dict, ObjectPath, OwnedObjectPath};
 use zvariant_derive::Type;
 
+use super::SecretStruct;
+
+/// A dbus proxy for speaking with secret service's `Item` Interface.
+///
 /// This will derive ItemInterfaceProxy
 #[dbus_proxy(
     interface = "org.freedesktop.Secret.Item",
@@ -32,6 +36,7 @@ trait ItemInterface {
     #[dbus_proxy(property)]
     fn attributes(&self) -> zbus::fdo::Result<Dict>;
 
+    // TODO change Dict to HashMap?
     #[dbus_proxy(property)]
     fn set_attributes(&self, attributes: Dict) -> zbus::fdo::Result<()>;
 
@@ -46,14 +51,6 @@ trait ItemInterface {
 
     #[dbus_proxy(property)]
     fn modified(&self) -> zbus::fdo::Result<u64>;
-}
-
-#[derive(Debug, Serialize, Deserialize, Type)]
-pub struct SecretStruct {
-    pub(crate) session: OwnedObjectPath,
-    pub(crate) parameters: Vec<u8>,
-    pub(crate) value: Vec<u8>,
-    pub(crate) content_type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]

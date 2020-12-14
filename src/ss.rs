@@ -16,7 +16,6 @@ pub const SS_PATH: &'static str            = "/org/freedesktop/secrets";
 // DBus Interfaces
 pub const SS_INTERFACE_SERVICE: &'static str      = "org.freedesktop.Secret.Service";
 pub const SS_INTERFACE_COLLECTION: &'static str   = "org.freedesktop.Secret.Collection";
-pub const SS_INTERFACE_ITEM: &'static str         = "org.freedesktop.Secret.Item";
 pub const SS_INTERFACE_PROMPT: &'static str       = "org.freedesktop.Secret.Prompt";
 
 // Item Properties
