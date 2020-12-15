@@ -25,9 +25,9 @@ use super::SecretStruct;
     interface = "org.freedesktop.Secret.Service",
 )]
 trait ServiceInterface {
-    fn open_session(&self, algorithm: String, input: Value) -> zbus::Result<OpenSessionResult>;
+    fn open_session(&self, algorithm: &str, input: Value) -> zbus::Result<OpenSessionResult>;
 
-    fn create_collection(&self, properties: HashMap<String, Value>, alias: String) -> zbus::Result<CreateCollectionResult>;
+    fn create_collection(&self, properties: HashMap<String, Value>, alias: &str) -> zbus::Result<CreateCollectionResult>;
 
     fn search_items(&self, attributes: HashMap<String, String>) -> zbus::Result<SearchItemsResult>;
 
@@ -38,9 +38,9 @@ trait ServiceInterface {
     fn get_secrets(&self, objects: Vec<ObjectPath>) -> zbus::Result<HashMap<OwnedObjectPath, SecretStruct>>;
 
     /// Returns collection
-    fn read_alias(&self, name: String) -> zbus::Result<OwnedObjectPath>;
+    fn read_alias(&self, name: &str) -> zbus::Result<OwnedObjectPath>;
 
-    fn set_alias(&self, name: String, collection: ObjectPath) -> zbus::Result<()>;
+    fn set_alias(&self, name: &str, collection: ObjectPath) -> zbus::Result<()>;
 
     /// Returns collections
     // TODO Not sure why ObjectPath would be allowed but OwnedObjectPath would not be? Should Owned
