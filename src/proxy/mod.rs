@@ -8,6 +8,7 @@
 pub mod collection;
 pub mod item;
 pub mod service;
+pub mod session;
 
 use serde::{Deserialize, Serialize};
 use zvariant::OwnedObjectPath;

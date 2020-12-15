@@ -16,9 +16,9 @@ use zvariant_derive::Type;
 
 use super::SecretStruct;
 
-/// A dbus proxy for speaking with secret service's `Service` Interface.
+/// A dbus proxy for speaking with secret service's `Collection` Interface.
 ///
-/// This will derive ServiceInterfaceProxy
+/// This will derive CollectionInterfaceProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
 #[dbus_proxy(
