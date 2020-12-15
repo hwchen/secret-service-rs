@@ -5,19 +5,22 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-//! A dbus proxy for speaking with secret service's `Session` Interface.
+//! A dbus proxy for speaking with secret service's `Prompt` Interface.
 
 use zbus;
 use zbus_macros::dbus_proxy;
 
-/// A dbus proxy for speaking with secret service's `Session` Interface.
+/// A dbus proxy for speaking with secret service's `Prompt` Interface.
 ///
-/// This will derive SessionInterfaceProxy
+/// This will derive PromptInterfaceProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
 #[dbus_proxy(
-    interface = "org.freedesktop.Secret.Session",
+    interface = "org.freedesktop.Secret.Prompt",
 )]
-trait SessionInterface {
-    fn close(&self) -> zbus::Result<()>;
+trait PromptInterface {
+    fn prompt(&self, window_id: &str) -> zbus::Result<()>;
+
+    fn dismiss(&self) -> zbus::Result<()>;
 }
+
