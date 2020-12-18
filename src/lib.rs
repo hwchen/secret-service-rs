@@ -276,8 +276,8 @@ impl<'a> SecretService<'a> {
 
     /// Creates a new collection with a label and an alias.
     pub fn create_collection(&self, label: &str, alias: &str) -> ::Result<Collection> {
-        let mut properties: HashMap<String, Value> = HashMap::new();
-        properties.insert(SS_ITEM_LABEL.into(), label.into());
+        let mut properties: HashMap<&str, Value> = HashMap::new();
+        properties.insert(SS_ITEM_LABEL, label.into());
 
         let created_collection = self.service_interface.create_collection(
             properties,

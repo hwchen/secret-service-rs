@@ -31,7 +31,7 @@ trait CollectionInterface {
     // TODO why is ownedobjectpath ok here? is it because it's not a property?
     fn search_items(&self, attributes: HashMap<&str, &str>) -> zbus::Result<Vec<OwnedObjectPath>>;
 
-    fn create_item(&self, properties: HashMap<String, Value>, secret: SecretStruct, replace: bool) -> zbus::Result<CreateItemResult>;
+    fn create_item(&self, properties: HashMap<&str, Value>, secret: SecretStruct, replace: bool) -> zbus::Result<CreateItemResult>;
 
     #[dbus_proxy(property)]
     fn items(&self) -> zbus::fdo::Result<Vec<ObjectPath>>;

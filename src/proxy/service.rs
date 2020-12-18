@@ -29,7 +29,7 @@ use super::SecretStruct;
 trait ServiceInterface {
     fn open_session(&self, algorithm: &str, input: Value) -> zbus::Result<OpenSessionResult>;
 
-    fn create_collection(&self, properties: HashMap<String, Value>, alias: &str) -> zbus::Result<CreateCollectionResult>;
+    fn create_collection(&self, properties: HashMap<&str, Value>, alias: &str) -> zbus::Result<CreateCollectionResult>;
 
     fn search_items(&self, attributes: HashMap<&str, &str>) -> zbus::Result<SearchItemsResult>;
 

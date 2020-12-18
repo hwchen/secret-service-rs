@@ -13,6 +13,7 @@ use session::Session;
 use ss::{
     SS_DBUS_NAME,
     SS_ITEM_LABEL,
+    SS_ITEM_ATTRIBUTES,
 };
 use util::{
     exec_prompt,
@@ -23,7 +24,7 @@ use util::{
 
 use std::collections::HashMap;
 use std::convert::TryInto;
-use zvariant::{ObjectPath, OwnedObjectPath, Value};
+use zvariant::{Dict, ObjectPath, OwnedObjectPath, Value};
 
 // Collection struct.
 // Should always be created from the SecretService entry point,
@@ -162,10 +163,13 @@ impl<'a> Collection<'a> {
     {
         let secret_struct = format_secret(&self.session, secret, content_type)?;
 
-        let mut properties: HashMap<String, Value> = attributes.into_iter()
-            .map(|(k, v)| (k.into(), v.into()))
-            .collect();
-        properties.insert(SS_ITEM_LABEL.into(), label.into());
+        let mut properties: HashMap<&str, Value> = HashMap::new();
+        // TODO from Vec<(_,_)> directly to Dict?
+        let attributes: HashMap<&str, &str> = attributes.into_iter().collect();
+        let attributes: Dict = attributes.into();
+
+        properties.insert(SS_ITEM_LABEL, label.into());
+        properties.insert(SS_ITEM_ATTRIBUTES, attributes.into());
 
         let created_item = self.collection_interface.create_item(
             properties,
