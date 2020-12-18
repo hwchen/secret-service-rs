@@ -294,7 +294,7 @@ impl<'a> SecretService<'a> {
                 let prompt_path = created_collection.prompt;
 
                 // Exec prompt and parse result
-                let prompt_res = exec_prompt(self.conn.clone(), prompt_path.clone())?;
+                let prompt_res = exec_prompt(self.conn.clone(), &prompt_path)?;
                 prompt_res.try_into()?
             } else {
                 // if not, just return created path

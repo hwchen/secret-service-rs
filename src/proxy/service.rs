@@ -33,9 +33,9 @@ trait ServiceInterface {
 
     fn search_items(&self, attributes: HashMap<&str, &str>) -> zbus::Result<SearchItemsResult>;
 
-    fn unlock(&self, objects: Vec<ObjectPath>) -> zbus::Result<LockActionResult>;
+    fn unlock(&self, objects: Vec<&ObjectPath>) -> zbus::Result<LockActionResult>;
 
-    fn lock(&self, objects: Vec<ObjectPath>) -> zbus::Result<LockActionResult>;
+    fn lock(&self, objects: Vec<&ObjectPath>) -> zbus::Result<LockActionResult>;
 
     fn get_secrets(&self, objects: Vec<ObjectPath>) -> zbus::Result<HashMap<OwnedObjectPath, SecretStruct>>;
 

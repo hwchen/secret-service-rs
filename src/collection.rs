@@ -76,7 +76,7 @@ impl<'a> Collection<'a> {
         lock_or_unlock(
             self.conn.clone(),
             &self.service_interface,
-            self.collection_path.clone().into(),
+            &self.collection_path,
             LockAction::Unlock,
         )
     }
@@ -85,7 +85,7 @@ impl<'a> Collection<'a> {
         lock_or_unlock(
             self.conn.clone(),
             &self.service_interface,
-            self.collection_path.clone().into(),
+            &self.collection_path,
             LockAction::Lock,
         )
     }
@@ -98,7 +98,7 @@ impl<'a> Collection<'a> {
         let prompt_path = self.collection_interface.delete()?;
 
         if prompt_path.as_str() != "/" {
-                exec_prompt(self.conn.clone(), prompt_path)?;
+                exec_prompt(self.conn.clone(), &prompt_path)?;
         } else {
             return Ok(());
         }
@@ -185,7 +185,7 @@ impl<'a> Collection<'a> {
                 let prompt_path = created_item.prompt;
 
                 // Exec prompt and parse result
-                let prompt_res = exec_prompt(self.conn.clone(), prompt_path.clone())?;
+                let prompt_res = exec_prompt(self.conn.clone(), &prompt_path)?;
                 prompt_res.try_into()?
             } else {
                 // if not, just return created path

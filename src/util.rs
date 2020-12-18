@@ -25,7 +25,7 @@ use proxy::item::SecretStructInput;
 
 use rand::{Rng, rngs::OsRng};
 use std::convert::TryFrom;
-use zvariant::{ObjectPath, OwnedObjectPath};
+use zvariant::ObjectPath;
 
 // Helper enum for locking
 pub(crate) enum LockAction {
@@ -36,7 +36,7 @@ pub(crate) enum LockAction {
 pub(crate) fn lock_or_unlock(
     conn: zbus::Connection,
     service_interface: &ServiceInterfaceProxy,
-    object_path: ObjectPath,
+    object_path: &ObjectPath,
     lock_action: LockAction
     ) -> ::Result<()>
 {
@@ -48,7 +48,7 @@ pub(crate) fn lock_or_unlock(
     };
 
     if lock_action_res.object_paths.is_empty() {
-        exec_prompt(conn.clone(), lock_action_res.prompt)?;
+        exec_prompt(conn.clone(), &lock_action_res.prompt)?;
     }
     Ok(())
 }
@@ -97,7 +97,7 @@ pub(crate) fn format_secret(
     }
 }
 
-pub fn exec_prompt(conn: zbus::Connection, prompt: OwnedObjectPath) -> ::Result<zvariant::OwnedValue> {
+pub fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvariant::OwnedValue> {
     let prompt_interface = PromptInterfaceProxy::new_for_owned(
         conn.clone(),
         SS_DBUS_NAME.to_owned(),

@@ -69,7 +69,7 @@ impl<'a> Item<'a> {
         lock_or_unlock(
             self.conn.clone(),
             &self.service_interface,
-            self.item_path.clone().into(),
+            &self.item_path,
             LockAction::Unlock,
         )
     }
@@ -78,17 +78,16 @@ impl<'a> Item<'a> {
         lock_or_unlock(
             self.conn.clone(),
             &self.service_interface,
-            self.item_path.clone().into(),
+            &self.item_path,
             LockAction::Lock,
         )
     }
 
     pub fn get_attributes(&self) -> ::Result<Vec<(String, String)>> {
         let attributes = self.item_interface.attributes()?;
-        let attributes: HashMap<String, String> = attributes.try_into().map_err(|_| SsError::Parse)?;
+        let attributes: HashMap<String, String> = attributes.try_into()?;
 
-        let res = attributes.iter()
-            .map(|(k, v)| (k.clone(), v.clone()))
+        let res = attributes.into_iter()
             .collect::<Vec<(String, String)>>();
 
         Ok(res)
@@ -120,7 +119,7 @@ impl<'a> Item<'a> {
         let prompt_path = self.item_interface.delete()?;
 
         if prompt_path.as_str() != "/" {
-                exec_prompt(self.conn.clone(), prompt_path)?;
+                exec_prompt(self.conn.clone(), &prompt_path)?;
         } else {
             return Ok(());
         }
