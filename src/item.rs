@@ -71,8 +71,7 @@ impl<'a> Item<'a> {
             &self.service_interface,
             self.item_path.clone().into(),
             LockAction::Unlock,
-        );
-        Ok(())
+        )
     }
 
     pub fn lock(&self) -> ::Result<()> {
@@ -81,8 +80,7 @@ impl<'a> Item<'a> {
             &self.service_interface,
             self.item_path.clone().into(),
             LockAction::Lock,
-        );
-        Ok(())
+        )
     }
 
     pub fn get_attributes(&self) -> ::Result<Vec<(String, String)>> {

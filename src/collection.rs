@@ -78,8 +78,7 @@ impl<'a> Collection<'a> {
             &self.service_interface,
             self.collection_path.clone().into(),
             LockAction::Unlock,
-        );
-        Ok(())
+        )
     }
 
     pub fn lock(&self) -> ::Result<()> {
@@ -88,8 +87,7 @@ impl<'a> Collection<'a> {
             &self.service_interface,
             self.collection_path.clone().into(),
             LockAction::Lock,
-        );
-        Ok(())
+        )
     }
 
     /// Deletes dbus object, but struct instance still exists (current implementation)
