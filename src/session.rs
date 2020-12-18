@@ -18,7 +18,7 @@
 //      This encoding uses the aes_key from the associated Session.
 
 use proxy::service::ServiceInterfaceProxy;
-use ss::ALGORITHM_PLAIN;
+use ss::{ALGORITHM_DH, ALGORITHM_PLAIN};
 
 use sha2::Sha256;
 use hkdf::Hkdf;
@@ -95,7 +95,7 @@ impl Session {
                 let public_key_bytes = public_key.to_bytes_be();
 
                 let session= service_interface.open_session(
-                    ALGORITHM_PLAIN,
+                    ALGORITHM_DH,
                     public_key_bytes.as_slice().into(),
                 )?;
                 let server_public_key: Vec<_> = session.output.try_into()?;
