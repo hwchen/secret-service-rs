@@ -145,7 +145,6 @@
 
 extern crate aes;
 extern crate block_modes;
-extern crate dbus;
 extern crate hkdf;
 #[macro_use]
 extern crate lazy_static;
