@@ -62,21 +62,7 @@ impl fmt::Display for SsError {
 }
 
 impl error::Error for SsError {
-    fn description(&self) -> &str {
-        match *self {
-            SsError::Crypto(_) => "crypto: Invalid Length or Padding",
-            SsError::Zbus(ref err) => err.description(),
-            SsError::ZbusMsg(ref err) => err.description(),
-            SsError::ZbusFdo(ref err) => err.description(),
-            SsError::Zvariant(ref err) => err.description(),
-            SsError::Locked => "Object locked",
-            SsError::NoResult => "Result not returned from SS API",
-            SsError::Parse => "Error parsing Dbus output",
-            SsError::Prompt => "Prompt Dismissed",
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn error::Error> {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match *self {
             SsError::Zbus(ref err) => Some(err),
             SsError::ZbusMsg(ref err) => Some(err),
