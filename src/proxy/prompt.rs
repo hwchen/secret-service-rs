@@ -7,8 +7,11 @@
 
 //! A dbus proxy for speaking with secret service's `Prompt` Interface.
 
+use serde::{Deserialize, Serialize};
 use zbus;
 use zbus_macros::dbus_proxy;
+use zvariant::OwnedValue;
+use zvariant_derive::Type;
 
 /// A dbus proxy for speaking with secret service's `Prompt` Interface.
 ///
@@ -24,3 +27,8 @@ trait PromptInterface {
     fn dismiss(&self) -> zbus::Result<()>;
 }
 
+#[derive(Debug, Serialize, Deserialize, Type)]
+pub struct CompletedSignal {
+    pub(crate) dismissed: bool,
+    pub(crate) result: OwnedValue,
+}

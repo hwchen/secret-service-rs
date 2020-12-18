@@ -170,31 +170,15 @@ mod util;
 pub use collection::Collection;
 pub use error::{Result, SsError};
 pub use item::Item;
-use util::{Interface, exec_prompt};
+use proxy::service::ServiceInterfaceProxy;
+use util::exec_prompt;
 use session::Session;
 pub use session::EncryptionType;
-use ss::{
-    SS_DBUS_NAME,
-    SS_INTERFACE_SERVICE,
-    SS_PATH,
-};
+use ss::SS_ITEM_LABEL;
 
-use dbus::{
-    BusName,
-    BusType,
-    Connection,
-    MessageItem,
-    Path,
-};
-use dbus::Interface as InterfaceName;
-use dbus::MessageItem::{
-    Array,
-    DictEntry,
-    ObjectPath,
-    Str,
-    Variant,
-};
-use std::rc::Rc;
+use std::collections::HashMap;
+use std::convert::TryInto;
+use zvariant::{ObjectPath,Value};
 
 /// Secret Service Struct.
 ///
@@ -205,15 +189,13 @@ use std::rc::Rc;
 /// (`EncryptionType::Plain` or `EncryptionType::Dh`)
 ///
 // Interfaces are the dbus namespace for methods
-#[derive(Debug)]
-pub struct SecretService {
-    bus: Rc<Connection>,
-    zbus: zbus::Connection,
+pub struct SecretService<'a> {
+    conn: zbus::Connection,
     session: Session,
-    service_interface: Interface,
+    service_interface: ServiceInterfaceProxy<'a>,
 }
 
-impl SecretService {
+impl<'a> SecretService<'a> {
     /// Create a new `SecretService` instance
     ///
     /// # Example
@@ -224,19 +206,12 @@ impl SecretService {
     /// let ss = SecretService::new(EncryptionType::Dh).unwrap();
     /// ```
     pub fn new(encryption: EncryptionType) -> ::Result<Self> {
-        let bus = Rc::new(Connection::get_private(BusType::Session)?);
-        let zbus = zbus::Connection::new_session().unwrap();
-        let session = Session::new(bus.clone(), encryption)?;
-        let service_interface = Interface::new(
-            bus.clone(),
-            BusName::new(SS_DBUS_NAME).unwrap(),
-            Path::new(SS_PATH).unwrap(),
-            InterfaceName::new(SS_INTERFACE_SERVICE).unwrap()
-        );
+        let conn = zbus::Connection::new_session()?;
+        let service_interface = ServiceInterfaceProxy::new(&conn).unwrap();
+        let session = Session::new(&service_interface, encryption)?;
 
         Ok(SecretService {
-            bus: bus.clone(),
-            zbus: zbus.clone(),
+            conn,
             session,
             service_interface,
         })
@@ -244,15 +219,13 @@ impl SecretService {
 
     /// Get all collections
     pub fn get_all_collections(&self) -> ::Result<Vec<Collection>> {
-        let res = self.service_interface.get_props("Collections")?;
-        let collections: &Vec<_> = res.inner().unwrap();
-        Ok(collections.iter().map(|object_path| {
-            let path: &Path = object_path.inner().unwrap();
+        let collections = self.service_interface.collections()?;
+        Ok(collections.into_iter().map(|object_path| {
             Collection::new(
-                self.bus.clone(),
-                self.zbus.clone(),
+                self.conn.clone(),
                 &self.session,
-                path.clone()
+                &self.service_interface,
+                object_path.into(),
             )
         }).collect::<Vec<_>>())
     }
@@ -262,24 +235,18 @@ impl SecretService {
     /// is also a specific method for getting the collection
     /// by default aliasl
     pub fn get_collection_by_alias(&self, alias: &str) -> ::Result<Collection>{
-        let name = Str(alias.to_owned());
+        let object_path = self.service_interface.read_alias(alias)?;
 
-        let res = self.service_interface.method("ReadAlias", vec![name])?;
-        if let ObjectPath(ref path) = res[0] {
-            if &**path == "/" {
-                Err(SsError::NoResult)
-            } else {
-                Ok(Collection::new(
-                    self.bus.clone(),
-                    self.zbus.clone(),
-                    &self.session,
-                    path.clone()
-                ))
-            }
+        if object_path.as_str() == "/" {
+            Err(SsError::NoResult)
         } else {
-            Err(SsError::Parse)
+            Ok(Collection::new(
+                self.conn.clone(),
+                &self.session,
+                &self.service_interface,
+                object_path.into(),
+            ))
         }
-
     }
 
     /// Get default collection.
@@ -299,123 +266,76 @@ impl SecretService {
             .or_else(|_| {
                 self.get_collection_by_alias("session")
             }).or_else(|_| {
-                let collections = self.get_all_collections()?;
-                collections
-                    .get(0)
-                    .ok_or(SsError::NoResult)
-                    .map(|collection| collection.clone())
+                let mut collections = self.get_all_collections()?;
+                if collections.is_empty() {
+                    Err(SsError::NoResult)
+                } else {
+                    Ok(collections.swap_remove(0))
+                }
             })
     }
 
     /// Creates a new collection with a label and an alias.
     pub fn create_collection(&self, label: &str, alias: &str) -> ::Result<Collection> {
-        // Set up dbus args
-        let label = DictEntry(
-            Box::new(Str("org.freedesktop.Secret.Collection.Label".to_owned())),
-            Box::new(Variant(Box::new(Str(label.to_owned()))))
-        );
-        let label_type_sig = label.type_sig();
-        let properties = Array(vec![label], label_type_sig);
-        let alias = Str(alias.to_owned());
+        let mut properties: HashMap<String, Value> = HashMap::new();
+        properties.insert(SS_ITEM_LABEL.into(), label.into());
 
-        // Call the dbus method
-        let res = self.service_interface.method("CreateCollection", vec![properties, alias])?;
+        let created_collection = self.service_interface.create_collection(
+            properties,
+            alias,
+        )?;
 
-        // parse the result
-        let collection_path: Path = {
+        // This prompt handling is practically identical to create_collection
+        let collection_path: ObjectPath = {
             // Get path of created object
-            let created_object_path = res
-                .get(0)
-                .ok_or(SsError::NoResult)?;
-            let created_path: &Path = created_object_path.inner().unwrap();
+            let created_path = created_collection.collection;
 
             // Check if that path is "/", if so should execute a prompt
-            if &**created_path == "/" {
-                let prompt_object_path = res
-                    .get(1)
-                    .ok_or(SsError::NoResult)?;
-                let prompt_path: &Path = prompt_object_path.inner().unwrap();
+            if created_path.as_str() == "/" {
+                let prompt_path = created_collection.prompt;
 
                 // Exec prompt and parse result
-                let var_obj_path = exec_prompt(self.bus.clone(), prompt_path.clone())?;
-                let obj_path: &MessageItem = var_obj_path.inner().unwrap();
-                let path: &Path = obj_path.inner().unwrap();
-                path.clone()
+                let prompt_res = exec_prompt(self.conn.clone(), prompt_path.clone())?;
+                prompt_res.try_into()?
             } else {
                 // if not, just return created path
-                created_path.clone()
+                created_path.into()
             }
         };
 
         Ok(Collection::new(
-            self.bus.clone(),
-            self.zbus.clone(),
+            self.conn.clone(),
             &self.session,
-            collection_path.clone()
+            &self.service_interface,
+            collection_path.into(),
         ))
     }
 
     /// Searches all items by attributes
     pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> ::Result<Vec<Item>> {
-        // Build dbus args
-        let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
-            let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
-            MessageItem::from(dict_entry)
-        }).collect();
-        let attr_type_sig = DictEntry(
-            Box::new(Str("".to_owned())),
-            Box::new(Str("".to_owned()))
-        ).type_sig();
-        let attr_dbus_dict = Array(
-            attr_dict_entries,
-            attr_type_sig
-        );
+        let items = self.service_interface.search_items(attributes.into_iter().collect())?;
 
-        // Method call to SearchItem
-        let res = self.service_interface.method("SearchItems", vec![attr_dbus_dict])?;
+        // map array of item paths to Item
+        let res = items.locked.into_iter().chain(items.unlocked.into_iter())
+            .map(|item_path| {
+                Item::new(
+                    self.conn.clone(),
+                    &self.session,
+                    &self.service_interface,
+                    item_path.into(),
+                )
+            })
+            .collect();
 
-        // The result is unlocked and unlocked items.
-        // Currently, I just concatenate and return all.
-        let mut unlocked = match res.get(0) {
-            Some(ref array) => {
-                match **array {
-                    Array(ref v, _) => v.clone(),
-                    _ => Vec::new(),
-                }
-            }
-            _ => Vec::new(),
-        };
-        let locked = match res.get(1) {
-            Some(ref array) => {
-                match **array {
-                    Array(ref v, _) => v.clone(),
-                    _ => Vec::new(),
-                }
-            }
-            _ => Vec::new(),
-        };
-        unlocked.extend(locked);
-        let items = unlocked;
-
-        // Map the array of item pahts to array of Item
-        Ok(items.iter().map(|item_path| {
-            // extract path from objectPath
-            let path: &Path = item_path.inner().unwrap();
-
-            Item::new(
-                self.bus.clone(),
-                self.zbus.clone(),
-                &self.session,
-                path.clone(),
-            )
-        }).collect::<Vec<_>>())
+        Ok(res)
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use dbus::Path;
+    use std::convert::TryFrom;
+    use zvariant::ObjectPath;
 
     #[test]
     fn should_create_secret_service() {
@@ -429,7 +349,7 @@ mod test {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collections = ss.get_all_collections().unwrap();
         assert!(collections.len() >= 1);
-        println!("{:?}", collections);
+        //println!("{:?}", collections);
         println!("# of collections {:?}", collections.len());
         //assert!(false);
     }
@@ -467,10 +387,10 @@ mod test {
     fn should_create_and_delete_collection() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let test_collection = ss.create_collection("Test", "").unwrap();
-        println!("{:?}", test_collection);
+        //println!("{:?}", test_collection);
         assert_eq!(
-            test_collection.collection_path,
-            Path::new("/org/freedesktop/secrets/collection/Test").unwrap()
+            ObjectPath::from(test_collection.collection_path.clone()),
+            ObjectPath::try_from("/org/freedesktop/secrets/collection/Test").unwrap()
         );
         test_collection.delete().unwrap();
     }

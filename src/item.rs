@@ -7,71 +7,45 @@
 
 use error::SsError;
 use proxy::item::ItemInterfaceProxy;
+use proxy::service::ServiceInterfaceProxy;
 use session::Session;
-use ss::{
-    SS_DBUS_NAME,
-    SS_INTERFACE_SERVICE,
-    SS_PATH,
-};
+use ss::SS_DBUS_NAME;
 use ss_crypto::decrypt;
 use util::{
     exec_prompt,
-    format_secret_zbus,
-    Interface,
+    format_secret,
+    lock_or_unlock,
+    LockAction,
 };
 
-use dbus::{
-    BusName,
-    Connection,
-    MessageItem,
-    Path,
-};
-use dbus::MessageItem::{
-    Array,
-    ObjectPath,
-};
-use dbus::Interface as InterfaceName;
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
-use std::rc::Rc;
-
-// Helper enum for locking
-enum LockAction {
-    Lock,
-    Unlock,
-}
+use zvariant::OwnedObjectPath;
 
 pub struct Item<'a> {
-    // TODO: Implement method for path?
-    bus: Rc<Connection>,
-    zbus: zbus::Connection,
+    conn: zbus::Connection,
     session: &'a Session,
-    pub item_path: Path,
+    pub item_path: OwnedObjectPath,
     item_interface: ItemInterfaceProxy<'a>,
-    service_interface: Interface,
+    service_interface: &'a ServiceInterfaceProxy<'a>,
 }
 
 impl<'a> Item<'a> {
-    pub fn new(bus: Rc<Connection>,
-               zbus: zbus::Connection,
-               session: &'a Session,
-               item_path: Path
-               ) -> Self {
+    pub fn new(
+        conn: zbus::Connection,
+        session: &'a Session,
+        service_interface: &'a ServiceInterfaceProxy<'a>,
+        item_path: OwnedObjectPath,
+        ) -> Self
+    {
         let item_interface = ItemInterfaceProxy::new_for_owned(
-            zbus.clone(),
+            conn.clone(),
             SS_DBUS_NAME.to_owned(),
             item_path.to_string(),
             )
             .unwrap();
-        let service_interface = Interface::new(
-            bus.clone(),
-            BusName::new(SS_DBUS_NAME).unwrap(),
-            Path::new(SS_PATH).unwrap(),
-            InterfaceName::new(SS_INTERFACE_SERVICE).unwrap()
-        );
         Item {
-            bus,
-            zbus,
+            conn: conn.clone(),
             session,
             item_path,
             item_interface,
@@ -91,35 +65,24 @@ impl<'a> Item<'a> {
         }
     }
 
-    //Helper function for locking and unlocking
-    // TODO: refactor into utils? It should be same as collection
-    fn lock_or_unlock(&self, lock_action: LockAction) -> ::Result<()> {
-        let objects = MessageItem::new_array(
-            vec![ObjectPath(self.item_path.clone())]
-        ).unwrap();
-
-        let lock_action_str = match lock_action {
-            LockAction::Lock => "Lock",
-            LockAction::Unlock => "Unlock",
-        };
-
-        let res = self.service_interface.method(lock_action_str, vec![objects])?;
-        if let Some(&Array(ref unlocked, _)) = res.get(0) {
-            if unlocked.is_empty() {
-                if let Some(&ObjectPath(ref path)) = res.get(1) {
-                    exec_prompt(self.bus.clone(), path.clone())?;
-                }
-            }
-        }
+    pub fn unlock(&self) -> ::Result<()> {
+        lock_or_unlock(
+            self.conn.clone(),
+            &self.service_interface,
+            self.item_path.clone().into(),
+            LockAction::Unlock,
+        );
         Ok(())
     }
 
-    pub fn unlock(&self) -> ::Result<()> {
-        self.lock_or_unlock(LockAction::Unlock)
-    }
-
     pub fn lock(&self) -> ::Result<()> {
-        self.lock_or_unlock(LockAction::Lock)
+        lock_or_unlock(
+            self.conn.clone(),
+            &self.service_interface,
+            self.item_path.clone().into(),
+            LockAction::Lock,
+        );
+        Ok(())
     }
 
     pub fn get_attributes(&self) -> ::Result<Vec<(String, String)>> {
@@ -159,7 +122,7 @@ impl<'a> Item<'a> {
         let prompt_path = self.item_interface.delete()?;
 
         if prompt_path.as_str() != "/" {
-                exec_prompt(self.bus.clone(), dbus::Path::new(prompt_path.as_str()).unwrap())?;
+                exec_prompt(self.conn.clone(), prompt_path)?;
         } else {
             return Ok(());
         }
@@ -194,7 +157,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn set_secret(&self, secret: &[u8], content_type: &str) -> ::Result<()> {
-        let secret_struct = format_secret_zbus(&self.session, secret, content_type)?;
+        let secret_struct = format_secret(&self.session, secret, content_type)?;
         Ok(self.item_interface.set_secret(secret_struct)?)
     }
 

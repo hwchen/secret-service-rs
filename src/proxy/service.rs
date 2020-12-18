@@ -23,17 +23,19 @@ use super::SecretStruct;
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
 #[dbus_proxy(
     interface = "org.freedesktop.Secret.Service",
+    default_service = "org.freedesktop.secrets",
+    default_path = "/org/freedesktop/secrets",
 )]
 trait ServiceInterface {
     fn open_session(&self, algorithm: &str, input: Value) -> zbus::Result<OpenSessionResult>;
 
     fn create_collection(&self, properties: HashMap<String, Value>, alias: &str) -> zbus::Result<CreateCollectionResult>;
 
-    fn search_items(&self, attributes: HashMap<String, String>) -> zbus::Result<SearchItemsResult>;
+    fn search_items(&self, attributes: HashMap<&str, &str>) -> zbus::Result<SearchItemsResult>;
 
-    fn unlock(&self, objects: Vec<ObjectPath>) -> zbus::Result<UnlockResult>;
+    fn unlock(&self, objects: Vec<ObjectPath>) -> zbus::Result<LockActionResult>;
 
-    fn lock(&self, objects: Vec<ObjectPath>) -> zbus::Result<LockResult>;
+    fn lock(&self, objects: Vec<ObjectPath>) -> zbus::Result<LockActionResult>;
 
     fn get_secrets(&self, objects: Vec<ObjectPath>) -> zbus::Result<HashMap<OwnedObjectPath, SecretStruct>>;
 
@@ -68,13 +70,7 @@ pub struct SearchItemsResult {
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
-pub struct UnlockResult {
-    pub(crate) unlocked: Vec<OwnedObjectPath>,
-    pub(crate) prompt: OwnedObjectPath,
-}
-
-#[derive(Debug, Serialize, Deserialize, Type)]
-pub struct LockResult {
-    pub(crate) locked: Vec<OwnedObjectPath>,
+pub struct LockActionResult {
+    pub(crate) object_paths: Vec<OwnedObjectPath>,
     pub(crate) prompt: OwnedObjectPath,
 }

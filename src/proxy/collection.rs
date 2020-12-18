@@ -29,7 +29,7 @@ trait CollectionInterface {
     fn delete(&self) -> zbus::Result<OwnedObjectPath>;
 
     // TODO why is ownedobjectpath ok here? is it because it's not a property?
-    fn search_items(&self, attributes: HashMap<String, String>) -> zbus::Result<Vec<OwnedObjectPath>>;
+    fn search_items(&self, attributes: HashMap<&str, &str>) -> zbus::Result<Vec<OwnedObjectPath>>;
 
     fn create_item(&self, properties: HashMap<String, Value>, secret: SecretStruct, replace: bool) -> zbus::Result<CreateItemResult>;
 
@@ -41,6 +41,9 @@ trait CollectionInterface {
 
     #[dbus_proxy(property)]
     fn set_label(&self, new_label: &str) -> zbus::fdo::Result<()>;
+
+    #[dbus_proxy(property)]
+    fn locked(&self) -> zbus::fdo::Result<bool>;
 
     #[dbus_proxy(property)]
     fn created(&self) -> zbus::fdo::Result<u64>;
