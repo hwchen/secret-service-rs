@@ -19,7 +19,7 @@ use util::{
 };
 
 use std::collections::HashMap;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryInto;
 use zvariant::OwnedObjectPath;
 
 pub struct Item<'a> {
@@ -128,8 +128,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn get_secret(&self) -> ::Result<Vec<u8>> {
-        let session = zvariant::ObjectPath::try_from(self.session.object_path.to_string()).expect("remove this expect later");
-        let secret_struct = self.item_interface.get_secret(session)?;
+        let secret_struct = self.item_interface.get_secret(&self.session.object_path)?;
         let secret = secret_struct.value;
 
         if !self.session.is_encrypted() {
@@ -146,8 +145,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn get_secret_content_type(&self) -> ::Result<String> {
-        let session = zvariant::ObjectPath::try_from(self.session.object_path.to_string()).expect("remove this expect later");
-        let secret_struct = self.item_interface.get_secret(session)?;
+        let secret_struct = self.item_interface.get_secret(&self.session.object_path)?;
         let content_type = secret_struct.content_type;
 
         Ok(content_type.clone())

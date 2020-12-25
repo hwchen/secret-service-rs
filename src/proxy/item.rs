@@ -25,7 +25,7 @@ trait ItemInterface {
     fn delete(&self) -> zbus::Result<OwnedObjectPath>;
 
     /// returns `Secret`
-    fn get_secret(&self, session: ObjectPath) -> zbus::Result<SecretStruct>;
+    fn get_secret(&self, session: &ObjectPath) -> zbus::Result<SecretStruct>;
 
     fn set_secret(&self, secret: SecretStructInput) -> zbus::Result<()>;
 

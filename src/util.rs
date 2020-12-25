@@ -24,7 +24,6 @@ use proxy::SecretStruct;
 use proxy::item::SecretStructInput;
 
 use rand::{Rng, rngs::OsRng};
-use std::convert::TryFrom;
 use zvariant::ObjectPath;
 
 // Helper enum for locking
@@ -59,7 +58,6 @@ pub(crate) fn format_secret(
     content_type: &str
     ) -> ::Result<SecretStructInput>
 {
-    let session_path = zvariant::ObjectPath::try_from(session.object_path.to_string()).expect("remove this");
     let content_type = content_type.to_owned();
 
     if session.is_encrypted() {
@@ -75,7 +73,7 @@ pub(crate) fn format_secret(
 
         Ok(SecretStructInput {
             inner: SecretStruct {
-                session: session_path.into(),
+                session: session.object_path.clone(),
                 parameters,
                 value,
                 content_type,
@@ -88,7 +86,7 @@ pub(crate) fn format_secret(
 
         Ok(SecretStructInput {
             inner: SecretStruct {
-                session: session_path.into(),
+                session: session.object_path.clone(),
                 parameters,
                 value,
                 content_type,
