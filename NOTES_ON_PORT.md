@@ -19,3 +19,14 @@ Creating proxy was nice, and removed a lot of my boilerplate.
 One issue was lifetimes for using a path in creating a new proxy. I had wanted to store the proxy in the `Item` struct, but I needed to borrow the `item_path`, which wouldn't live long enough. I ended up instantiating a new proxy on each `Item` method, which didn't feel as good.
 
 Now, getting some test errors. One is that session doesn't exist.
+
+## Second Pass
+First finished creating all the proxies.
+
+I found `Proxy::new_for_owned` which removed the instantiation of a proxy per-method, now the `Proxy` can be saved in the struct.
+
+There's a weird issue where on a derived `property` it allows `ObjectPath` in the return, but on methods it requires `OwnedObjectPath`. Seems to work ok, oh well.
+
+Looks like `SecretStruct` needs to be wrapped in another struct in order to fit the dbus signature, not sure what that's about.
+
+Otherwise pretty straightforward. Removing the low-level details of creating dbus types allowed me to refactor much more easily.
