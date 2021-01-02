@@ -125,7 +125,8 @@ pub fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvar
     let window_id = "";
     prompt_interface.prompt(window_id)?;
 
-    // waits for next signal and calls the handler
+    // waits for next signal and calls the handler.
+    // If message handled by above handler, `next_signal` returns `Ok(None)`, ending loop.
     while prompt_interface.next_signal()?.is_some() {};
 
     prompt_interface.disconnect_completed()?;
