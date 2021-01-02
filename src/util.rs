@@ -15,7 +15,7 @@
 //   have their own module?
 
 use error::SsError;
-use proxy::prompt::{CompletedSignal, PromptInterfaceProxy};
+use proxy::prompt::PromptInterfaceProxy;
 use proxy::service::ServiceInterfaceProxy;
 use session::Session;
 use ss::SS_DBUS_NAME;
@@ -24,6 +24,7 @@ use proxy::SecretStruct;
 use proxy::item::SecretStructInput;
 
 use rand::{Rng, rngs::OsRng};
+use std::sync::mpsc::channel;
 use zvariant::ObjectPath;
 
 // Helper enum for locking
@@ -102,18 +103,33 @@ pub fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvar
         prompt.to_string(),
         )
         .unwrap();
-    // TODO figure out window_id
+
+    let (tx, rx) = channel();
+
+    // create a handler for `completed` signal
+    prompt_interface
+        .connect_completed(move |dismissed, result| {
+            let res = if dismissed {
+                Err(SsError::Prompt)
+            } else {
+                Ok(result)
+            };
+
+            // FIXME remove unwrap
+            tx.send(res).expect("remove this unwrap");
+
+            Ok(())
+        })?;
+
+    // FIXME figure out window_id
     let window_id = "";
     prompt_interface.prompt(window_id)?;
 
-    // check to see if prompt is dismissed or accepted
-    // TODO: Find a better way to do this.
-    let msg = conn.receive_message()?;
+    // waits for next signal and calls the handler
+    while prompt_interface.next_signal()?.is_some() {};
 
-    let completed: CompletedSignal = msg.body()?;
-    if completed.dismissed {
-        Err(SsError::Prompt)
-    } else {
-        Ok(completed.result)
-    }
+    prompt_interface.disconnect_completed()?;
+
+    // FIXME remove unwrap
+    rx.recv().expect("remove this unwrap")
 }

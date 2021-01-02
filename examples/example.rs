@@ -19,7 +19,7 @@ fn main() {
     let collection = ss.get_default_collection().unwrap();
 
     //create new item
-    let new_item = collection.create_item(
+    collection.create_item(
         "test_label", // label
         vec![("test", "test_value")], // properties
         b"test_secret", //secret

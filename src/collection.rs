@@ -221,7 +221,7 @@ mod test{
     }
 
     #[test]
-    #[ignore]
+    #[ignore] // should unignore this test this manually, otherwise will constantly prompt during tests.
     fn should_lock_and_unlock() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
@@ -267,7 +267,7 @@ mod test{
     fn should_get_all_items() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let items = collection.get_all_items().unwrap();
+        collection.get_all_items().unwrap();
         //println!("{:?}", items);
     }
 
