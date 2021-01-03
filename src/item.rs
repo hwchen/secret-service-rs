@@ -19,7 +19,6 @@ use util::{
 };
 
 use std::collections::HashMap;
-use std::convert::TryInto;
 use zvariant::OwnedObjectPath;
 
 pub struct Item<'a> {
@@ -85,7 +84,6 @@ impl<'a> Item<'a> {
 
     pub fn get_attributes(&self) -> ::Result<Vec<(String, String)>> {
         let attributes = self.item_interface.attributes()?;
-        let attributes: HashMap<String, String> = attributes.try_into()?;
 
         let res = attributes.into_iter()
             .collect::<Vec<(String, String)>>();

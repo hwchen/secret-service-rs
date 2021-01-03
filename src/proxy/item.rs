@@ -8,6 +8,7 @@
 //! A dbus proxy for speaking with secret service's `Item` Interface.
 
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use zbus;
 use zbus_macros::dbus_proxy;
 use zvariant::{Dict, ObjectPath, OwnedObjectPath};
@@ -34,7 +35,7 @@ trait ItemInterface {
 
     // Looks like the Dict has to be transformed into HashMap<String, String> in separate step?
     #[dbus_proxy(property)]
-    fn attributes(&self) -> zbus::fdo::Result<Dict>;
+    fn attributes(&self) -> zbus::fdo::Result<HashMap<String, String>>;
 
     // TODO change Dict to HashMap?
     #[dbus_proxy(property)]
