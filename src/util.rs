@@ -101,8 +101,7 @@ pub fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvar
         &conn,
         SS_DBUS_NAME,
         prompt,
-        )
-        .unwrap();
+        )?;
 
     let (tx, rx) = channel();
 

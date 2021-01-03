@@ -35,21 +35,20 @@ impl<'a> Item<'a> {
         session: &'a Session,
         service_interface: &'a ServiceProxy<'a>,
         item_path: OwnedObjectPath,
-        ) -> Self
+        ) -> ::Result<Self>
     {
         let item_interface = ItemProxy::new_for_owned(
             conn.clone(),
             SS_DBUS_NAME.to_owned(),
             item_path.to_string(),
-            )
-            .unwrap();
-        Item {
+            )?;
+        Ok(Item {
             conn: conn.clone(),
             session,
             item_path,
             item_interface,
             service_interface,
-        }
+        })
     }
 
     pub fn is_locked(&self) -> ::Result<bool> {

@@ -43,21 +43,20 @@ impl<'a> Collection<'a> {
         session: &'a Session,
         service_interface: &'a ServiceProxy,
         collection_path: OwnedObjectPath,
-        ) -> Self
+        ) -> ::Result<Self>
     {
         let collection_interface = CollectionProxy::new_for_owned(
             conn.clone(),
             SS_DBUS_NAME.to_owned(),
             collection_path.to_string(),
-            )
-            .unwrap();
-        Collection {
+            )?;
+        Ok(Collection {
             conn: conn.clone(),
             session,
             collection_path,
             collection_interface,
             service_interface,
-        }
+        })
     }
 
     pub fn is_locked(&self) -> ::Result<bool> {
@@ -119,7 +118,7 @@ impl<'a> Collection<'a> {
                     item_path.into(),
                 )
             })
-            .collect();
+            .collect::<::Result<_>>()?;
 
         Ok(res)
     }
@@ -137,7 +136,7 @@ impl<'a> Collection<'a> {
                     item_path.into(),
                 )
             })
-            .collect();
+            .collect::<::Result<_>>()?;
 
         Ok(res)
     }
@@ -198,7 +197,7 @@ impl<'a> Collection<'a> {
             &self.session,
             &self.service_interface,
             item_path.into(),
-        ))
+        )?)
     }
 }
 

@@ -206,7 +206,7 @@ impl<'a> SecretService<'a> {
     /// ```
     pub fn new(encryption: EncryptionType) -> ::Result<Self> {
         let conn = zbus::Connection::new_session()?;
-        let service_interface = ServiceProxy::new(&conn).unwrap();
+        let service_interface = ServiceProxy::new(&conn)?;
         let session = Session::new(&service_interface, encryption)?;
 
         Ok(SecretService {
@@ -226,7 +226,7 @@ impl<'a> SecretService<'a> {
                 &self.service_interface,
                 object_path.into(),
             )
-        }).collect::<Vec<_>>())
+        }).collect::<Result<Vec<_>>>()?)
     }
 
     /// Get collection by alias.
@@ -244,7 +244,7 @@ impl<'a> SecretService<'a> {
                 &self.session,
                 &self.service_interface,
                 object_path.into(),
-            ))
+            )?)
         }
     }
 
@@ -307,7 +307,7 @@ impl<'a> SecretService<'a> {
             &self.session,
             &self.service_interface,
             collection_path.into(),
-        ))
+        )?)
     }
 
     /// Searches all items by attributes
@@ -324,7 +324,7 @@ impl<'a> SecretService<'a> {
                     item_path.into(),
                 )
             })
-            .collect();
+            .collect::<Result<_>>()?;
 
         Ok(res)
     }
