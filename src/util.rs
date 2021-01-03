@@ -15,8 +15,8 @@
 //   have their own module?
 
 use error::SsError;
-use proxy::prompt::PromptInterfaceProxy;
-use proxy::service::ServiceInterfaceProxy;
+use proxy::prompt::PromptProxy;
+use proxy::service::ServiceProxy;
 use session::Session;
 use ss::SS_DBUS_NAME;
 use ss_crypto::encrypt;
@@ -35,7 +35,7 @@ pub(crate) enum LockAction {
 
 pub(crate) fn lock_or_unlock(
     conn: zbus::Connection,
-    service_interface: &ServiceInterfaceProxy,
+    service_interface: &ServiceProxy,
     object_path: &ObjectPath,
     lock_action: LockAction
     ) -> ::Result<()>
@@ -97,7 +97,7 @@ pub(crate) fn format_secret(
 }
 
 pub fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvariant::OwnedValue> {
-    let prompt_interface = PromptInterfaceProxy::new_for(
+    let prompt_interface = PromptProxy::new_for(
         &conn,
         SS_DBUS_NAME,
         prompt,
@@ -128,8 +128,6 @@ pub fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvar
     // waits for next signal and calls the handler.
     // If message handled by above handler, `next_signal` returns `Ok(None)`, ending loop.
     while prompt_interface.next_signal()?.is_some() {};
-
-    prompt_interface.disconnect_completed()?;
 
     // FIXME remove unwrap
     rx.recv().expect("remove this unwrap")

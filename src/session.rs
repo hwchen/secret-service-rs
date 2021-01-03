@@ -17,7 +17,7 @@
 // 7. Format Secret: encode the secret value for the value field in secret struct. 
 //      This encoding uses the aes_key from the associated Session.
 
-use proxy::service::ServiceInterfaceProxy;
+use proxy::service::ServiceProxy;
 use ss::{ALGORITHM_DH, ALGORITHM_PLAIN};
 
 use sha2::Sha256;
@@ -64,7 +64,7 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(service_interface: &ServiceInterfaceProxy, encryption: EncryptionType) -> ::Result<Self> {
+    pub fn new(service_interface: &ServiceProxy, encryption: EncryptionType) -> ::Result<Self> {
         match encryption {
             EncryptionType::Plain => {
                 let session= service_interface.open_session(
@@ -174,7 +174,7 @@ mod test {
     #[test]
     fn should_create_plain_session() {
         let conn = zbus::Connection::new_session().unwrap();
-        let service_interface = ServiceInterfaceProxy::new(&conn).unwrap();
+        let service_interface = ServiceProxy::new(&conn).unwrap();
         let session = Session::new(&service_interface, EncryptionType::Plain).unwrap();
         assert!(!session.is_encrypted());
     }
@@ -182,7 +182,7 @@ mod test {
     #[test]
     fn should_create_encrypted_session() {
         let conn = zbus::Connection::new_session().unwrap();
-        let service_interface = ServiceInterfaceProxy::new(&conn).unwrap();
+        let service_interface = ServiceProxy::new(&conn).unwrap();
         let session = Session::new(&service_interface, EncryptionType::Dh).unwrap();
         assert!(session.is_encrypted());
     }

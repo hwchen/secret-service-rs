@@ -18,13 +18,13 @@ use super::SecretStruct;
 
 /// A dbus proxy for speaking with secret service's `Collection` Interface.
 ///
-/// This will derive CollectionInterfaceProxy
+/// This will derive CollectionProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
 #[dbus_proxy(
     interface = "org.freedesktop.Secret.Collection",
 )]
-trait CollectionInterface {
+trait Collection{
     /// Returns prompt: ObjectPath
     fn delete(&self) -> zbus::Result<OwnedObjectPath>;
 

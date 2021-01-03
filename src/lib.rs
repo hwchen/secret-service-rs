@@ -169,7 +169,7 @@ mod util;
 pub use collection::Collection;
 pub use error::{Result, SsError};
 pub use item::Item;
-use proxy::service::ServiceInterfaceProxy;
+use proxy::service::ServiceProxy;
 use util::exec_prompt;
 use session::Session;
 pub use session::EncryptionType;
@@ -191,7 +191,7 @@ use zvariant::{ObjectPath,Value};
 pub struct SecretService<'a> {
     conn: zbus::Connection,
     session: Session,
-    service_interface: ServiceInterfaceProxy<'a>,
+    service_interface: ServiceProxy<'a>,
 }
 
 impl<'a> SecretService<'a> {
@@ -206,7 +206,7 @@ impl<'a> SecretService<'a> {
     /// ```
     pub fn new(encryption: EncryptionType) -> ::Result<Self> {
         let conn = zbus::Connection::new_session()?;
-        let service_interface = ServiceInterfaceProxy::new(&conn).unwrap();
+        let service_interface = ServiceProxy::new(&conn).unwrap();
         let session = Session::new(&service_interface, encryption)?;
 
         Ok(SecretService {

@@ -13,13 +13,13 @@ use zvariant::Value;
 
 /// A dbus proxy for speaking with secret service's `Prompt` Interface.
 ///
-/// This will derive PromptInterfaceProxy
+/// This will derive PromptProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
 #[dbus_proxy(
     interface = "org.freedesktop.Secret.Prompt",
 )]
-trait PromptInterface {
+trait Prompt{
     fn prompt(&self, window_id: &str) -> zbus::Result<()>;
 
     fn dismiss(&self) -> zbus::Result<()>;

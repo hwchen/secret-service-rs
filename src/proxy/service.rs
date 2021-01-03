@@ -18,7 +18,7 @@ use super::SecretStruct;
 
 /// A dbus proxy for speaking with secret service's `Service` Interface.
 ///
-/// This will derive ServiceInterfaceProxy
+/// This will derive ServiceProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
 #[dbus_proxy(
@@ -26,7 +26,7 @@ use super::SecretStruct;
     default_service = "org.freedesktop.secrets",
     default_path = "/org/freedesktop/secrets",
 )]
-trait ServiceInterface {
+trait Service{
     fn open_session(&self, algorithm: &str, input: Value) -> zbus::Result<OpenSessionResult>;
 
     fn create_collection(&self, properties: HashMap<&str, Value>, alias: &str) -> zbus::Result<CreateCollectionResult>;

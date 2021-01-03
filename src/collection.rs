@@ -7,8 +7,8 @@
 
 use error::SsError;
 use item::Item;
-use proxy::collection::CollectionInterfaceProxy;
-use proxy::service::ServiceInterfaceProxy;
+use proxy::collection::CollectionProxy;
+use proxy::service::ServiceProxy;
 use session::Session;
 use ss::{
     SS_DBUS_NAME,
@@ -33,19 +33,19 @@ pub struct Collection<'a> {
     conn: zbus::Connection,
     session: &'a Session,
     pub collection_path: OwnedObjectPath,
-    collection_interface: CollectionInterfaceProxy<'a>,
-    service_interface: &'a ServiceInterfaceProxy<'a>,
+    collection_interface: CollectionProxy<'a>,
+    service_interface: &'a ServiceProxy<'a>,
 }
 
 impl<'a> Collection<'a> {
     pub fn new(
         conn: zbus::Connection,
         session: &'a Session,
-        service_interface: &'a ServiceInterfaceProxy,
+        service_interface: &'a ServiceProxy,
         collection_path: OwnedObjectPath,
         ) -> Self
     {
-        let collection_interface = CollectionInterfaceProxy::new_for_owned(
+        let collection_interface = CollectionProxy::new_for_owned(
             conn.clone(),
             SS_DBUS_NAME.to_owned(),
             collection_path.to_string(),

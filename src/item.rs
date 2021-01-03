@@ -6,8 +6,8 @@
 // copied, modified, or distributed except according to those terms.
 
 use error::SsError;
-use proxy::item::ItemInterfaceProxy;
-use proxy::service::ServiceInterfaceProxy;
+use proxy::item::ItemProxy;
+use proxy::service::ServiceProxy;
 use session::Session;
 use ss::SS_DBUS_NAME;
 use ss_crypto::decrypt;
@@ -25,19 +25,19 @@ pub struct Item<'a> {
     conn: zbus::Connection,
     session: &'a Session,
     pub item_path: OwnedObjectPath,
-    item_interface: ItemInterfaceProxy<'a>,
-    service_interface: &'a ServiceInterfaceProxy<'a>,
+    item_interface: ItemProxy<'a>,
+    service_interface: &'a ServiceProxy<'a>,
 }
 
 impl<'a> Item<'a> {
     pub fn new(
         conn: zbus::Connection,
         session: &'a Session,
-        service_interface: &'a ServiceInterfaceProxy<'a>,
+        service_interface: &'a ServiceProxy<'a>,
         item_path: OwnedObjectPath,
         ) -> Self
     {
-        let item_interface = ItemInterfaceProxy::new_for_owned(
+        let item_interface = ItemProxy::new_for_owned(
             conn.clone(),
             SS_DBUS_NAME.to_owned(),
             item_path.to_string(),
