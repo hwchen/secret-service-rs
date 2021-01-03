@@ -9,7 +9,7 @@
 
 use zbus;
 use zbus_macros::dbus_proxy;
-use zvariant::OwnedValue;
+use zvariant::Value;
 
 /// A dbus proxy for speaking with secret service's `Prompt` Interface.
 ///
@@ -24,7 +24,6 @@ trait PromptInterface {
 
     fn dismiss(&self) -> zbus::Result<()>;
 
-
     #[dbus_proxy(signal)]
-    fn completed(&self, dismissed: bool, result: OwnedValue) -> zbus::Result<CompletedSignal>;
+    fn completed(&self, dismissed: bool, result: Value) -> zbus::Result<()>;
 }

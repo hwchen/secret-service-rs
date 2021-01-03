@@ -97,10 +97,10 @@ pub(crate) fn format_secret(
 }
 
 pub fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvariant::OwnedValue> {
-    let prompt_interface = PromptInterfaceProxy::new_for_owned(
-        conn.clone(),
-        SS_DBUS_NAME.to_owned(),
-        prompt.to_string(),
+    let prompt_interface = PromptInterfaceProxy::new_for(
+        &conn,
+        SS_DBUS_NAME,
+        prompt,
         )
         .unwrap();
 
@@ -112,7 +112,7 @@ pub fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvar
             let res = if dismissed {
                 Err(SsError::Prompt)
             } else {
-                Ok(result)
+                Ok(result.into())
             };
 
             // FIXME remove unwrap
