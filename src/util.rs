@@ -96,7 +96,7 @@ pub(crate) fn format_secret(
     }
 }
 
-pub fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvariant::OwnedValue> {
+pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvariant::OwnedValue> {
     let prompt_interface = PromptProxy::new_for(
         &conn,
         SS_DBUS_NAME,
