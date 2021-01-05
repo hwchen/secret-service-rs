@@ -7,7 +7,6 @@
 
 //! A dbus proxy for speaking with secret service's `Session` Interface.
 
-use zbus;
 use zbus_macros::dbus_proxy;
 
 /// A dbus proxy for speaking with secret service's `Session` Interface.

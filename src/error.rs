@@ -23,11 +23,9 @@
 // - prompt dismissed (not an error?) (currently custom dbus error)
 
 use std::{error, fmt};
-use zbus;
 
 /// Result type often returned from methods that have Error.
 /// Fns in this library return ::Result<T> when using this alias.
-// (This pattern is something I saw in hyper)
 pub type Result<T> = ::std::result::Result<T, Error>;
 
 #[derive(Debug)]

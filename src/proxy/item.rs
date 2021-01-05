@@ -9,7 +9,6 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use zbus;
 use zbus_macros::dbus_proxy;
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::Type;
