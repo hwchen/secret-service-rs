@@ -17,34 +17,19 @@
 // 7. Format Secret: encode the secret value for the value field in secret struct. 
 //      This encoding uses the aes_key from the associated Session.
 
-use error::SsError;
-use ss::{
-    SS_DBUS_NAME,
-    SS_PATH,
-    SS_INTERFACE_SERVICE,
-    ALGORITHM_PLAIN,
-    ALGORITHM_DH,
-};
+use proxy::service::ServiceProxy;
+use ss::{ALGORITHM_DH, ALGORITHM_PLAIN};
 
 use sha2::Sha256;
 use hkdf::Hkdf;
-use dbus::{
-    Connection,
-    Message,
-    MessageItem,
-    Path,
-};
-use dbus::MessageItem::{
-    Str,
-    Variant,
-};
 use num::bigint::BigUint;
 use num::traits::{One, Zero};
 use num::integer::Integer;
 use num::FromPrimitive;
 use rand::{Rng, rngs::OsRng};
+use std::convert::TryInto;
+use zvariant::OwnedObjectPath;
 
-use std::rc::Rc;
 use std::ops::{Mul, Rem, Shr};
 
 // for key exchange
@@ -70,8 +55,7 @@ pub enum EncryptionType {
 
 #[derive(Debug)]
 pub struct Session {
-    // TODO: Should session store encryption? As bool or EncryptionType? also getter/setter
-    pub object_path: Path,
+    pub object_path: OwnedObjectPath,
     encrypted: bool,
     server_public_key: Option<Vec<u8>>,
     aes_key: Option<Vec<u8>>,
@@ -79,46 +63,18 @@ pub struct Session {
     my_public_key: Option<Vec<u8>>,
 }
 
-// Think about how to break this function up? It's 134 lines.
-// Could have a function for plain, and one for encrypted.
-// Encryption could probably have a good chunk factored out.
-// setting aes key could be put into ss_crypto
-// Or factor out some common parts to helper functions?
 impl Session {
-    pub fn new(bus: Rc<Connection>, encryption: EncryptionType) -> ::Result<Self> {
+    pub fn new(service_proxy: &ServiceProxy, encryption: EncryptionType) -> ::Result<Self> {
         match encryption {
             EncryptionType::Plain => {
-                let m = Message::new_method_call(
-                    SS_DBUS_NAME,
-                    SS_PATH,
-                    SS_INTERFACE_SERVICE,
-                    "OpenSession"
-                ).unwrap()
-                .append(Str(ALGORITHM_PLAIN.to_owned()))
-                // this argument should be input for algorithm
-                .append(Variant(Box::new(Str("".to_owned()))));
-
-                // Call to session
-                let r = bus.send_with_reply_and_block(m, 2000)?;
-                let items = r.get_items();
-
-                // Get session output
-                let session_output_dbus = items
-                    .get(0)
-                    .ok_or(SsError::NoResult)?;
-                let session_output_variant_dbus: &MessageItem = session_output_dbus.inner().unwrap();
-
-                // check session output is str
-                session_output_variant_dbus.inner::<&str>().unwrap();
-
-                // get session path
-                let object_path_dbus = items
-                    .get(1)
-                    .ok_or(SsError::NoResult)?;
-                let object_path: &Path = object_path_dbus.inner().unwrap();
+                let session= service_proxy.open_session(
+                    ALGORITHM_PLAIN,
+                    "".into(),
+                )?;
+                let session_path = session.result;
 
                 Ok(Session {
-                    object_path: object_path.clone(),
+                    object_path: session_path,
                     encrypted: false,
                     server_public_key: None,
                     aes_key: None,
@@ -129,7 +85,6 @@ impl Session {
             EncryptionType::Dh => {
                 // crypto: create private and public key, send public key
                 // requires some finagling to get pow() for bigints
-                // mpz is multiple precision integer type for gmp
                 let mut rng = OsRng {};
                 let mut private_key_bytes = [0;128];
                 rng.fill(&mut private_key_bytes);
@@ -138,44 +93,15 @@ impl Session {
                 let public_key = powm(&DH_GENERATOR, &private_key, &DH_PRIME);
 
                 let public_key_bytes = public_key.to_bytes_be();
-                let public_key_bytes_dbus: Vec<_> = public_key_bytes
-                    .iter()
-                    .map(|&byte| { MessageItem::from(byte) })
-                    .collect();
 
-                // Method call to negotiate encrypted session
-                let m = Message::new_method_call(
-                    SS_DBUS_NAME,
-                    SS_PATH,
-                    SS_INTERFACE_SERVICE,
-                    "OpenSession"
-                ).unwrap()
-                .append(Str(ALGORITHM_DH.to_owned()))
-                .append(Variant(Box::new(MessageItem::new_array(public_key_bytes_dbus).unwrap())));
-
-                // Call to session
-                let r = bus.send_with_reply_and_block(m, 2000)?;
-                let items = r.get_items();
-
-                // Get session output (which is the server public key when using encryption)
-                let session_output_dbus = items
-                    .get(0)
-                    .ok_or(SsError::NoResult)?;
-                let session_output_variant_dbus: &MessageItem = session_output_dbus.inner().unwrap();
-
-                // Since encrypted Variant should be a vector of bytes
-                let session_output_array_dbus: &Vec<_> = session_output_variant_dbus
-                    .inner()
-                    // inner does not return an Error type, so have to manually map
-                    .map_err(|_| SsError::Parse)?;
-
-                let server_public_key: Vec<_> = session_output_array_dbus
-                    .iter()
-                    .map(|byte_dbus| byte_dbus.inner::<u8>().unwrap())
-                    .collect();
+                let session= service_proxy.open_session(
+                    ALGORITHM_DH,
+                    public_key_bytes.as_slice().into(),
+                )?;
+                let server_public_key: Vec<_> = session.output.try_into()?;
+                let session_path = session.result;
 
                 // Set aes key from server key
-                // TODO: Don't store keys except for aes?
                 let server_public_key = BigUint::from_bytes_be(&server_public_key);
                 let server_public_key_bytes = server_public_key.to_bytes_be();
                 let common_secret = powm(&server_public_key, &private_key, &DH_PRIME);
@@ -200,14 +126,8 @@ impl Session {
 
                 let aes_key = okm.to_vec();
 
-                // get session path to store
-                let object_path_dbus = items
-                    .get(1)
-                    .ok_or(SsError::NoResult)?;
-                let object_path: &Path = object_path_dbus.inner().unwrap();
-
                 Ok(Session {
-                    object_path: object_path.clone(),
+                    object_path: session_path,
                     encrypted: true,
                     server_public_key: Some(server_public_key_bytes),
                     aes_key: Some(aes_key),
@@ -247,21 +167,22 @@ fn powm(base: &BigUint, exp: &BigUint, modulus: &BigUint) -> BigUint {
 
 #[cfg(test)]
 mod test {
-    use std::rc::Rc;
     use super::*;
-    use dbus::{Connection, BusType};
+    use zbus;
 
     #[test]
     fn should_create_plain_session() {
-        let bus = Connection::get_private(BusType::Session).unwrap();
-        let session = Session::new(Rc::new(bus), EncryptionType::Plain).unwrap();
+        let conn = zbus::Connection::new_session().unwrap();
+        let service_proxy = ServiceProxy::new(&conn).unwrap();
+        let session = Session::new(&service_proxy, EncryptionType::Plain).unwrap();
         assert!(!session.is_encrypted());
     }
 
     #[test]
     fn should_create_encrypted_session() {
-        let bus = Connection::get_private(BusType::Session).unwrap();
-        let session = Session::new(Rc::new(bus), EncryptionType::Dh).unwrap();
+        let conn = zbus::Connection::new_session().unwrap();
+        let service_proxy = ServiceProxy::new(&conn).unwrap();
+        let session = Session::new(&service_proxy, EncryptionType::Dh).unwrap();
         assert!(session.is_encrypted());
     }
 }

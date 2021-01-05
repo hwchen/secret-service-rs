@@ -22,9 +22,9 @@
 // - locked (currently custom dbus error)
 // - prompt dismissed (not an error?) (currently custom dbus error)
 
-use dbus;
 use std::error;
 use std::fmt;
+use zbus;
 
 /// Result type often returned from methods that have SsError.
 /// Fns in this library return ::Result<T> when using this alias.
@@ -34,7 +34,10 @@ pub type Result<T> = ::std::result::Result<T, SsError>;
 #[derive(Debug)]
 pub enum SsError {
     Crypto(String),
-    Dbus(dbus::Error),
+    Zbus(zbus::Error),
+    ZbusMsg(zbus::MessageError),
+    ZbusFdo(zbus::fdo::Error),
+    Zvariant(zvariant::Error),
     Locked,
     NoResult,
     Parse,
@@ -46,7 +49,10 @@ impl fmt::Display for SsError {
         match *self {
             // crypto error does not implement Display
             SsError::Crypto(_) => write!(f, "Crypto error: Invalid Length or Padding"),
-            SsError::Dbus(ref err) => write!(f, "Dbus error: {}", err),
+            SsError::Zbus(ref err) => write!(f, "zbus error: {}", err),
+            SsError::ZbusMsg(ref err) => write!(f, "zbus message error: {}", err),
+            SsError::ZbusFdo(ref err) => write!(f, "zbus fdo error: {}", err),
+            SsError::Zvariant(ref err) => write!(f, "zbus fdo error: {}", err),
             SsError::Locked => write!(f, "SS Error: object locked"),
             SsError::NoResult => write!(f, "SS error: result not returned from SS API"),
             SsError::Parse => write!(f, "SS error: could not parse Dbus output"),
@@ -56,20 +62,12 @@ impl fmt::Display for SsError {
 }
 
 impl error::Error for SsError {
-    fn description(&self) -> &str {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match *self {
-            SsError::Crypto(_) => "crypto: Invalid Length or Padding",
-            SsError::Dbus(ref err) => err.description(),
-            SsError::Locked => "Object locked",
-            SsError::NoResult => "Result not returned from SS API",
-            SsError::Parse => "Error parsing Dbus output",
-            SsError::Prompt => "Prompt Dismissed",
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn error::Error> {
-        match *self {
-            SsError::Dbus(ref err) => Some(err),
+            SsError::Zbus(ref err) => Some(err),
+            SsError::ZbusMsg(ref err) => Some(err),
+            SsError::ZbusFdo(ref err) => Some(err),
+            SsError::Zvariant(ref err) => Some(err),
             _ => None,
         }
     }
@@ -87,9 +85,26 @@ impl From<block_modes::InvalidKeyIvLength> for SsError {
     }
 }
 
-impl From<dbus::Error> for SsError {
-    fn from(err: dbus::Error) -> SsError {
-        SsError::Dbus(err)
+impl From<zbus::Error> for SsError {
+    fn from(err: zbus::Error) -> SsError {
+        SsError::Zbus(err)
     }
 }
 
+impl From<zbus::fdo::Error> for SsError {
+    fn from(err: zbus::fdo::Error) -> SsError {
+        SsError::ZbusFdo(err)
+    }
+}
+
+impl From<zvariant::Error> for SsError {
+    fn from(err: zvariant::Error) -> SsError {
+        SsError::Zvariant(err)
+    }
+}
+
+impl From<zbus::MessageError> for SsError {
+    fn from(err: zbus::MessageError) -> SsError {
+        SsError::ZbusMsg(err)
+    }
+}

@@ -7,86 +7,60 @@
 
 use error::SsError;
 use item::Item;
+use proxy::collection::CollectionProxy;
+use proxy::service::ServiceProxy;
 use session::Session;
 use ss::{
     SS_DBUS_NAME,
-    SS_INTERFACE_COLLECTION,
-    SS_INTERFACE_SERVICE,
     SS_ITEM_LABEL,
     SS_ITEM_ATTRIBUTES,
-    SS_PATH,
 };
 use util::{
     exec_prompt,
     format_secret,
-    Interface,
+    lock_or_unlock,
+    LockAction,
 };
 
-use dbus::{
-    BusName,
-    Connection,
-    MessageItem,
-    Path,
-};
-use dbus::Interface as InterfaceName;
-use dbus::MessageItem::{
-    Array,
-    Bool,
-    DictEntry,
-    ObjectPath,
-    Str,
-    Variant,
-};
-use std::rc::Rc;
-
-// Helper enum for
-// locking and unlocking
-enum LockAction {
-    Lock,
-    Unlock,
-}
+use std::collections::HashMap;
+use std::convert::TryInto;
+use zvariant::{Dict, ObjectPath, OwnedObjectPath, Value};
 
 // Collection struct.
 // Should always be created from the SecretService entry point,
 // whether through a new collection or a collection search
-#[derive(Debug, Clone)]
 pub struct Collection<'a> {
-    // TODO: Implement method for path?
-    bus: Rc<Connection>,
+    conn: zbus::Connection,
     session: &'a Session,
-    pub collection_path: Path,
-    collection_interface: Interface,
-    service_interface: Interface,
+    pub collection_path: OwnedObjectPath,
+    collection_proxy: CollectionProxy<'a>,
+    service_proxy: &'a ServiceProxy<'a>,
 }
 
 impl<'a> Collection<'a> {
-    pub fn new(bus: Rc<Connection>, session: &'a Session, collection_path: Path) -> Self {
-        let collection_interface = Interface::new(
-            bus.clone(),
-            BusName::new(SS_DBUS_NAME).unwrap(),
-            collection_path.clone(),
-            InterfaceName::new(SS_INTERFACE_COLLECTION).unwrap()
-        );
-        let service_interface = Interface::new(
-            bus.clone(),
-            BusName::new(SS_DBUS_NAME).unwrap(),
-            Path::new(SS_PATH).unwrap(),
-            InterfaceName::new(SS_INTERFACE_SERVICE).unwrap()
-        );
-        Collection {
-            bus,
+    pub fn new(
+        conn: zbus::Connection,
+        session: &'a Session,
+        service_proxy: &'a ServiceProxy,
+        collection_path: OwnedObjectPath,
+        ) -> ::Result<Self>
+    {
+        let collection_proxy = CollectionProxy::new_for_owned(
+            conn.clone(),
+            SS_DBUS_NAME.to_owned(),
+            collection_path.to_string(),
+            )?;
+        Ok(Collection {
+            conn,
             session,
             collection_path,
-            collection_interface,
-            service_interface,
-        }
+            collection_proxy,
+            service_proxy,
+        })
     }
 
     pub fn is_locked(&self) -> ::Result<bool> {
-        self.collection_interface.get_props("Locked")
-            .map(|locked| {
-                locked.inner().unwrap()
-            })
+        Ok(self.collection_proxy.locked()?)
     }
 
     pub fn ensure_unlocked(&self) -> ::Result<()> {
@@ -97,219 +71,131 @@ impl<'a> Collection<'a> {
         }
     }
 
-    //Helper function for locking and unlocking
-    // TODO: refactor into utils? It should be same as collection
-    fn lock_or_unlock(&self, lock_action: LockAction) -> ::Result<()> {
-        let objects = MessageItem::new_array(
-            vec![ObjectPath(self.collection_path.clone())]
-        ).unwrap();
-
-        let lock_action_str = match lock_action {
-            LockAction::Lock => "Lock",
-            LockAction::Unlock => "Unlock",
-        };
-
-        let res = self.service_interface.method(lock_action_str, vec![objects])?;
-
-        // If the action requires a prompt, execute it.
-        if let Some(&Array(ref lock_action, _)) = res.get(0) {
-            if lock_action.is_empty() {
-                if let Some(&ObjectPath(ref path)) = res.get(1) {
-                    exec_prompt(self.bus.clone(), path.clone())?;
-                }
-            }
-        }
-        Ok(())
-    }
-
     pub fn unlock(&self) -> ::Result<()> {
-        self.lock_or_unlock(LockAction::Unlock)
+        lock_or_unlock(
+            self.conn.clone(),
+            &self.service_proxy,
+            &self.collection_path,
+            LockAction::Unlock,
+        )
     }
 
     pub fn lock(&self) -> ::Result<()> {
-        self.lock_or_unlock(LockAction::Lock)
+        lock_or_unlock(
+            self.conn.clone(),
+            &self.service_proxy,
+            &self.collection_path,
+            LockAction::Lock,
+        )
     }
 
-    // TODO: Rewrite?
     /// Deletes dbus object, but struct instance still exists (current implementation)
     pub fn delete(&self) -> ::Result<()> {
-        //Because of ensure_unlocked, no prompt is really necessary
-        //basically,you must explicitly unlock first
+        // ensure_unlocked handles prompt for unlocking if necessary
         self.ensure_unlocked()?;
-        let prompt = self.collection_interface.method("Delete", vec![])?;
+        let prompt_path = self.collection_proxy.delete()?;
 
-        // Returns prompt path. If there's a non-trivial prompt path, execute it.
-        if let Some(&ObjectPath(ref prompt_path)) = prompt.get(0) {
-            if &**prompt_path != "/" {
-                    let del_res = exec_prompt(self.bus.clone(), prompt_path.clone())?;
-                    println!("{:?}", del_res);
-                    return Ok(());
-            } else {
-                return Ok(());
-            }
+        // "/" means no prompt necessary
+        if prompt_path.as_str() != "/" {
+            exec_prompt(self.conn.clone(), &prompt_path)?;
         }
-        // If for some reason the patterns don't match, return error
-        Err(SsError::Parse)
+
+        Ok(())
     }
 
-    // TODO: Refactor to clean up indents?
     pub fn get_all_items(&self) -> ::Result<Vec<Item>> {
-        let items = self.collection_interface.get_props("Items")?;
+        let items = self.collection_proxy.items()?;
 
         // map array of item paths to Item
-        if let Array(item_array, _) = items {
-            Ok(item_array.iter().filter_map(|ref item| {
-                match **item {
-                    ObjectPath(ref path) => {
-                        Some(Item::new(
-                            self.bus.clone(),
-                            &self.session,
-                            path.clone()
-                        ))
-                    },
-                    _ => None,
-                }
-            }).collect::<Vec<_>>()
-            )
-        } else {
-            Err(SsError::Parse)
-        }
+        let res = items.into_iter()
+            .map(|item_path| {
+                Item::new(
+                    self.conn.clone(),
+                    &self.session,
+                    &self.service_proxy,
+                    item_path.into(),
+                )
+            })
+            .collect::<::Result<_>>()?;
+
+        Ok(res)
     }
 
     pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> ::Result<Vec<Item>> {
-        // Process dbus args
-        let attr_dict_entries: Vec<_> = attributes.iter().map(|&(key, value)| {
-            let dict_entry = (Str(key.to_owned()), Str(value.to_owned()));
-            MessageItem::from(dict_entry)
-        }).collect();
-        let attr_type_sig = DictEntry(
-            Box::new(Str("".to_owned())),
-            Box::new(Str("".to_owned()))
-        ).type_sig();
-        let attr_dbus_dict = Array(
-            attr_dict_entries,
-            attr_type_sig
-        );
+        let items = self.collection_proxy.search_items(attributes.into_iter().collect())?;
 
-        // Method call to SearchItem
-        let items = self.collection_interface.method("SearchItems", vec![attr_dbus_dict])?;
+        // map array of item paths to Item
+        let res = items.into_iter()
+            .map(|item_path| {
+                Item::new(
+                    self.conn.clone(),
+                    &self.session,
+                    &self.service_proxy,
+                    item_path,
+                )
+            })
+            .collect::<::Result<_>>()?;
 
-        // TODO: Refactor to be clean like create_item?
-        if let Array(ref item_array, _) = *items.get(0).unwrap() {
-            Ok(item_array.iter().filter_map(|ref item| {
-                match **item {
-                    ObjectPath(ref path) => {
-                        Some(Item::new(
-                            self.bus.clone(),
-                            &self.session,
-                            path.clone()
-                        ))
-                    },
-                    _ => None,
-                }
-            }).collect::<Vec<_>>()
-            )
-        } else {
-            Err(SsError::Parse)
-        }
+        Ok(res)
     }
 
     pub fn get_label(&self) -> ::Result<String> {
-        let label = self.collection_interface.get_props("Label")?;
-        // TODO: switch to inner()?
-        if let Str(label_str) = label {
-            Ok(label_str)
-        } else {
-            Err(SsError::Parse)
-        }
+        Ok(self.collection_proxy.label()?)
     }
 
     pub fn set_label(&self, new_label: &str) -> ::Result<()> {
-        self.collection_interface.set_props("Label", Str(new_label.to_owned()))
+        Ok(self.collection_proxy.set_label(new_label)?)
     }
 
-    pub fn create_item(&self,
-                       label: &str,
-                       attributes:Vec<(&str, &str)>,
-                       secret: &[u8],
-                       replace: bool,
-                       content_type: &str,
-                       ) -> ::Result<Item> {
-
+    pub fn create_item(
+        &self,
+        label: &str,
+        attributes:Vec<(&str, &str)>,
+        secret: &[u8],
+        replace: bool,
+        content_type: &str,
+        ) -> ::Result<Item>
+    {
         let secret_struct = format_secret(&self.session, secret, content_type)?;
 
-        // build dbus dict
+        let mut properties: HashMap<&str, Value> = HashMap::new();
+        // TODO from Vec<(_,_)> directly to Dict?
+        let attributes: HashMap<&str, &str> = attributes.into_iter().collect();
+        let attributes: Dict = attributes.into();
 
-        // label
-        let label_dbus = DictEntry(
-            Box::new(Str(SS_ITEM_LABEL.to_owned())),
-            Box::new(Variant(Box::new(Str(label.to_owned()))))
-        );
+        properties.insert(SS_ITEM_LABEL, label.into());
+        properties.insert(SS_ITEM_ATTRIBUTES, attributes.into());
 
-        // initializing properties vector, preparing to push
-        // attributes if available
-        let mut properties = vec![label_dbus];
-
-        // attributes dict
-        if !attributes.is_empty() {
-            let attributes_dbus: Vec<_> = attributes
-                .iter()
-                .map(|&(ref key, ref value)| {
-                    DictEntry(
-                        Box::new(Str((*key).to_owned())),
-                        Box::new(Str((*value).to_owned()))
-                    )
-                }).collect();
-            let attributes_dbus_dict = MessageItem::new_array(attributes_dbus).unwrap();
-            let attributes_dict_entry = DictEntry(
-                Box::new(Str(SS_ITEM_ATTRIBUTES.to_owned())),
-                Box::new(Variant(Box::new(attributes_dbus_dict)))
-            );
-            properties.push(attributes_dict_entry);
-        }
-
-        // properties dict (label and attributes)
-        let properties_dbus_dict = MessageItem::new_array(properties).unwrap();
-
-        // Method call to CreateItem
-        let res = self.collection_interface.method("CreateItem", vec![
-            properties_dbus_dict,
-            secret_struct,
-            Bool(replace)
-        ])?;
+        let created_item = self.collection_proxy.create_item(
+            properties,
+            secret_struct.inner,
+            replace,
+        )?;
 
         // This prompt handling is practically identical to create_collection
-        // TODO: refactor
-        let item_path: Path = {
+        let item_path: ObjectPath = {
             // Get path of created object
-            let created_object_path = res
-                .get(0)
-                .ok_or(SsError::NoResult)?;
-            let created_path: &Path = created_object_path.inner().unwrap();
+            let created_path = created_item.item;
 
             // Check if that path is "/", if so should execute a prompt
-            if &**created_path == "/" {
-                let prompt_object_path = res
-                    .get(1)
-                    .ok_or(SsError::NoResult)?;
-                let prompt_path: &Path = prompt_object_path.inner().unwrap();
+            if created_path.as_str() == "/" {
+                let prompt_path = created_item.prompt;
 
                 // Exec prompt and parse result
-                let var_obj_path = exec_prompt(self.bus.clone(), prompt_path.clone())?;
-                let obj_path: &MessageItem = var_obj_path.inner().unwrap();
-                let path: &Path = obj_path.inner().expect("getting path cannot fail");
-                path.clone()
+                let prompt_res = exec_prompt(self.conn.clone(), &prompt_path)?;
+                prompt_res.try_into()?
             } else {
                 // if not, just return created path
-                created_path.clone()
+                created_path.into()
             }
         };
 
         Ok(Item::new(
-            self.bus.clone(),
+            self.conn.clone(),
             &self.session,
-            item_path.clone()
-        ))
+            &self.service_proxy,
+            item_path.into(),
+        )?)
     }
 }
 
@@ -332,7 +218,7 @@ mod test{
     }
 
     #[test]
-    #[ignore]
+    #[ignore] // should unignore this test this manually, otherwise will constantly prompt during tests.
     fn should_lock_and_unlock() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
@@ -357,7 +243,7 @@ mod test{
     fn should_delete_collection() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collections = ss.get_all_collections().unwrap();
-        println!("collections before delete {:?}", collections);
+        //println!("collections before delete {:?}", collections);
         println!("# collections before delete {:?}", collections.len());
         for collection in collections {
             let collection_path = &*collection.collection_path;
@@ -369,7 +255,7 @@ mod test{
         }
         //double check after
         let collections = ss.get_all_collections().unwrap();
-        println!("collections after delete {:?}", collections);
+        //println!("collections after delete {:?}", collections);
         println!("# collections after delete {:?}", collections.len());
         assert!(false);
     }
@@ -378,8 +264,8 @@ mod test{
     fn should_get_all_items() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let items = collection.get_all_items().unwrap();
-        println!("{:?}", items);
+        collection.get_all_items().unwrap();
+        //println!("{:?}", items);
     }
 
     #[test]

@@ -19,7 +19,7 @@ fn main() {
     let collection = ss.get_default_collection().unwrap();
 
     //create new item
-    let new_item = collection.create_item(
+    collection.create_item(
         "test_label", // label
         vec![("test", "test_value")], // properties
         b"test_secret", //secret
@@ -27,14 +27,14 @@ fn main() {
         "text/plain" // secret content type
     ).unwrap();
 
-    println!("New Item: {:?}", new_item);
+    //println!("New Item: {:?}", new_item);
 
     // search items by properties
     let search_items = ss.search_items(
         vec![("test", "test_value")]
     ).unwrap();
 
-    println!("Searched Item: {:?}", search_items);
+    //println!("Searched Item: {:?}", search_items);
 
     let item = search_items.get(0).unwrap();
 

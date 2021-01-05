@@ -5,114 +5,57 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-// Contains helpers for:
-//   exec_prompt
-//   interfaces
-//   formatting secrets
-//
-//   Consider: What else should be in here? Should
-//   formatting secrets be in crypto? Should interfaces
-//   have their own module?
+//! Contains helpers for:
+//!   locking/unlocking
+//!   exec_prompt
+//!   formatting secrets
 
 use error::SsError;
+use proxy::prompt::PromptProxy;
+use proxy::service::ServiceProxy;
 use session::Session;
-use ss::{
-    SS_DBUS_NAME,
-    SS_INTERFACE_PROMPT,
-};
+use ss::SS_DBUS_NAME;
 use ss_crypto::encrypt;
+use proxy::SecretStruct;
+use proxy::item::SecretStructInput;
 
-use dbus::{
-    BusName,
-    Connection,
-    Message,
-    MessageItem,
-    Path,
-    Props,
-};
-use dbus::ConnectionItem::Signal;
-use dbus::Interface as InterfaceName;
-use dbus::MessageItem::{
-    Array,
-    Bool,
-    Byte,
-    ObjectPath,
-    Str,
-    Struct,
-};
 use rand::{Rng, rngs::OsRng};
-use std::rc::Rc;
+use std::sync::mpsc::channel;
+use zvariant::ObjectPath;
 
-#[derive(Debug, Clone)]
-pub struct Interface {
-    bus: Rc<Connection>,
-    name: BusName,
-    path: Path,
-    interface: InterfaceName,
+// Helper enum for locking
+pub(crate) enum LockAction {
+    Lock,
+    Unlock,
 }
 
-impl Interface {
-    pub fn new(bus: Rc<Connection>,
-               name: BusName,
-               path: Path,
-               interface: InterfaceName) -> Self {
+pub(crate) fn lock_or_unlock(
+    conn: zbus::Connection,
+    service_proxy: &ServiceProxy,
+    object_path: &ObjectPath,
+    lock_action: LockAction
+    ) -> ::Result<()>
+{
+    let objects = vec![object_path];
 
-        Interface {
-            bus,
-            name,
-            path,
-            interface,
-        }
+    let lock_action_res = match lock_action {
+        LockAction::Lock => service_proxy.lock(objects)?,
+        LockAction::Unlock => service_proxy.unlock(objects)?,
+    };
+
+    if lock_action_res.object_paths.is_empty() {
+        exec_prompt(conn, &lock_action_res.prompt)?;
     }
-
-    pub fn method(&self,
-                  method_name: &str,
-                  args: Vec<MessageItem>) -> ::Result<Vec<MessageItem>> {
-        // Should never fail, so unwrap
-        let mut m = Message::new_method_call(
-            self.name.clone(),
-            self.path.clone(),
-            self.interface.clone(),
-            method_name)
-            .unwrap();
-
-        m.append_items(&args);
-
-        // could use and_then?
-        let r = self.bus.send_with_reply_and_block(m, 2000)?;
-
-        Ok(r.get_items())
-    }
-
-    pub fn get_props(&self, prop_name: &str) -> ::Result<MessageItem> {
-        let p = Props::new(
-            &self.bus,
-            self.name.clone(),
-            self.path.clone(),
-            self.interface.clone(),
-            2000
-        );
-
-        Ok(p.get(prop_name)?)
-    }
-
-    pub fn set_props(&self, prop_name: &str, value: MessageItem) -> ::Result<()> {
-        let p = Props::new(
-            &self.bus,
-            self.name.clone(),
-            self.path.clone(),
-            self.interface.clone(),
-            2000
-        );
-
-        Ok(p.set(prop_name, value)?)
-    }
+    Ok(())
 }
 
-pub fn format_secret(session: &Session,
-                     secret: &[u8],
-                     content_type: &str
-                    ) -> ::Result<MessageItem> {
+pub(crate) fn format_secret(
+    session: &Session,
+    secret: &[u8],
+    content_type: &str
+    ) -> ::Result<SecretStructInput>
+{
+    let content_type = content_type.to_owned();
 
     if session.is_encrypted() {
         let mut rng = OsRng {};
@@ -122,63 +65,64 @@ pub fn format_secret(session: &Session,
         let encrypted_secret = encrypt(secret, &session.get_aes_key()[..], &aes_iv)?;
 
         // Construct secret struct
-        // (These are all straight conversions, can't fail.
-        let object_path = ObjectPath(session.object_path.clone());
-        let parameters = MessageItem::from(&aes_iv[..]);
-        // Construct an array, even if it's empty
-        let value_dbus = MessageItem::from(&encrypted_secret[..]);
-        let content_type = Str(content_type.to_owned());
+        let parameters = aes_iv.to_vec();
+        let value = encrypted_secret;
 
-        Ok(Struct(vec![
-            object_path,
-            parameters,
-            value_dbus,
-            content_type
-        ]))
-
+        Ok(SecretStructInput {
+            inner: SecretStruct {
+                session: session.object_path.clone(),
+                parameters,
+                value,
+                content_type,
+            }
+        })
     } else {
         // just Plain for now
-        let object_path = ObjectPath(session.object_path.clone());
-        let parameters = Array(vec![], Byte(0u8).type_sig());
-        let value_dbus = MessageItem::from(secret);
-        let content_type = Str(content_type.to_owned());
+        let parameters = Vec::new();
+        let value = secret.to_vec();
 
-        Ok(Struct(vec![
-            object_path,
-            parameters,
-            value_dbus,
-            content_type
-        ]))
+        Ok(SecretStructInput {
+            inner: SecretStruct {
+                session: session.object_path.clone(),
+                parameters,
+                value,
+                content_type,
+            }
+        })
     }
 }
 
-pub fn exec_prompt(bus: Rc<Connection>, prompt: Path) -> ::Result<MessageItem> {
-    let prompt_interface = Interface::new(
-        bus.clone(),
-        BusName::new(SS_DBUS_NAME).unwrap(),
+pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvariant::OwnedValue> {
+    let prompt_proxy = PromptProxy::new_for(
+        &conn,
+        SS_DBUS_NAME,
         prompt,
-        InterfaceName::new(SS_INTERFACE_PROMPT).unwrap()
-    );
-    prompt_interface.method("Prompt", vec![Str("".to_owned())])?;
+        )?;
 
-    // check to see if prompt is dismissed or accepted
-    // TODO: Find a better way to do this.
-    // Also, should I return the paths in the result?
-    for event in bus.iter(5000) {
-        if let Signal(message) =  event {
-            //println!("Incoming Signal {:?}", message);
-            let items = message.get_items();
-            if let Some(&Bool(dismissed)) = items.get(0) {
-                //println!("Was prompt dismissed? {:?}", dismissed);
-                if dismissed {
-                    return Err(SsError::Prompt);
-                }
-            }
-            if let Some(&ref result) = items.get(1) {
-                return Ok(result.clone());
-            }
-        }
-    }
-    Err(SsError::Prompt)
+    let (tx, rx) = channel();
+
+    // create a handler for `completed` signal
+    prompt_proxy
+        .connect_completed(move |dismissed, result| {
+            let res = if dismissed {
+                Err(SsError::Prompt)
+            } else {
+                Ok(result.into())
+            };
+
+            tx.send(res).expect("rx should not be dropped, channel scoped to this fn");
+
+            Ok(())
+        })?;
+
+    // TODO figure out window_id
+    let window_id = "";
+    prompt_proxy.prompt(window_id)?;
+
+    // waits for next signal and calls the handler.
+    // If message handled by above handler, `next_signal` returns `Ok(None)`, ending loop.
+    while prompt_proxy.next_signal()?.is_some() {};
+
+    // See comment on allowing channels to panic: https://www.reddit.com/r/rust/comments/awh751/proposal_new_channels_for_rusts_standard_library/ehmk3lz/
+    rx.recv().expect("tx shold not be dropped, channel scoped to this fn")
 }
-

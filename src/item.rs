@@ -6,81 +6,53 @@
 // copied, modified, or distributed except according to those terms.
 
 use error::SsError;
+use proxy::item::ItemProxy;
+use proxy::service::ServiceProxy;
 use session::Session;
-use ss::{
-    SS_DBUS_NAME,
-    SS_INTERFACE_ITEM,
-    SS_INTERFACE_SERVICE,
-    SS_PATH,
-};
+use ss::SS_DBUS_NAME;
 use ss_crypto::decrypt;
 use util::{
     exec_prompt,
     format_secret,
-    Interface,
+    lock_or_unlock,
+    LockAction,
 };
 
-use dbus::{
-    BusName,
-    Connection,
-    MessageItem,
-    Path,
-};
-use dbus::MessageItem::{
-    Array,
-    ObjectPath,
-    Str,
-};
-use dbus::Interface as InterfaceName;
-use std::rc::Rc;
+use std::collections::HashMap;
+use zvariant::OwnedObjectPath;
 
-// Helper enum for locking
-enum LockAction {
-    Lock,
-    Unlock,
-}
-
-#[derive(Debug)]
 pub struct Item<'a> {
-    // TODO: Implement method for path?
-    bus: Rc<Connection>,
+    conn: zbus::Connection,
     session: &'a Session,
-    pub item_path: Path,
-    item_interface: Interface,
-    service_interface: Interface,
+    pub item_path: OwnedObjectPath,
+    item_proxy: ItemProxy<'a>,
+    service_proxy: &'a ServiceProxy<'a>,
 }
 
 impl<'a> Item<'a> {
-    pub fn new(bus: Rc<Connection>,
-               session: &'a Session,
-               item_path: Path
-               ) -> Self {
-        let item_interface = Interface::new(
-            bus.clone(),
-            BusName::new(SS_DBUS_NAME).unwrap(),
-            item_path.clone(),
-            InterfaceName::new(SS_INTERFACE_ITEM).unwrap()
-        );
-        let service_interface = Interface::new(
-            bus.clone(),
-            BusName::new(SS_DBUS_NAME).unwrap(),
-            Path::new(SS_PATH).unwrap(),
-            InterfaceName::new(SS_INTERFACE_SERVICE).unwrap()
-        );
-        Item {
-            bus,
+    pub fn new(
+        conn: zbus::Connection,
+        session: &'a Session,
+        service_proxy: &'a ServiceProxy<'a>,
+        item_path: OwnedObjectPath,
+        ) -> ::Result<Self>
+    {
+        let item_proxy = ItemProxy::new_for_owned(
+            conn.clone(),
+            SS_DBUS_NAME.to_owned(),
+            item_path.to_string(),
+            )?;
+        Ok(Item {
+            conn,
             session,
             item_path,
-            item_interface,
-            service_interface,
-        }
+            item_proxy,
+            service_proxy,
+        })
     }
 
     pub fn is_locked(&self) -> ::Result<bool> {
-        self.item_interface.get_props("Locked")
-            .map(|locked| {
-                locked.inner().unwrap()
-            })
+        Ok(self.item_proxy.locked()?)
     }
 
     pub fn ensure_unlocked(&self) -> ::Result<()> {
@@ -91,185 +63,99 @@ impl<'a> Item<'a> {
         }
     }
 
-    //Helper function for locking and unlocking
-    // TODO: refactor into utils? It should be same as collection
-    fn lock_or_unlock(&self, lock_action: LockAction) -> ::Result<()> {
-        let objects = MessageItem::new_array(
-            vec![ObjectPath(self.item_path.clone())]
-        ).unwrap();
-
-        let lock_action_str = match lock_action {
-            LockAction::Lock => "Lock",
-            LockAction::Unlock => "Unlock",
-        };
-
-        let res = self.service_interface.method(lock_action_str, vec![objects])?;
-        if let Some(&Array(ref unlocked, _)) = res.get(0) {
-            if unlocked.is_empty() {
-                if let Some(&ObjectPath(ref path)) = res.get(1) {
-                    exec_prompt(self.bus.clone(), path.clone())?;
-                }
-            }
-        }
-        Ok(())
-    }
-
     pub fn unlock(&self) -> ::Result<()> {
-        self.lock_or_unlock(LockAction::Unlock)
+        lock_or_unlock(
+            self.conn.clone(),
+            &self.service_proxy,
+            &self.item_path,
+            LockAction::Unlock,
+        )
     }
 
     pub fn lock(&self) -> ::Result<()> {
-        println!("locked!");
-        self.lock_or_unlock(LockAction::Lock)
+        lock_or_unlock(
+            self.conn.clone(),
+            &self.service_proxy,
+            &self.item_path,
+            LockAction::Lock,
+        )
     }
 
     pub fn get_attributes(&self) -> ::Result<Vec<(String, String)>> {
-        let res = self.item_interface.get_props("Attributes")?;
+        let attributes = self.item_proxy.attributes()?;
 
-        if let Array(attributes, _) = res {
-            return Ok(attributes.iter().map(|ref dict_entry| {
-                let entry: (&MessageItem, &MessageItem) = dict_entry.inner().unwrap();
-                let key: &String = entry.0.inner().unwrap();
-                let value: &String= entry.1.inner().unwrap();
-                (key.clone(), value.clone())
-            }).collect::<Vec<(String, String)>>())
-        } else {
-            Err(SsError::Parse)
-        }
+        let res = attributes.into_iter()
+            .collect::<Vec<(String, String)>>();
+
+        Ok(res)
     }
 
-    // Probably best example of creating dict
     pub fn set_attributes(&self, attributes: Vec<(&str, &str)>) -> ::Result<()> {
         if !attributes.is_empty() {
-            let attributes_dict_entries: Vec<_> = attributes.iter().map(|&(ref key, ref value)| {
-                let dict_entry = (
-                    MessageItem::from(*key),
-                    MessageItem::from(*value)
-                );
-                MessageItem::from(dict_entry)
-            }).collect();
-            let attributes_dict = MessageItem::new_array(attributes_dict_entries).unwrap();
-            self.item_interface.set_props("Attributes", attributes_dict)
+            let attributes: HashMap<&str, &str> = attributes.into_iter().collect();
+            Ok(self.item_proxy.set_attributes(attributes)?)
         } else {
             Ok(())
         }
     }
 
     pub fn get_label(&self) -> ::Result<String> {
-        let label = self.item_interface.get_props("Label")?;
-        if let Str(label_str) = label {
-            Ok(label_str)
-        } else {
-            Err(SsError::Parse)
-        }
+        Ok(self.item_proxy.label()?)
     }
 
     pub fn set_label(&self, new_label: &str) -> ::Result<()> {
-        self.item_interface.set_props("Label", Str(new_label.to_owned()))
+        Ok(self.item_proxy.set_label(new_label)?)
     }
 
     /// Deletes dbus object, but struct instance still exists (current implementation)
     pub fn delete(&self) -> ::Result<()> {
-        //Because of ensure_unlocked, no prompt is really necessary
-        //basically,you must explicitly unlock first
+        // ensure_unlocked handles prompt for unlocking if necessary
         self.ensure_unlocked()?;
-        let prompt = self.item_interface.method("Delete", vec![])?;
+        let prompt_path = self.item_proxy.delete()?;
 
-        if let Some(&ObjectPath(ref prompt_path)) = prompt.get(0) {
-            if &**prompt_path != "/" {
-                    let del_res = exec_prompt(self.bus.clone(), prompt_path.clone())?;
-                    println!("{:?}", del_res);
-                    return Ok(());
-            } else {
-                return Ok(());
-            }
+        // "/" means no prompt necessary
+        if prompt_path.as_str() != "/" {
+            exec_prompt(self.conn.clone(), &prompt_path)?;
         }
-        // If for some reason the patterns don't match, return error
-        Err(SsError::Parse)
+
+        Ok(())
     }
 
     pub fn get_secret(&self) -> ::Result<Vec<u8>> {
-        let session = MessageItem::from(self.session.object_path.clone());
-        let res = self.item_interface.method("GetSecret", vec![session])?;
-        // No secret would be an error, so try! instead of option
-        let secret_struct = res
-            .get(0)
-            .ok_or(SsError::NoResult)?;
-
-        // parse out secret
-
-        // get "secret" field out of secret struct
-        // secret should always be index 2
-        let secret_vec: &Vec<_> = secret_struct.inner().unwrap();
-        let secret_dbus = secret_vec
-            .get(2)
-            .ok_or(SsError::NoResult)?;
-
-        // get array of dbus bytes
-        let secret_bytes_dbus: &Vec<_> = secret_dbus.inner().unwrap();
-
-        // map dbus bytes to u8
-        let secret: Vec<_> = secret_bytes_dbus.iter().map(|byte| byte.inner::<u8>().unwrap()).collect();
+        let secret_struct = self.item_proxy.get_secret(&self.session.object_path)?;
+        let secret = secret_struct.value;
 
         if !self.session.is_encrypted() {
             Ok(secret)
         } else {
             // get "param" (aes_iv) field out of secret struct
-            // param should always be index 1
-            let aes_iv_dbus = secret_vec
-                .get(1)
-                .ok_or(SsError::NoResult)?;
-            // get array of dbus bytes
-            let aes_iv_bytes_dbus: &Vec<_> = aes_iv_dbus.inner().unwrap();
-            // map dbus bytes to u8
-            let aes_iv: Vec<_> = aes_iv_bytes_dbus.iter().map(|byte| byte.inner::<u8>().unwrap()).collect();
+            let aes_iv = secret_struct.parameters;
 
             // decrypt
             let decrypted_secret = decrypt(&secret[..], &self.session.get_aes_key()[..], &aes_iv[..]).unwrap();
+
             Ok(decrypted_secret)
         }
     }
 
     pub fn get_secret_content_type(&self) -> ::Result<String> {
-        let session = MessageItem::from(self.session.object_path.clone());
-        let res = self.item_interface.method("GetSecret", vec![session])?;
-        // No secret content type would be a bug, so try!
-        let secret_struct = res
-            .get(0)
-            .ok_or(SsError::NoResult)?;
+        let secret_struct = self.item_proxy.get_secret(&self.session.object_path)?;
+        let content_type = secret_struct.content_type;
 
-        // parse out secret content type
-
-        // get "content type" field out of secret struct
-        // content type should always be index 3
-        let secret_vec: &Vec<_> = secret_struct.inner().unwrap();
-        let content_type_dbus = secret_vec
-            .get(3)
-            .ok_or(SsError::NoResult)?;
-
-        // Get value out of DBus value
-        let content_type: &String = content_type_dbus.inner().unwrap();
-
-        Ok(content_type.clone())
+        Ok(content_type)
     }
 
     pub fn set_secret(&self, secret: &[u8], content_type: &str) -> ::Result<()> {
         let secret_struct = format_secret(&self.session, secret, content_type)?;
-        self.item_interface.method("SetSecret", vec![secret_struct]).map(|_| ())
+        Ok(self.item_proxy.set_secret(secret_struct)?)
     }
 
     pub fn get_created(&self) -> ::Result<u64> {
-        self.item_interface.get_props("Created")
-            .map(|locked| {
-                locked.inner::<u64>().unwrap()
-            })
+        Ok(self.item_proxy.created()?)
     }
 
     pub fn get_modified(&self) -> ::Result<u64> {
-        self.item_interface.get_props("Modified")
-            .map(|locked| {
-                locked.inner::<u64>().unwrap()
-            })
+        Ok(self.item_proxy.modified()?)
     }
 }
 
@@ -492,7 +378,6 @@ mod test{
         assert_eq!(secret, b"new_test");
     }
 
-    #[cfg(feature = "gmp")]
     #[test]
     fn should_create_encrypted_item() {
         let ss = SecretService::new(EncryptionType::Dh).unwrap();
@@ -509,7 +394,6 @@ mod test{
         assert_eq!(secret, b"test_encrypted");
     }
 
-    #[cfg(feature = "gmp")]
     #[test]
     fn should_create_encrypted_item_from_empty_secret() {
         //empty string
@@ -527,7 +411,6 @@ mod test{
         assert_eq!(secret, b"");
     }
 
-    #[cfg(feature = "gmp")]
     #[test]
     fn should_get_encrypted_secret_across_dbus_connections() {
         {
