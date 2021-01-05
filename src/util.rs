@@ -10,7 +10,7 @@
 //!   exec_prompt
 //!   formatting secrets
 
-use crate::error::{SsError, Result};
+use crate::error::{Error, Result};
 use crate::proxy::prompt::PromptProxy;
 use crate::proxy::service::ServiceProxy;
 use crate::session::Session;
@@ -105,7 +105,7 @@ pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> Result
     prompt_proxy
         .connect_completed(move |dismissed, result| {
             let res = if dismissed {
-                Err(SsError::Prompt)
+                Err(Error::Prompt)
             } else {
                 Ok(result.into())
             };

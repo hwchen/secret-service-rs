@@ -5,7 +5,7 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-use crate::error::{SsError, Result};
+use crate::error::{Error, Result};
 use crate::proxy::item::ItemProxy;
 use crate::proxy::service::ServiceProxy;
 use crate::session::Session;
@@ -57,7 +57,7 @@ impl<'a> Item<'a> {
 
     pub fn ensure_unlocked(&self) -> Result<()> {
         if self.is_locked()? {
-            Err(SsError::Locked)
+            Err(Error::Locked)
         } else {
             Ok(())
         }

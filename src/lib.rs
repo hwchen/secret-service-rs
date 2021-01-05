@@ -97,8 +97,8 @@
 //! In addition, `set` and `get` actions are available for secrets contained in an `Item`.
 //!
 //! ### Errors
-//! This library provides a custom `SsError`. `dbus` and `rust-crypto` crate errors
-//! are converted into `SsError`s.
+//! This library provides a custom `Error`. `dbus` and `rust-crypto` crate errors
+//! are converted into `Error`s.
 //!
 //! Types of errors:
 //!
@@ -138,7 +138,7 @@ mod ss_crypto;
 mod util;
 
 pub use collection::Collection;
-pub use error::{Result, SsError};
+pub use error::{Result, Error};
 pub use item::Item;
 use proxy::service::ServiceProxy;
 use util::exec_prompt;
@@ -209,7 +209,7 @@ impl<'a> SecretService<'a> {
         let object_path = self.service_proxy.read_alias(alias)?;
 
         if object_path.as_str() == "/" {
-            Err(SsError::NoResult)
+            Err(Error::NoResult)
         } else {
             Ok(Collection::new(
                 self.conn.clone(),
@@ -239,7 +239,7 @@ impl<'a> SecretService<'a> {
             }).or_else(|_| {
                 let mut collections = self.get_all_collections()?;
                 if collections.is_empty() {
-                    Err(SsError::NoResult)
+                    Err(Error::NoResult)
                 } else {
                     Ok(collections.swap_remove(0))
                 }
@@ -336,7 +336,7 @@ mod test {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
 
         match ss.get_collection_by_alias("definitely_defintely_does_not_exist") {
-            Err(SsError::NoResult) => println!("worked"),
+            Err(Error::NoResult) => println!("worked"),
             _ => panic!(),
         }
     }
