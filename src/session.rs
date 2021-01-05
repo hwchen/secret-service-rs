@@ -64,10 +64,10 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(service_interface: &ServiceProxy, encryption: EncryptionType) -> ::Result<Self> {
+    pub fn new(service_proxy: &ServiceProxy, encryption: EncryptionType) -> ::Result<Self> {
         match encryption {
             EncryptionType::Plain => {
-                let session= service_interface.open_session(
+                let session= service_proxy.open_session(
                     ALGORITHM_PLAIN,
                     "".into(),
                 )?;
@@ -94,7 +94,7 @@ impl Session {
 
                 let public_key_bytes = public_key.to_bytes_be();
 
-                let session= service_interface.open_session(
+                let session= service_proxy.open_session(
                     ALGORITHM_DH,
                     public_key_bytes.as_slice().into(),
                 )?;
@@ -173,16 +173,16 @@ mod test {
     #[test]
     fn should_create_plain_session() {
         let conn = zbus::Connection::new_session().unwrap();
-        let service_interface = ServiceProxy::new(&conn).unwrap();
-        let session = Session::new(&service_interface, EncryptionType::Plain).unwrap();
+        let service_proxy = ServiceProxy::new(&conn).unwrap();
+        let session = Session::new(&service_proxy, EncryptionType::Plain).unwrap();
         assert!(!session.is_encrypted());
     }
 
     #[test]
     fn should_create_encrypted_session() {
         let conn = zbus::Connection::new_session().unwrap();
-        let service_interface = ServiceProxy::new(&conn).unwrap();
-        let session = Session::new(&service_interface, EncryptionType::Dh).unwrap();
+        let service_proxy = ServiceProxy::new(&conn).unwrap();
+        let session = Session::new(&service_proxy, EncryptionType::Dh).unwrap();
         assert!(session.is_encrypted());
     }
 }

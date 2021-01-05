@@ -33,19 +33,19 @@ pub struct Collection<'a> {
     conn: zbus::Connection,
     session: &'a Session,
     pub collection_path: OwnedObjectPath,
-    collection_interface: CollectionProxy<'a>,
-    service_interface: &'a ServiceProxy<'a>,
+    collection_proxy: CollectionProxy<'a>,
+    service_proxy: &'a ServiceProxy<'a>,
 }
 
 impl<'a> Collection<'a> {
     pub fn new(
         conn: zbus::Connection,
         session: &'a Session,
-        service_interface: &'a ServiceProxy,
+        service_proxy: &'a ServiceProxy,
         collection_path: OwnedObjectPath,
         ) -> ::Result<Self>
     {
-        let collection_interface = CollectionProxy::new_for_owned(
+        let collection_proxy = CollectionProxy::new_for_owned(
             conn.clone(),
             SS_DBUS_NAME.to_owned(),
             collection_path.to_string(),
@@ -54,13 +54,13 @@ impl<'a> Collection<'a> {
             conn,
             session,
             collection_path,
-            collection_interface,
-            service_interface,
+            collection_proxy,
+            service_proxy,
         })
     }
 
     pub fn is_locked(&self) -> ::Result<bool> {
-        Ok(self.collection_interface.locked()?)
+        Ok(self.collection_proxy.locked()?)
     }
 
     pub fn ensure_unlocked(&self) -> ::Result<()> {
@@ -74,7 +74,7 @@ impl<'a> Collection<'a> {
     pub fn unlock(&self) -> ::Result<()> {
         lock_or_unlock(
             self.conn.clone(),
-            &self.service_interface,
+            &self.service_proxy,
             &self.collection_path,
             LockAction::Unlock,
         )
@@ -83,7 +83,7 @@ impl<'a> Collection<'a> {
     pub fn lock(&self) -> ::Result<()> {
         lock_or_unlock(
             self.conn.clone(),
-            &self.service_interface,
+            &self.service_proxy,
             &self.collection_path,
             LockAction::Lock,
         )
@@ -93,7 +93,7 @@ impl<'a> Collection<'a> {
     pub fn delete(&self) -> ::Result<()> {
         // ensure_unlocked handles prompt for unlocking if necessary
         self.ensure_unlocked()?;
-        let prompt_path = self.collection_interface.delete()?;
+        let prompt_path = self.collection_proxy.delete()?;
 
         // "/" means no prompt necessary
         if prompt_path.as_str() != "/" {
@@ -104,7 +104,7 @@ impl<'a> Collection<'a> {
     }
 
     pub fn get_all_items(&self) -> ::Result<Vec<Item>> {
-        let items = self.collection_interface.items()?;
+        let items = self.collection_proxy.items()?;
 
         // map array of item paths to Item
         let res = items.into_iter()
@@ -112,7 +112,7 @@ impl<'a> Collection<'a> {
                 Item::new(
                     self.conn.clone(),
                     &self.session,
-                    &self.service_interface,
+                    &self.service_proxy,
                     item_path.into(),
                 )
             })
@@ -122,7 +122,7 @@ impl<'a> Collection<'a> {
     }
 
     pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> ::Result<Vec<Item>> {
-        let items = self.collection_interface.search_items(attributes.into_iter().collect())?;
+        let items = self.collection_proxy.search_items(attributes.into_iter().collect())?;
 
         // map array of item paths to Item
         let res = items.into_iter()
@@ -130,7 +130,7 @@ impl<'a> Collection<'a> {
                 Item::new(
                     self.conn.clone(),
                     &self.session,
-                    &self.service_interface,
+                    &self.service_proxy,
                     item_path,
                 )
             })
@@ -140,11 +140,11 @@ impl<'a> Collection<'a> {
     }
 
     pub fn get_label(&self) -> ::Result<String> {
-        Ok(self.collection_interface.label()?)
+        Ok(self.collection_proxy.label()?)
     }
 
     pub fn set_label(&self, new_label: &str) -> ::Result<()> {
-        Ok(self.collection_interface.set_label(new_label)?)
+        Ok(self.collection_proxy.set_label(new_label)?)
     }
 
     pub fn create_item(
@@ -166,7 +166,7 @@ impl<'a> Collection<'a> {
         properties.insert(SS_ITEM_LABEL, label.into());
         properties.insert(SS_ITEM_ATTRIBUTES, attributes.into());
 
-        let created_item = self.collection_interface.create_item(
+        let created_item = self.collection_proxy.create_item(
             properties,
             secret_struct.inner,
             replace,
@@ -193,7 +193,7 @@ impl<'a> Collection<'a> {
         Ok(Item::new(
             self.conn.clone(),
             &self.session,
-            &self.service_interface,
+            &self.service_proxy,
             item_path.into(),
         )?)
     }

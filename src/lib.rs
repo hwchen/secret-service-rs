@@ -169,11 +169,10 @@ use zvariant::{ObjectPath,Value};
 /// and negotiate a new cryptographic session
 /// (`EncryptionType::Plain` or `EncryptionType::Dh`)
 ///
-// Interfaces are the dbus namespace for methods
 pub struct SecretService<'a> {
     conn: zbus::Connection,
     session: Session,
-    service_interface: ServiceProxy<'a>,
+    service_proxy: ServiceProxy<'a>,
 }
 
 impl<'a> SecretService<'a> {
@@ -188,24 +187,24 @@ impl<'a> SecretService<'a> {
     /// ```
     pub fn new(encryption: EncryptionType) -> ::Result<Self> {
         let conn = zbus::Connection::new_session()?;
-        let service_interface = ServiceProxy::new(&conn)?;
-        let session = Session::new(&service_interface, encryption)?;
+        let service_proxy = ServiceProxy::new(&conn)?;
+        let session = Session::new(&service_proxy, encryption)?;
 
         Ok(SecretService {
             conn,
             session,
-            service_interface,
+            service_proxy,
         })
     }
 
     /// Get all collections
     pub fn get_all_collections(&self) -> ::Result<Vec<Collection>> {
-        let collections = self.service_interface.collections()?;
+        let collections = self.service_proxy.collections()?;
         Ok(collections.into_iter().map(|object_path| {
             Collection::new(
                 self.conn.clone(),
                 &self.session,
-                &self.service_interface,
+                &self.service_proxy,
                 object_path.into(),
             )
         }).collect::<Result<Vec<_>>>()?)
@@ -216,7 +215,7 @@ impl<'a> SecretService<'a> {
     /// is also a specific method for getting the collection
     /// by default aliasl
     pub fn get_collection_by_alias(&self, alias: &str) -> ::Result<Collection>{
-        let object_path = self.service_interface.read_alias(alias)?;
+        let object_path = self.service_proxy.read_alias(alias)?;
 
         if object_path.as_str() == "/" {
             Err(SsError::NoResult)
@@ -224,7 +223,7 @@ impl<'a> SecretService<'a> {
             Ok(Collection::new(
                 self.conn.clone(),
                 &self.session,
-                &self.service_interface,
+                &self.service_proxy,
                 object_path,
             )?)
         }
@@ -261,7 +260,7 @@ impl<'a> SecretService<'a> {
         let mut properties: HashMap<&str, Value> = HashMap::new();
         properties.insert(SS_ITEM_LABEL, label.into());
 
-        let created_collection = self.service_interface.create_collection(
+        let created_collection = self.service_proxy.create_collection(
             properties,
             alias,
         )?;
@@ -287,14 +286,14 @@ impl<'a> SecretService<'a> {
         Ok(Collection::new(
             self.conn.clone(),
             &self.session,
-            &self.service_interface,
+            &self.service_proxy,
             collection_path.into(),
         )?)
     }
 
     /// Searches all items by attributes
     pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> ::Result<Vec<Item>> {
-        let items = self.service_interface.search_items(attributes.into_iter().collect())?;
+        let items = self.service_proxy.search_items(attributes.into_iter().collect())?;
 
         // map array of item paths to Item
         let res = items.locked.into_iter().chain(items.unlocked.into_iter())
@@ -302,7 +301,7 @@ impl<'a> SecretService<'a> {
                 Item::new(
                     self.conn.clone(),
                     &self.session,
-                    &self.service_interface,
+                    &self.service_proxy,
                     item_path,
                 )
             })

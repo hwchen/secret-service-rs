@@ -25,19 +25,19 @@ pub struct Item<'a> {
     conn: zbus::Connection,
     session: &'a Session,
     pub item_path: OwnedObjectPath,
-    item_interface: ItemProxy<'a>,
-    service_interface: &'a ServiceProxy<'a>,
+    item_proxy: ItemProxy<'a>,
+    service_proxy: &'a ServiceProxy<'a>,
 }
 
 impl<'a> Item<'a> {
     pub fn new(
         conn: zbus::Connection,
         session: &'a Session,
-        service_interface: &'a ServiceProxy<'a>,
+        service_proxy: &'a ServiceProxy<'a>,
         item_path: OwnedObjectPath,
         ) -> ::Result<Self>
     {
-        let item_interface = ItemProxy::new_for_owned(
+        let item_proxy = ItemProxy::new_for_owned(
             conn.clone(),
             SS_DBUS_NAME.to_owned(),
             item_path.to_string(),
@@ -46,13 +46,13 @@ impl<'a> Item<'a> {
             conn,
             session,
             item_path,
-            item_interface,
-            service_interface,
+            item_proxy,
+            service_proxy,
         })
     }
 
     pub fn is_locked(&self) -> ::Result<bool> {
-        Ok(self.item_interface.locked()?)
+        Ok(self.item_proxy.locked()?)
     }
 
     pub fn ensure_unlocked(&self) -> ::Result<()> {
@@ -66,7 +66,7 @@ impl<'a> Item<'a> {
     pub fn unlock(&self) -> ::Result<()> {
         lock_or_unlock(
             self.conn.clone(),
-            &self.service_interface,
+            &self.service_proxy,
             &self.item_path,
             LockAction::Unlock,
         )
@@ -75,14 +75,14 @@ impl<'a> Item<'a> {
     pub fn lock(&self) -> ::Result<()> {
         lock_or_unlock(
             self.conn.clone(),
-            &self.service_interface,
+            &self.service_proxy,
             &self.item_path,
             LockAction::Lock,
         )
     }
 
     pub fn get_attributes(&self) -> ::Result<Vec<(String, String)>> {
-        let attributes = self.item_interface.attributes()?;
+        let attributes = self.item_proxy.attributes()?;
 
         let res = attributes.into_iter()
             .collect::<Vec<(String, String)>>();
@@ -93,25 +93,25 @@ impl<'a> Item<'a> {
     pub fn set_attributes(&self, attributes: Vec<(&str, &str)>) -> ::Result<()> {
         if !attributes.is_empty() {
             let attributes: HashMap<&str, &str> = attributes.into_iter().collect();
-            Ok(self.item_interface.set_attributes(attributes)?)
+            Ok(self.item_proxy.set_attributes(attributes)?)
         } else {
             Ok(())
         }
     }
 
     pub fn get_label(&self) -> ::Result<String> {
-        Ok(self.item_interface.label()?)
+        Ok(self.item_proxy.label()?)
     }
 
     pub fn set_label(&self, new_label: &str) -> ::Result<()> {
-        Ok(self.item_interface.set_label(new_label)?)
+        Ok(self.item_proxy.set_label(new_label)?)
     }
 
     /// Deletes dbus object, but struct instance still exists (current implementation)
     pub fn delete(&self) -> ::Result<()> {
         // ensure_unlocked handles prompt for unlocking if necessary
         self.ensure_unlocked()?;
-        let prompt_path = self.item_interface.delete()?;
+        let prompt_path = self.item_proxy.delete()?;
 
         // "/" means no prompt necessary
         if prompt_path.as_str() != "/" {
@@ -122,7 +122,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn get_secret(&self) -> ::Result<Vec<u8>> {
-        let secret_struct = self.item_interface.get_secret(&self.session.object_path)?;
+        let secret_struct = self.item_proxy.get_secret(&self.session.object_path)?;
         let secret = secret_struct.value;
 
         if !self.session.is_encrypted() {
@@ -139,7 +139,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn get_secret_content_type(&self) -> ::Result<String> {
-        let secret_struct = self.item_interface.get_secret(&self.session.object_path)?;
+        let secret_struct = self.item_proxy.get_secret(&self.session.object_path)?;
         let content_type = secret_struct.content_type;
 
         Ok(content_type)
@@ -147,15 +147,15 @@ impl<'a> Item<'a> {
 
     pub fn set_secret(&self, secret: &[u8], content_type: &str) -> ::Result<()> {
         let secret_struct = format_secret(&self.session, secret, content_type)?;
-        Ok(self.item_interface.set_secret(secret_struct)?)
+        Ok(self.item_proxy.set_secret(secret_struct)?)
     }
 
     pub fn get_created(&self) -> ::Result<u64> {
-        Ok(self.item_interface.created()?)
+        Ok(self.item_proxy.created()?)
     }
 
     pub fn get_modified(&self) -> ::Result<u64> {
-        Ok(self.item_interface.modified()?)
+        Ok(self.item_proxy.modified()?)
     }
 }
 

@@ -5,14 +5,10 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-// Contains helpers for:
-//   exec_prompt
-//   interfaces
-//   formatting secrets
-//
-//   Consider: What else should be in here? Should
-//   formatting secrets be in crypto? Should interfaces
-//   have their own module?
+//! Contains helpers for:
+//!   locking/unlocking
+//!   exec_prompt
+//!   formatting secrets
 
 use error::SsError;
 use proxy::prompt::PromptProxy;
@@ -35,7 +31,7 @@ pub(crate) enum LockAction {
 
 pub(crate) fn lock_or_unlock(
     conn: zbus::Connection,
-    service_interface: &ServiceProxy,
+    service_proxy: &ServiceProxy,
     object_path: &ObjectPath,
     lock_action: LockAction
     ) -> ::Result<()>
@@ -43,8 +39,8 @@ pub(crate) fn lock_or_unlock(
     let objects = vec![object_path];
 
     let lock_action_res = match lock_action {
-        LockAction::Lock => service_interface.lock(objects)?,
-        LockAction::Unlock => service_interface.unlock(objects)?,
+        LockAction::Lock => service_proxy.lock(objects)?,
+        LockAction::Unlock => service_proxy.unlock(objects)?,
     };
 
     if lock_action_res.object_paths.is_empty() {
@@ -97,7 +93,7 @@ pub(crate) fn format_secret(
 }
 
 pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvariant::OwnedValue> {
-    let prompt_interface = PromptProxy::new_for(
+    let prompt_proxy = PromptProxy::new_for(
         &conn,
         SS_DBUS_NAME,
         prompt,
@@ -106,7 +102,7 @@ pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Resu
     let (tx, rx) = channel();
 
     // create a handler for `completed` signal
-    prompt_interface
+    prompt_proxy
         .connect_completed(move |dismissed, result| {
             let res = if dismissed {
                 Err(SsError::Prompt)
@@ -121,11 +117,11 @@ pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Resu
 
     // TODO figure out window_id
     let window_id = "";
-    prompt_interface.prompt(window_id)?;
+    prompt_proxy.prompt(window_id)?;
 
     // waits for next signal and calls the handler.
     // If message handled by above handler, `next_signal` returns `Ok(None)`, ending loop.
-    while prompt_interface.next_signal()?.is_some() {};
+    while prompt_proxy.next_signal()?.is_some() {};
 
     // See comment on allowing channels to panic: https://www.reddit.com/r/rust/comments/awh751/proposal_new_channels_for_rusts_standard_library/ehmk3lz/
     rx.recv().expect("tx shold not be dropped, channel scoped to this fn")
