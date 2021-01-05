@@ -81,22 +81,12 @@ impl<'a> Item<'a> {
         )
     }
 
-    pub fn get_attributes(&self) -> ::Result<Vec<(String, String)>> {
-        let attributes = self.item_proxy.attributes()?;
-
-        let res = attributes.into_iter()
-            .collect::<Vec<(String, String)>>();
-
-        Ok(res)
+    pub fn get_attributes(&self) -> ::Result<HashMap<String, String>> {
+        Ok(self.item_proxy.attributes()?)
     }
 
-    pub fn set_attributes(&self, attributes: Vec<(&str, &str)>) -> ::Result<()> {
-        if !attributes.is_empty() {
-            let attributes: HashMap<&str, &str> = attributes.into_iter().collect();
-            Ok(self.item_proxy.set_attributes(attributes)?)
-        } else {
-            Ok(())
-        }
+    pub fn set_attributes(&self, attributes: HashMap<&str, &str>) -> ::Result<()> {
+        Ok(self.item_proxy.set_attributes(attributes)?)
     }
 
     pub fn get_label(&self) -> ::Result<String> {
@@ -177,7 +167,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test",
             false, // replace
             "text/plain" // content_type
@@ -197,7 +187,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test",
             false, // replace
             "text/plain" // content_type
@@ -213,7 +203,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test",
             false, // replace
             "text/plain" // content_type
@@ -241,7 +231,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test",
             false, // replace
             "text/plain" // content_type
@@ -262,13 +252,13 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            vec![("test_attributes_in_item", "test")],
+            vec![("test_attributes_in_item", "test")].into_iter().collect(),
             b"test",
             false, // replace
             "text/plain" // content_type
         ).unwrap();
         let attributes = item.get_attributes().unwrap();
-        assert_eq!(attributes, vec![("test_attributes_in_item".into(), "test".into())]);
+        assert_eq!(attributes, vec![("test_attributes_in_item".into(), "test".into())].into_iter().collect());
         println!("Attributes: {:?}", attributes);
         item.delete().unwrap();
         //assert!(false);
@@ -280,17 +270,17 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test",
             false, // replace
             "text/plain" // content_type
         ).unwrap();
         // Also test empty array handling
-        item.set_attributes(vec![]).unwrap();
-        item.set_attributes(vec![("test_attributes_in_item_get", "test")]).unwrap();
+        item.set_attributes(HashMap::new()).unwrap();
+        item.set_attributes(vec![("test_attributes_in_item_get", "test")].into_iter().collect()).unwrap();
         let attributes = item.get_attributes().unwrap();
         println!("Attributes: {:?}", attributes);
-        assert_eq!(attributes, vec![("test_attributes_in_item_get".into(), "test".into())]);
+        assert_eq!(attributes, vec![("test_attributes_in_item_get".into(), "test".into())].into_iter().collect());
         item.delete().unwrap();
         //assert!(false);
     }
@@ -300,7 +290,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test",
             false, // replace
             "text/plain" // content_type
@@ -319,7 +309,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test",
             false, // replace
             "text/plain" // content_type
@@ -335,7 +325,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test",
             false, // replace
             "text/plain" // content_type
@@ -351,7 +341,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test",
             false, // replace
             "text/plain" // content_type, defaults to text/plain
@@ -367,7 +357,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test",
             false, // replace
             "text/plain" // content_type
@@ -384,7 +374,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"test_encrypted",
             false, // replace
             "text/plain" // content_type
@@ -401,7 +391,7 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
         let item = collection.create_item(
             "Test",
-            Vec::new(),
+            HashMap::new(),
             b"",
             false, // replace
             "text/plain" // content_type
@@ -418,7 +408,7 @@ mod test{
             let collection = ss.get_default_collection().unwrap();
             let item = collection.create_item(
                 "Test",
-                vec![("test_attributes_in_item_encrypt", "test")],
+                vec![("test_attributes_in_item_encrypt", "test")].into_iter().collect(),
                 b"test_encrypted",
                 false, // replace
                 "text/plain" // content_type
@@ -430,7 +420,7 @@ mod test{
             let ss = SecretService::new(EncryptionType::Dh).unwrap();
             let collection = ss.get_default_collection().unwrap();
             let search_item = collection.search_items(
-                vec![("test_attributes_in_item_encrypt", "test")]
+                vec![("test_attributes_in_item_encrypt", "test")].into_iter().collect()
             ).unwrap();
             let item = search_item.get(0).unwrap().clone();
             assert_eq!(item.get_secret().unwrap(), b"test_encrypted");

@@ -121,8 +121,8 @@ impl<'a> Collection<'a> {
         Ok(res)
     }
 
-    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> ::Result<Vec<Item>> {
-        let items = self.collection_proxy.search_items(attributes.into_iter().collect())?;
+    pub fn search_items(&self, attributes: HashMap<&str, &str>) -> ::Result<Vec<Item>> {
+        let items = self.collection_proxy.search_items(attributes)?;
 
         // map array of item paths to Item
         let res = items.into_iter()
@@ -150,7 +150,7 @@ impl<'a> Collection<'a> {
     pub fn create_item(
         &self,
         label: &str,
-        attributes:Vec<(&str, &str)>,
+        attributes: HashMap<&str, &str>,
         secret: &[u8],
         replace: bool,
         content_type: &str,
@@ -159,8 +159,6 @@ impl<'a> Collection<'a> {
         let secret_struct = format_secret(&self.session, secret, content_type)?;
 
         let mut properties: HashMap<&str, Value> = HashMap::new();
-        // TODO from Vec<(_,_)> directly to Dict?
-        let attributes: HashMap<&str, &str> = attributes.into_iter().collect();
         let attributes: Dict = attributes.into();
 
         properties.insert(SS_ITEM_LABEL, label.into());
@@ -276,22 +274,22 @@ mod test{
         // Create an item
         let item = collection.create_item(
             "test",
-            vec![("test_attributes_in_collection", "test")],
+            vec![("test_attributes_in_collection", "test")].into_iter().collect(),
             b"test_secret",
             false,
             "text/plain"
         ).unwrap();
 
         // handle empty vec search
-        collection.search_items(Vec::new()).unwrap();
+        collection.search_items(HashMap::new()).unwrap();
 
         // handle no result
-        let bad_search = collection.search_items(vec![("test_bad".into(), "test".into())]).unwrap();
+        let bad_search = collection.search_items(vec![("test_bad", "test")].into_iter().collect()).unwrap();
         assert_eq!(bad_search.len(), 0);
 
         // handle correct search for item and compare
         let search_item = collection.search_items(
-            vec![("test_attributes_in_collection", "test")]
+            vec![("test_attributes_in_collection", "test")].into_iter().collect()
         ).unwrap();
 
         assert_eq!(

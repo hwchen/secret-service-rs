@@ -21,6 +21,7 @@
 //! extern crate secret_service;
 //! use secret_service::SecretService;
 //! use secret_service::EncryptionType;
+//! use std::collections::HashMap;
 //!
 //! # fn main() {
 //!
@@ -30,10 +31,13 @@
 //! // get default collection
 //! let collection = ss.get_default_collection().unwrap();
 //!
+//! let mut properties = HashMap::new();
+//! properties.insert("test", "test_value");
+//!
 //! //create new item
 //! collection.create_item(
 //!     "test_label", // label
-//!     vec![("test", "test_value")], // properties
+//!     properties,
 //!     b"test_secret", //secret
 //!     false, // replace item with same attributes
 //!     "text/plain" // secret content type
@@ -383,7 +387,7 @@ mod test {
         // Create an item
         let item = collection.create_item(
             "test",
-            vec![("test_attribute_in_ss", "test_value")],
+            vec![("test_attribute_in_ss", "test_value")].into_iter().collect(),
             b"test_secret",
             false,
             "text/plain"

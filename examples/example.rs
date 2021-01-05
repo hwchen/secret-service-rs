@@ -9,6 +9,7 @@ extern crate secret_service;
 
 use secret_service::SecretService;
 use secret_service::EncryptionType;
+use std::collections::HashMap;
 use std::str;
 
 fn main() {
@@ -18,10 +19,13 @@ fn main() {
     // navigate to default collection
     let collection = ss.get_default_collection().unwrap();
 
+    let mut properties = HashMap::new();
+    properties.insert("test", "test_value");
+
     //create new item
     collection.create_item(
         "test_label", // label
-        vec![("test", "test_value")], // properties
+        properties,
         b"test_secret", //secret
         false, // replace item with same attributes
         "text/plain" // secret content type
