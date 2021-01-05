@@ -12,9 +12,8 @@ This library is feature complete, has stabilized its API, and has removed extran
 
 ### Basic Usage
 
-Requires dbus library.
-
-On ubuntu, this is libdbus-1-dev when building, and libdbus-1-3 when running.
+Does not require dbus library! Pure Rust!
+(On ubuntu, this was libdbus-1-dev when building, and libdbus-1-3 when running)
 
 In Cargo.toml:
 
