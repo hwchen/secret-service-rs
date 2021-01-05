@@ -114,13 +114,12 @@ pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Resu
                 Ok(result.into())
             };
 
-            // FIXME remove unwrap
-            tx.send(res).expect("remove this unwrap");
+            tx.send(res).expect("rx should not be dropped, channel scoped to this fn");
 
             Ok(())
         })?;
 
-    // FIXME figure out window_id
+    // TODO figure out window_id
     let window_id = "";
     prompt_interface.prompt(window_id)?;
 
@@ -128,6 +127,6 @@ pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Resu
     // If message handled by above handler, `next_signal` returns `Ok(None)`, ending loop.
     while prompt_interface.next_signal()?.is_some() {};
 
-    // FIXME remove unwrap
-    rx.recv().expect("remove this unwrap")
+    // See comment on allowing channels to panic: https://www.reddit.com/r/rust/comments/awh751/proposal_new_channels_for_rusts_standard_library/ehmk3lz/
+    rx.recv().expect("tx shold not be dropped, channel scoped to this fn")
 }
