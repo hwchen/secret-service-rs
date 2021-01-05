@@ -7,10 +7,11 @@
 
 extern crate secret_service;
 
-use secret_service::SecretService;
-use secret_service::EncryptionType;
-use std::collections::HashMap;
-use std::str;
+use secret_service::{EncryptionType, SecretService};
+use std::{
+    collections::HashMap,
+    str,
+};
 
 fn main() {
     // Initialize secret service

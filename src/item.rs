@@ -5,13 +5,13 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-use error::SsError;
-use proxy::item::ItemProxy;
-use proxy::service::ServiceProxy;
-use session::Session;
-use ss::SS_DBUS_NAME;
-use ss_crypto::decrypt;
-use util::{
+use crate::error::{SsError, Result};
+use crate::proxy::item::ItemProxy;
+use crate::proxy::service::ServiceProxy;
+use crate::session::Session;
+use crate::ss::SS_DBUS_NAME;
+use crate::ss_crypto::decrypt;
+use crate::util::{
     exec_prompt,
     format_secret,
     lock_or_unlock,
@@ -35,7 +35,7 @@ impl<'a> Item<'a> {
         session: &'a Session,
         service_proxy: &'a ServiceProxy<'a>,
         item_path: OwnedObjectPath,
-        ) -> ::Result<Self>
+        ) -> Result<Self>
     {
         let item_proxy = ItemProxy::new_for_owned(
             conn.clone(),
@@ -51,11 +51,11 @@ impl<'a> Item<'a> {
         })
     }
 
-    pub fn is_locked(&self) -> ::Result<bool> {
+    pub fn is_locked(&self) -> Result<bool> {
         Ok(self.item_proxy.locked()?)
     }
 
-    pub fn ensure_unlocked(&self) -> ::Result<()> {
+    pub fn ensure_unlocked(&self) -> Result<()> {
         if self.is_locked()? {
             Err(SsError::Locked)
         } else {
@@ -63,7 +63,7 @@ impl<'a> Item<'a> {
         }
     }
 
-    pub fn unlock(&self) -> ::Result<()> {
+    pub fn unlock(&self) -> Result<()> {
         lock_or_unlock(
             self.conn.clone(),
             &self.service_proxy,
@@ -72,7 +72,7 @@ impl<'a> Item<'a> {
         )
     }
 
-    pub fn lock(&self) -> ::Result<()> {
+    pub fn lock(&self) -> Result<()> {
         lock_or_unlock(
             self.conn.clone(),
             &self.service_proxy,
@@ -81,24 +81,24 @@ impl<'a> Item<'a> {
         )
     }
 
-    pub fn get_attributes(&self) -> ::Result<HashMap<String, String>> {
+    pub fn get_attributes(&self) -> Result<HashMap<String, String>> {
         Ok(self.item_proxy.attributes()?)
     }
 
-    pub fn set_attributes(&self, attributes: HashMap<&str, &str>) -> ::Result<()> {
+    pub fn set_attributes(&self, attributes: HashMap<&str, &str>) -> Result<()> {
         Ok(self.item_proxy.set_attributes(attributes)?)
     }
 
-    pub fn get_label(&self) -> ::Result<String> {
+    pub fn get_label(&self) -> Result<String> {
         Ok(self.item_proxy.label()?)
     }
 
-    pub fn set_label(&self, new_label: &str) -> ::Result<()> {
+    pub fn set_label(&self, new_label: &str) -> Result<()> {
         Ok(self.item_proxy.set_label(new_label)?)
     }
 
     /// Deletes dbus object, but struct instance still exists (current implementation)
-    pub fn delete(&self) -> ::Result<()> {
+    pub fn delete(&self) -> Result<()> {
         // ensure_unlocked handles prompt for unlocking if necessary
         self.ensure_unlocked()?;
         let prompt_path = self.item_proxy.delete()?;
@@ -111,7 +111,7 @@ impl<'a> Item<'a> {
         Ok(())
     }
 
-    pub fn get_secret(&self) -> ::Result<Vec<u8>> {
+    pub fn get_secret(&self) -> Result<Vec<u8>> {
         let secret_struct = self.item_proxy.get_secret(&self.session.object_path)?;
         let secret = secret_struct.value;
 
@@ -128,23 +128,23 @@ impl<'a> Item<'a> {
         }
     }
 
-    pub fn get_secret_content_type(&self) -> ::Result<String> {
+    pub fn get_secret_content_type(&self) -> Result<String> {
         let secret_struct = self.item_proxy.get_secret(&self.session.object_path)?;
         let content_type = secret_struct.content_type;
 
         Ok(content_type)
     }
 
-    pub fn set_secret(&self, secret: &[u8], content_type: &str) -> ::Result<()> {
+    pub fn set_secret(&self, secret: &[u8], content_type: &str) -> Result<()> {
         let secret_struct = format_secret(&self.session, secret, content_type)?;
         Ok(self.item_proxy.set_secret(secret_struct)?)
     }
 
-    pub fn get_created(&self) -> ::Result<u64> {
+    pub fn get_created(&self) -> Result<u64> {
         Ok(self.item_proxy.created()?)
     }
 
-    pub fn get_modified(&self) -> ::Result<u64> {
+    pub fn get_modified(&self) -> Result<u64> {
         Ok(self.item_proxy.modified()?)
     }
 }

@@ -17,15 +17,19 @@
 // 7. Format Secret: encode the secret value for the value field in secret struct. 
 //      This encoding uses the aes_key from the associated Session.
 
-use proxy::service::ServiceProxy;
-use ss::{ALGORITHM_DH, ALGORITHM_PLAIN};
+use crate::error::Result;
+use crate::proxy::service::ServiceProxy;
+use crate::ss::{ALGORITHM_DH, ALGORITHM_PLAIN};
 
 use sha2::Sha256;
 use hkdf::Hkdf;
-use num::bigint::BigUint;
-use num::traits::{One, Zero};
-use num::integer::Integer;
-use num::FromPrimitive;
+use lazy_static::lazy_static;
+use num::{
+    bigint::BigUint,
+    traits::{One, Zero},
+    integer::Integer,
+    FromPrimitive,
+};
 use rand::{Rng, rngs::OsRng};
 use std::convert::TryInto;
 use zvariant::OwnedObjectPath;
@@ -64,7 +68,7 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(service_proxy: &ServiceProxy, encryption: EncryptionType) -> ::Result<Self> {
+    pub fn new(service_proxy: &ServiceProxy, encryption: EncryptionType) -> Result<Self> {
         match encryption {
             EncryptionType::Plain => {
                 let session= service_proxy.open_session(

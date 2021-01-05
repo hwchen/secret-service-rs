@@ -10,14 +10,14 @@
 //!   exec_prompt
 //!   formatting secrets
 
-use error::SsError;
-use proxy::prompt::PromptProxy;
-use proxy::service::ServiceProxy;
-use session::Session;
-use ss::SS_DBUS_NAME;
-use ss_crypto::encrypt;
-use proxy::SecretStruct;
-use proxy::item::SecretStructInput;
+use crate::error::{SsError, Result};
+use crate::proxy::prompt::PromptProxy;
+use crate::proxy::service::ServiceProxy;
+use crate::session::Session;
+use crate::ss::SS_DBUS_NAME;
+use crate::ss_crypto::encrypt;
+use crate::proxy::SecretStruct;
+use crate::proxy::item::SecretStructInput;
 
 use rand::{Rng, rngs::OsRng};
 use std::sync::mpsc::channel;
@@ -34,7 +34,7 @@ pub(crate) fn lock_or_unlock(
     service_proxy: &ServiceProxy,
     object_path: &ObjectPath,
     lock_action: LockAction
-    ) -> ::Result<()>
+    ) -> Result<()>
 {
     let objects = vec![object_path];
 
@@ -53,7 +53,7 @@ pub(crate) fn format_secret(
     session: &Session,
     secret: &[u8],
     content_type: &str
-    ) -> ::Result<SecretStructInput>
+    ) -> Result<SecretStructInput>
 {
     let content_type = content_type.to_owned();
 
@@ -92,7 +92,7 @@ pub(crate) fn format_secret(
     }
 }
 
-pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> ::Result<zvariant::OwnedValue> {
+pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> Result<zvariant::OwnedValue> {
     let prompt_proxy = PromptProxy::new_for(
         &conn,
         SS_DBUS_NAME,

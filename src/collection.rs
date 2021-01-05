@@ -5,17 +5,17 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-use error::SsError;
-use item::Item;
-use proxy::collection::CollectionProxy;
-use proxy::service::ServiceProxy;
-use session::Session;
-use ss::{
+use crate::error::{SsError, Result};
+use crate::item::Item;
+use crate::proxy::collection::CollectionProxy;
+use crate::proxy::service::ServiceProxy;
+use crate::session::Session;
+use crate::ss::{
     SS_DBUS_NAME,
     SS_ITEM_LABEL,
     SS_ITEM_ATTRIBUTES,
 };
-use util::{
+use crate::util::{
     exec_prompt,
     format_secret,
     lock_or_unlock,
@@ -43,7 +43,7 @@ impl<'a> Collection<'a> {
         session: &'a Session,
         service_proxy: &'a ServiceProxy,
         collection_path: OwnedObjectPath,
-        ) -> ::Result<Self>
+        ) -> Result<Self>
     {
         let collection_proxy = CollectionProxy::new_for_owned(
             conn.clone(),
@@ -59,11 +59,11 @@ impl<'a> Collection<'a> {
         })
     }
 
-    pub fn is_locked(&self) -> ::Result<bool> {
+    pub fn is_locked(&self) -> Result<bool> {
         Ok(self.collection_proxy.locked()?)
     }
 
-    pub fn ensure_unlocked(&self) -> ::Result<()> {
+    pub fn ensure_unlocked(&self) -> Result<()> {
         if self.is_locked()? {
             Err(SsError::Locked)
         } else {
@@ -71,7 +71,7 @@ impl<'a> Collection<'a> {
         }
     }
 
-    pub fn unlock(&self) -> ::Result<()> {
+    pub fn unlock(&self) -> Result<()> {
         lock_or_unlock(
             self.conn.clone(),
             &self.service_proxy,
@@ -80,7 +80,7 @@ impl<'a> Collection<'a> {
         )
     }
 
-    pub fn lock(&self) -> ::Result<()> {
+    pub fn lock(&self) -> Result<()> {
         lock_or_unlock(
             self.conn.clone(),
             &self.service_proxy,
@@ -90,7 +90,7 @@ impl<'a> Collection<'a> {
     }
 
     /// Deletes dbus object, but struct instance still exists (current implementation)
-    pub fn delete(&self) -> ::Result<()> {
+    pub fn delete(&self) -> Result<()> {
         // ensure_unlocked handles prompt for unlocking if necessary
         self.ensure_unlocked()?;
         let prompt_path = self.collection_proxy.delete()?;
@@ -103,7 +103,7 @@ impl<'a> Collection<'a> {
         Ok(())
     }
 
-    pub fn get_all_items(&self) -> ::Result<Vec<Item>> {
+    pub fn get_all_items(&self) -> Result<Vec<Item>> {
         let items = self.collection_proxy.items()?;
 
         // map array of item paths to Item
@@ -116,12 +116,12 @@ impl<'a> Collection<'a> {
                     item_path.into(),
                 )
             })
-            .collect::<::Result<_>>()?;
+            .collect::<Result<_>>()?;
 
         Ok(res)
     }
 
-    pub fn search_items(&self, attributes: HashMap<&str, &str>) -> ::Result<Vec<Item>> {
+    pub fn search_items(&self, attributes: HashMap<&str, &str>) -> Result<Vec<Item>> {
         let items = self.collection_proxy.search_items(attributes)?;
 
         // map array of item paths to Item
@@ -134,16 +134,16 @@ impl<'a> Collection<'a> {
                     item_path,
                 )
             })
-            .collect::<::Result<_>>()?;
+            .collect::<Result<_>>()?;
 
         Ok(res)
     }
 
-    pub fn get_label(&self) -> ::Result<String> {
+    pub fn get_label(&self) -> Result<String> {
         Ok(self.collection_proxy.label()?)
     }
 
-    pub fn set_label(&self, new_label: &str) -> ::Result<()> {
+    pub fn set_label(&self, new_label: &str) -> Result<()> {
         Ok(self.collection_proxy.set_label(new_label)?)
     }
 
@@ -154,7 +154,7 @@ impl<'a> Collection<'a> {
         secret: &[u8],
         replace: bool,
         content_type: &str,
-        ) -> ::Result<Item>
+        ) -> Result<Item>
     {
         let secret_struct = format_secret(&self.session, secret, content_type)?;
 

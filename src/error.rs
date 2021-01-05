@@ -22,8 +22,7 @@
 // - locked (currently custom dbus error)
 // - prompt dismissed (not an error?) (currently custom dbus error)
 
-use std::error;
-use std::fmt;
+use std::{error, fmt};
 use zbus;
 
 /// Result type often returned from methods that have SsError.

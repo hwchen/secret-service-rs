@@ -18,7 +18,6 @@
 //!
 //! ## Basic Usage
 //! ```
-//! extern crate secret_service;
 //! use secret_service::SecretService;
 //! use secret_service::EncryptionType;
 //! use std::collections::HashMap;
@@ -129,20 +128,6 @@
 // ss provides some constants which are paths for dbus interaction, and some other strings.
 //
 
-extern crate aes;
-extern crate block_modes;
-extern crate hkdf;
-#[macro_use]
-extern crate lazy_static;
-extern crate num;
-extern crate rand;
-extern crate serde;
-extern crate sha2;
-extern crate zbus;
-extern crate zbus_macros;
-extern crate zvariant;
-extern crate zvariant_derive;
-
 mod collection;
 mod error;
 mod item;
@@ -161,8 +146,10 @@ use session::Session;
 pub use session::EncryptionType;
 use ss::SS_ITEM_LABEL;
 
-use std::collections::HashMap;
-use std::convert::TryInto;
+use std::{
+    collections::HashMap,
+    convert::TryInto,
+};
 use zvariant::{ObjectPath,Value};
 
 /// Secret Service Struct.
@@ -189,7 +176,7 @@ impl<'a> SecretService<'a> {
     /// # use secret_service::EncryptionType;
     /// let ss = SecretService::new(EncryptionType::Dh).unwrap();
     /// ```
-    pub fn new(encryption: EncryptionType) -> ::Result<Self> {
+    pub fn new(encryption: EncryptionType) -> Result<Self> {
         let conn = zbus::Connection::new_session()?;
         let service_proxy = ServiceProxy::new(&conn)?;
         let session = Session::new(&service_proxy, encryption)?;
@@ -202,7 +189,7 @@ impl<'a> SecretService<'a> {
     }
 
     /// Get all collections
-    pub fn get_all_collections(&self) -> ::Result<Vec<Collection>> {
+    pub fn get_all_collections(&self) -> Result<Vec<Collection>> {
         let collections = self.service_proxy.collections()?;
         Ok(collections.into_iter().map(|object_path| {
             Collection::new(
@@ -218,7 +205,7 @@ impl<'a> SecretService<'a> {
     /// Most common would be the `default` alias, but there
     /// is also a specific method for getting the collection
     /// by default aliasl
-    pub fn get_collection_by_alias(&self, alias: &str) -> ::Result<Collection>{
+    pub fn get_collection_by_alias(&self, alias: &str) -> Result<Collection>{
         let object_path = self.service_proxy.read_alias(alias)?;
 
         if object_path.as_str() == "/" {
@@ -235,7 +222,7 @@ impl<'a> SecretService<'a> {
 
     /// Get default collection.
     /// (The collection whos alias is `default`)
-    pub fn get_default_collection(&self) -> ::Result<Collection> {
+    pub fn get_default_collection(&self) -> Result<Collection> {
         self.get_collection_by_alias("default")
     }
 
@@ -243,7 +230,7 @@ impl<'a> SecretService<'a> {
     /// First tries `default` collection, then `session`
     /// collection, then the first collection when it 
     /// gets all collections.
-    pub fn get_any_collection(&self) -> ::Result<Collection> {
+    pub fn get_any_collection(&self) -> Result<Collection> {
         // default first, then session, then first
 
         self.get_default_collection()
@@ -260,7 +247,7 @@ impl<'a> SecretService<'a> {
     }
 
     /// Creates a new collection with a label and an alias.
-    pub fn create_collection(&self, label: &str, alias: &str) -> ::Result<Collection> {
+    pub fn create_collection(&self, label: &str, alias: &str) -> Result<Collection> {
         let mut properties: HashMap<&str, Value> = HashMap::new();
         properties.insert(SS_ITEM_LABEL, label.into());
 
@@ -296,7 +283,7 @@ impl<'a> SecretService<'a> {
     }
 
     /// Searches all items by attributes
-    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> ::Result<Vec<Item>> {
+    pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>> {
         let items = self.service_proxy.search_items(attributes.into_iter().collect())?;
 
         // map array of item paths to Item

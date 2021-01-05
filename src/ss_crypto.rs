@@ -12,16 +12,18 @@ use aes::Aes128;
 use block_modes::{BlockMode, Cbc};
 use block_modes::block_padding::Pkcs7;
 
+use crate::error::Result;
+
 type Aes128Cbc = Cbc<Aes128, Pkcs7>;
 
-pub fn encrypt(data: &[u8], key: &[u8], iv: &[u8]) -> ::Result<Vec<u8>> {
+pub fn encrypt(data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>> {
     let cipher = Aes128Cbc::new_var(key, iv)?;
     let cipher_text = cipher.encrypt_vec(data);
 
     Ok(cipher_text)
 }
 
-pub fn decrypt(encrypted_data: &[u8], key: &[u8], iv: &[u8]) -> ::Result<Vec<u8>> {
+pub fn decrypt(encrypted_data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>> {
     let cipher = Aes128Cbc::new_var(key, iv)?;
     let decrypted = cipher.decrypt_vec(encrypted_data)?;
 
