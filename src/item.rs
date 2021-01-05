@@ -30,7 +30,7 @@ pub struct Item<'a> {
 }
 
 impl<'a> Item<'a> {
-    pub fn new(
+    pub(crate) fn new(
         conn: zbus::Connection,
         session: &'a Session,
         service_proxy: &'a ServiceProxy<'a>,

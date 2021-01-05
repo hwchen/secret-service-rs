@@ -38,7 +38,7 @@ pub struct Collection<'a> {
 }
 
 impl<'a> Collection<'a> {
-    pub fn new(
+    pub(crate) fn new(
         conn: zbus::Connection,
         session: &'a Session,
         service_proxy: &'a ServiceProxy,
