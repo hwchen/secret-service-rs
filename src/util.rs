@@ -48,7 +48,7 @@ pub(crate) fn lock_or_unlock(
     };
 
     if lock_action_res.object_paths.is_empty() {
-        exec_prompt(conn.clone(), &lock_action_res.prompt)?;
+        exec_prompt(conn, &lock_action_res.prompt)?;
     }
     Ok(())
 }

@@ -43,7 +43,7 @@ impl<'a> Item<'a> {
             item_path.to_string(),
             )?;
         Ok(Item {
-            conn: conn.clone(),
+            conn,
             session,
             item_path,
             item_interface,
@@ -145,7 +145,7 @@ impl<'a> Item<'a> {
         let secret_struct = self.item_interface.get_secret(&self.session.object_path)?;
         let content_type = secret_struct.content_type;
 
-        Ok(content_type.clone())
+        Ok(content_type)
     }
 
     pub fn set_secret(&self, secret: &[u8], content_type: &str) -> ::Result<()> {

@@ -51,7 +51,7 @@ impl<'a> Collection<'a> {
             collection_path.to_string(),
             )?;
         Ok(Collection {
-            conn: conn.clone(),
+            conn,
             session,
             collection_path,
             collection_interface,
@@ -133,7 +133,7 @@ impl<'a> Collection<'a> {
                     self.conn.clone(),
                     &self.session,
                     &self.service_interface,
-                    item_path.into(),
+                    item_path,
                 )
             })
             .collect::<::Result<_>>()?;

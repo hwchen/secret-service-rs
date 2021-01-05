@@ -243,7 +243,7 @@ impl<'a> SecretService<'a> {
                 self.conn.clone(),
                 &self.session,
                 &self.service_interface,
-                object_path.into(),
+                object_path,
             )?)
         }
     }
@@ -321,7 +321,7 @@ impl<'a> SecretService<'a> {
                     self.conn.clone(),
                     &self.session,
                     &self.service_interface,
-                    item_path.into(),
+                    item_path,
                 )
             })
             .collect::<Result<_>>()?;
