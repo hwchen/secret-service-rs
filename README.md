@@ -8,7 +8,7 @@ This library is feature complete, has stabilized its API, and has removed extran
 
 ### Documentation
 
-[Get Docs!](https://docs.rs/secret-service/1.0.0/secret_service/)
+[Get Docs!](https://docs.rs/secret-service/)
 
 ### Basic Usage
 
@@ -19,7 +19,7 @@ In Cargo.toml:
 
 ```
 [dependencies]
-secret-service = "1.1.3"
+secret-service = "2.0.0"
 ```
 
 If you have `cargo-extras` installed, can replace above step with the command at the prompt in your project directory:
