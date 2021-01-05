@@ -39,14 +39,10 @@ trait Service{
 
     fn get_secrets(&self, objects: Vec<ObjectPath>) -> zbus::Result<HashMap<OwnedObjectPath, SecretStruct>>;
 
-    /// Returns collection
     fn read_alias(&self, name: &str) -> zbus::Result<OwnedObjectPath>;
 
     fn set_alias(&self, name: &str, collection: ObjectPath) -> zbus::Result<()>;
 
-    /// Returns collections
-    // TODO Not sure why ObjectPath would be allowed but OwnedObjectPath would not be? Should Owned
-    // be preferred here?
     #[dbus_proxy(property)]
     fn collections(&self) -> zbus::fdo::Result<Vec<ObjectPath>>;
 }

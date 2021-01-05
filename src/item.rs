@@ -94,7 +94,7 @@ impl<'a> Item<'a> {
     pub fn set_attributes(&self, attributes: Vec<(&str, &str)>) -> ::Result<()> {
         if !attributes.is_empty() {
             let attributes: HashMap<&str, &str> = attributes.into_iter().collect();
-            Ok(self.item_interface.set_attributes(attributes.into())?)
+            Ok(self.item_interface.set_attributes(attributes)?)
         } else {
             Ok(())
         }

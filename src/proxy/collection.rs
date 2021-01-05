@@ -28,7 +28,6 @@ trait Collection{
     /// Returns prompt: ObjectPath
     fn delete(&self) -> zbus::Result<OwnedObjectPath>;
 
-    // TODO why is ownedobjectpath ok here? is it because it's not a property?
     fn search_items(&self, attributes: HashMap<&str, &str>) -> zbus::Result<Vec<OwnedObjectPath>>;
 
     fn create_item(&self, properties: HashMap<&str, Value>, secret: SecretStruct, replace: bool) -> zbus::Result<CreateItemResult>;

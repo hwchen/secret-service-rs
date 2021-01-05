@@ -102,7 +102,6 @@ impl Session {
                 let session_path = session.result;
 
                 // Set aes key from server key
-                // TODO: Don't store keys except for aes?
                 let server_public_key = BigUint::from_bytes_be(&server_public_key);
                 let server_public_key_bytes = server_public_key.to_bytes_be();
                 let common_secret = powm(&server_public_key, &private_key, &DH_PRIME);

@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use zbus;
 use zbus_macros::dbus_proxy;
-use zvariant::{Dict, ObjectPath, OwnedObjectPath};
+use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::Type;
 
 use super::SecretStruct;
@@ -33,13 +33,11 @@ trait Item{
     #[dbus_proxy(property)]
     fn locked(&self) -> zbus::fdo::Result<bool>;
 
-    // Looks like the Dict has to be transformed into HashMap<String, String> in separate step?
     #[dbus_proxy(property)]
     fn attributes(&self) -> zbus::fdo::Result<HashMap<String, String>>;
 
-    // TODO change Dict to HashMap?
     #[dbus_proxy(property)]
-    fn set_attributes(&self, attributes: Dict) -> zbus::fdo::Result<()>;
+    fn set_attributes(&self, attributes: HashMap<&str, &str>) -> zbus::fdo::Result<()>;
 
     #[dbus_proxy(property)]
     fn label(&self) -> zbus::fdo::Result<String>;

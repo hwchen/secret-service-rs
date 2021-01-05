@@ -5,24 +5,6 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-// requires ldbus dev library
-// on ubuntu, libdbus-1-dev
-
-// TODO: refactoring
-//
-// map_err() for inner() instead of unwrap()
-// return errors early.
-// factor out handling mapping paths to Item
-// Remove all matches for option and result!
-// properly return path for delete actions?
-// Move similar methods to common interface: locking, attributes, del, label?
-// Reorg imports, format function params to be consistent
-// Refactor to make str and String function params consistent
-// Abstract prompts for creating items. Can I abstract other prompts? in all tests, make sure that check for structs
-// Change all MessageItems initialization to use MessageItem::from()
-// TODO: Could factor out some fns into utils: lock/unlock, more prompts.
-// TODO: Util also contains format_secret, but this may be moved to ss_crypto.
-//
 //! # Secret Service libary
 //!
 //! This library implements a rust interface to the Secret Service API which is implemented
