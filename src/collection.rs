@@ -91,18 +91,16 @@ impl<'a> Collection<'a> {
 
     /// Deletes dbus object, but struct instance still exists (current implementation)
     pub fn delete(&self) -> ::Result<()> {
-        //Because of ensure_unlocked, no prompt is really necessary
-        //basically,you must explicitly unlock first
+        // ensure_unlocked handles prompt for unlocking if necessary
         self.ensure_unlocked()?;
         let prompt_path = self.collection_interface.delete()?;
 
+        // "/" means no prompt necessary
         if prompt_path.as_str() != "/" {
-                exec_prompt(self.conn.clone(), &prompt_path)?;
-        } else {
-            return Ok(());
+            exec_prompt(self.conn.clone(), &prompt_path)?;
         }
-        // If for some reason the patterns don't match, return error
-        Err(SsError::Parse)
+
+        Ok(())
     }
 
     pub fn get_all_items(&self) -> ::Result<Vec<Item>> {

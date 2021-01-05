@@ -90,7 +90,6 @@ impl<'a> Item<'a> {
         Ok(res)
     }
 
-    // Probably best example of creating dict
     pub fn set_attributes(&self, attributes: Vec<(&str, &str)>) -> ::Result<()> {
         if !attributes.is_empty() {
             let attributes: HashMap<&str, &str> = attributes.into_iter().collect();
@@ -110,18 +109,16 @@ impl<'a> Item<'a> {
 
     /// Deletes dbus object, but struct instance still exists (current implementation)
     pub fn delete(&self) -> ::Result<()> {
-        //Because of ensure_unlocked, no prompt is really necessary
-        //basically,you must explicitly unlock first
+        // ensure_unlocked handles prompt for unlocking if necessary
         self.ensure_unlocked()?;
         let prompt_path = self.item_interface.delete()?;
 
+        // "/" means no prompt necessary
         if prompt_path.as_str() != "/" {
-                exec_prompt(self.conn.clone(), &prompt_path)?;
-        } else {
-            return Ok(());
+            exec_prompt(self.conn.clone(), &prompt_path)?;
         }
-        // If for some reason the patterns don't match, return error
-        Err(SsError::Parse)
+
+        Ok(())
     }
 
     pub fn get_secret(&self) -> ::Result<Vec<u8>> {
