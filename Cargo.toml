@@ -1,14 +1,14 @@
 [package]
 authors = ["Walther Chen <walther.chen@gmail.com>"]
 description = "Library to interface with Secret Service API"
-documentation = "https://hwchen.github.io/secret-service-rs/secret_service"
+documentation = "https://docs.rs/secret-service"
 homepage = "https://github.com/hwchen/secret-service-rs.git"
 keywords = ["secret-service", "password", "linux", "keychain"]
 license = "MIT OR Apache-2.0"
 name = "secret-service"
 repository = "https://github.com/hwchen/secret-service-rs.git"
 edition = "2018"
-version = "2.0.0"
+version = "2.0.1"
 
 [dependencies]
 aes = "0.6.0"
