@@ -11,11 +11,11 @@ edition = "2018"
 version = "2.0.1"
 
 [dependencies]
-aes = "0.6.0"
-block-modes = "0.7.0"
-hkdf = "0.10.0"
+aes = "0.7.0"
+block-modes = "0.8.0"
+hkdf = "0.11.0"
 lazy_static = "1.4.0"
-num = "0.3.1"
+num = "0.4.0"
 rand = "0.8.1"
 serde = { version = "1.0.118", features = ["derive"] }
 sha2 = "0.9.2"
