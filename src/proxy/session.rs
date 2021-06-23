@@ -14,9 +14,7 @@ use zbus_macros::dbus_proxy;
 /// This will derive SessionProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
-#[dbus_proxy(
-    interface = "org.freedesktop.Secret.Session",
-)]
-trait Session{
+#[dbus_proxy(interface = "org.freedesktop.Secret.Session")]
+trait Session {
     fn close(&self) -> zbus::Result<()>;
 }

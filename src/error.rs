@@ -42,7 +42,7 @@ pub enum Error {
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt:: Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             // crypto error does not implement Display
             Error::Crypto(_) => write!(f, "Crypto error: Invalid Length or Padding"),

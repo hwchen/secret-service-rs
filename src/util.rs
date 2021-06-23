@@ -11,15 +11,15 @@
 //!   formatting secrets
 
 use crate::error::{Error, Result};
+use crate::proxy::item::SecretStructInput;
 use crate::proxy::prompt::PromptProxy;
 use crate::proxy::service::ServiceProxy;
+use crate::proxy::SecretStruct;
 use crate::session::Session;
 use crate::ss::SS_DBUS_NAME;
 use crate::ss_crypto::encrypt;
-use crate::proxy::SecretStruct;
-use crate::proxy::item::SecretStructInput;
 
-use rand::{Rng, rngs::OsRng};
+use rand::{rngs::OsRng, Rng};
 use std::sync::mpsc::channel;
 use zvariant::ObjectPath;
 
@@ -33,9 +33,8 @@ pub(crate) fn lock_or_unlock(
     conn: zbus::Connection,
     service_proxy: &ServiceProxy,
     object_path: &ObjectPath,
-    lock_action: LockAction
-    ) -> Result<()>
-{
+    lock_action: LockAction,
+) -> Result<()> {
     let objects = vec![object_path];
 
     let lock_action_res = match lock_action {
@@ -52,14 +51,13 @@ pub(crate) fn lock_or_unlock(
 pub(crate) fn format_secret(
     session: &Session,
     secret: &[u8],
-    content_type: &str
-    ) -> Result<SecretStructInput>
-{
+    content_type: &str,
+) -> Result<SecretStructInput> {
     let content_type = content_type.to_owned();
 
     if session.is_encrypted() {
         let mut rng = OsRng {};
-        let mut aes_iv = [0;16];
+        let mut aes_iv = [0; 16];
         rng.fill(&mut aes_iv);
 
         let encrypted_secret = encrypt(secret, &session.get_aes_key()[..], &aes_iv)?;
@@ -74,7 +72,7 @@ pub(crate) fn format_secret(
                 parameters,
                 value,
                 content_type,
-            }
+            },
         })
     } else {
         // just Plain for now
@@ -87,33 +85,32 @@ pub(crate) fn format_secret(
                 parameters,
                 value,
                 content_type,
-            }
+            },
         })
     }
 }
 
-pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> Result<zvariant::OwnedValue> {
-    let prompt_proxy = PromptProxy::new_for(
-        &conn,
-        SS_DBUS_NAME,
-        prompt,
-        )?;
+pub(crate) fn exec_prompt(
+    conn: zbus::Connection,
+    prompt: &ObjectPath,
+) -> Result<zvariant::OwnedValue> {
+    let prompt_proxy = PromptProxy::new_for(&conn, SS_DBUS_NAME, prompt)?;
 
     let (tx, rx) = channel();
 
     // create a handler for `completed` signal
-    prompt_proxy
-        .connect_completed(move |dismissed, result| {
-            let res = if dismissed {
-                Err(Error::Prompt)
-            } else {
-                Ok(result.into())
-            };
+    prompt_proxy.connect_completed(move |dismissed, result| {
+        let res = if dismissed {
+            Err(Error::Prompt)
+        } else {
+            Ok(result.into())
+        };
 
-            tx.send(res).expect("rx should not be dropped, channel scoped to this fn");
+        tx.send(res)
+            .expect("rx should not be dropped, channel scoped to this fn");
 
-            Ok(())
-        })?;
+        Ok(())
+    })?;
 
     // TODO figure out window_id
     let window_id = "";
@@ -121,8 +118,9 @@ pub(crate) fn exec_prompt(conn: zbus::Connection, prompt: &ObjectPath) -> Result
 
     // waits for next signal and calls the handler.
     // If message handled by above handler, `next_signal` returns `Ok(None)`, ending loop.
-    while prompt_proxy.next_signal()?.is_some() {};
+    while prompt_proxy.next_signal()?.is_some() {}
 
     // See comment on allowing channels to panic: https://www.reddit.com/r/rust/comments/awh751/proposal_new_channels_for_rusts_standard_library/ehmk3lz/
-    rx.recv().expect("tx shold not be dropped, channel scoped to this fn")
+    rx.recv()
+        .expect("tx shold not be dropped, channel scoped to this fn")
 }

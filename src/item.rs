@@ -11,12 +11,7 @@ use crate::proxy::service::ServiceProxy;
 use crate::session::Session;
 use crate::ss::SS_DBUS_NAME;
 use crate::ss_crypto::decrypt;
-use crate::util::{
-    exec_prompt,
-    format_secret,
-    lock_or_unlock,
-    LockAction,
-};
+use crate::util::{exec_prompt, format_secret, lock_or_unlock, LockAction};
 
 use std::collections::HashMap;
 use zvariant::OwnedObjectPath;
@@ -35,13 +30,9 @@ impl<'a> Item<'a> {
         session: &'a Session,
         service_proxy: &'a ServiceProxy<'a>,
         item_path: OwnedObjectPath,
-        ) -> Result<Self>
-    {
-        let item_proxy = ItemProxy::new_for_owned(
-            conn.clone(),
-            SS_DBUS_NAME.to_owned(),
-            item_path.to_string(),
-            )?;
+    ) -> Result<Self> {
+        let item_proxy =
+            ItemProxy::new_for_owned(conn.clone(), SS_DBUS_NAME.to_owned(), item_path.to_string())?;
         Ok(Item {
             conn,
             session,
@@ -122,7 +113,8 @@ impl<'a> Item<'a> {
             let aes_iv = secret_struct.parameters;
 
             // decrypt
-            let decrypted_secret = decrypt(&secret[..], &self.session.get_aes_key()[..], &aes_iv[..]).unwrap();
+            let decrypted_secret =
+                decrypt(&secret[..], &self.session.get_aes_key()[..], &aes_iv[..]).unwrap();
 
             Ok(decrypted_secret)
         }
@@ -152,26 +144,28 @@ impl<'a> Item<'a> {
 impl<'a> Eq for Item<'a> {}
 impl<'a> PartialEq for Item<'a> {
     fn eq(&self, other: &Item) -> bool {
-        self.item_path == other.item_path &&
-        self.get_attributes().unwrap() == other.get_attributes().unwrap()
+        self.item_path == other.item_path
+            && self.get_attributes().unwrap() == other.get_attributes().unwrap()
     }
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use super::super::*;
 
     #[test]
     fn should_create_and_delete_item() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .unwrap();
         item.delete().unwrap();
         // Random operation to prove that path no longer exists
         if item.get_label().is_ok() {
@@ -183,13 +177,15 @@ mod test{
     fn should_check_if_item_locked() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .unwrap();
         item.is_locked().unwrap();
         item.delete().unwrap();
     }
@@ -199,13 +195,15 @@ mod test{
     fn should_lock_and_unlock() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .unwrap();
         let locked = item.is_locked().unwrap();
         if locked {
             item.unlock().unwrap();
@@ -227,13 +225,15 @@ mod test{
     fn should_get_and_set_item_label() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .unwrap();
 
         // Set label to test and check
         item.set_label("Tester").unwrap();
@@ -248,15 +248,24 @@ mod test{
     fn should_create_with_item_attributes() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            vec![("test_attributes_in_item", "test")].into_iter().collect(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                vec![("test_attributes_in_item", "test")]
+                    .into_iter()
+                    .collect(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .unwrap();
         let attributes = item.get_attributes().unwrap();
-        assert_eq!(attributes, vec![("test_attributes_in_item".into(), "test".into())].into_iter().collect());
+        assert_eq!(
+            attributes,
+            vec![("test_attributes_in_item".into(), "test".into())]
+                .into_iter()
+                .collect()
+        );
         println!("Attributes: {:?}", attributes);
         item.delete().unwrap();
         //assert!(false);
@@ -266,19 +275,31 @@ mod test{
     fn should_get_and_set_item_attributes() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .unwrap();
         // Also test empty array handling
         item.set_attributes(HashMap::new()).unwrap();
-        item.set_attributes(vec![("test_attributes_in_item_get", "test")].into_iter().collect()).unwrap();
+        item.set_attributes(
+            vec![("test_attributes_in_item_get", "test")]
+                .into_iter()
+                .collect(),
+        )
+        .unwrap();
         let attributes = item.get_attributes().unwrap();
         println!("Attributes: {:?}", attributes);
-        assert_eq!(attributes, vec![("test_attributes_in_item_get".into(), "test".into())].into_iter().collect());
+        assert_eq!(
+            attributes,
+            vec![("test_attributes_in_item_get".into(), "test".into())]
+                .into_iter()
+                .collect()
+        );
         item.delete().unwrap();
         //assert!(false);
     }
@@ -286,13 +307,15 @@ mod test{
     fn should_get_modified_created_props() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .unwrap();
         item.set_label("Tester").unwrap();
         let created = item.get_created().unwrap();
         let modified = item.get_modified().unwrap();
@@ -305,13 +328,15 @@ mod test{
     fn should_create_and_get_secret() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .unwrap();
         let secret = item.get_secret().unwrap();
         item.delete().unwrap();
         assert_eq!(secret, b"test");
@@ -321,13 +346,15 @@ mod test{
     fn should_create_and_get_secret_encrypted() {
         let ss = SecretService::new(EncryptionType::Dh).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .unwrap();
         let secret = item.get_secret().unwrap();
         item.delete().unwrap();
         assert_eq!(secret, b"test");
@@ -337,13 +364,15 @@ mod test{
     fn should_get_secret_content_type() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type, defaults to text/plain
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type, defaults to text/plain
+            )
+            .unwrap();
         let content_type = item.get_secret_content_type().unwrap();
         item.delete().unwrap();
         assert_eq!(content_type, "text/plain".to_owned());
@@ -353,13 +382,15 @@ mod test{
     fn should_set_secret() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test",
-            false, // replace
-            "text/plain" // content_type
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .unwrap();
         item.set_secret(b"new_test", "text/plain").unwrap();
         let secret = item.get_secret().unwrap();
         item.delete().unwrap();
@@ -370,13 +401,15 @@ mod test{
     fn should_create_encrypted_item() {
         let ss = SecretService::new(EncryptionType::Dh).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"test_encrypted",
-            false, // replace
-            "text/plain" // content_type
-        ).expect("Error on item creation");
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"test_encrypted",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .expect("Error on item creation");
         let secret = item.get_secret().unwrap();
         item.delete().unwrap();
         assert_eq!(secret, b"test_encrypted");
@@ -387,13 +420,15 @@ mod test{
         //empty string
         let ss = SecretService::new(EncryptionType::Dh).unwrap();
         let collection = ss.get_default_collection().unwrap();
-        let item = collection.create_item(
-            "Test",
-            HashMap::new(),
-            b"",
-            false, // replace
-            "text/plain" // content_type
-        ).expect("Error on item creation");
+        let item = collection
+            .create_item(
+                "Test",
+                HashMap::new(),
+                b"",
+                false,        // replace
+                "text/plain", // content_type
+            )
+            .expect("Error on item creation");
         let secret = item.get_secret().unwrap();
         item.delete().unwrap();
         assert_eq!(secret, b"");
@@ -404,26 +439,33 @@ mod test{
         {
             let ss = SecretService::new(EncryptionType::Dh).unwrap();
             let collection = ss.get_default_collection().unwrap();
-            let item = collection.create_item(
-                "Test",
-                vec![("test_attributes_in_item_encrypt", "test")].into_iter().collect(),
-                b"test_encrypted",
-                false, // replace
-                "text/plain" // content_type
-            ).expect("Error on item creation");
+            let item = collection
+                .create_item(
+                    "Test",
+                    vec![("test_attributes_in_item_encrypt", "test")]
+                        .into_iter()
+                        .collect(),
+                    b"test_encrypted",
+                    false,        // replace
+                    "text/plain", // content_type
+                )
+                .expect("Error on item creation");
             let secret = item.get_secret().unwrap();
             assert_eq!(secret, b"test_encrypted");
         }
         {
             let ss = SecretService::new(EncryptionType::Dh).unwrap();
             let collection = ss.get_default_collection().unwrap();
-            let search_item = collection.search_items(
-                vec![("test_attributes_in_item_encrypt", "test")].into_iter().collect()
-            ).unwrap();
+            let search_item = collection
+                .search_items(
+                    vec![("test_attributes_in_item_encrypt", "test")]
+                        .into_iter()
+                        .collect(),
+                )
+                .unwrap();
             let item = search_item.get(0).unwrap();
             assert_eq!(item.get_secret().unwrap(), b"test_encrypted");
             item.delete().unwrap();
         }
     }
 }
-

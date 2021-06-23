@@ -8,10 +8,7 @@
 extern crate secret_service;
 
 use secret_service::{EncryptionType, SecretService};
-use std::{
-    collections::HashMap,
-    str,
-};
+use std::{collections::HashMap, str};
 
 fn main() {
     // Initialize secret service
@@ -24,20 +21,20 @@ fn main() {
     properties.insert("test", "test_value");
 
     //create new item
-    collection.create_item(
-        "test_label", // label
-        properties,
-        b"test_secret", //secret
-        false, // replace item with same attributes
-        "text/plain" // secret content type
-    ).unwrap();
+    collection
+        .create_item(
+            "test_label", // label
+            properties,
+            b"test_secret", //secret
+            false,          // replace item with same attributes
+            "text/plain",   // secret content type
+        )
+        .unwrap();
 
     //println!("New Item: {:?}", new_item);
 
     // search items by properties
-    let search_items = ss.search_items(
-        vec![("test", "test_value")]
-    ).unwrap();
+    let search_items = ss.search_items(vec![("test", "test_value")]).unwrap();
 
     //println!("Searched Item: {:?}", search_items);
 

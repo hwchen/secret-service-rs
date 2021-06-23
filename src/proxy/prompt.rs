@@ -15,10 +15,8 @@ use zvariant::Value;
 /// This will derive PromptProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
-#[dbus_proxy(
-    interface = "org.freedesktop.Secret.Prompt",
-)]
-trait Prompt{
+#[dbus_proxy(interface = "org.freedesktop.Secret.Prompt")]
+trait Prompt {
     fn prompt(&self, window_id: &str) -> zbus::Result<()>;
 
     fn dismiss(&self) -> zbus::Result<()>;

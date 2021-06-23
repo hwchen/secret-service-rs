@@ -91,7 +91,7 @@
 //!
 //! ### Actions overview
 //! The most common supported actions are `create`, `get`, `search`, and `delete` for
-//! `Collections` and `Items`. For more specifics and exact method names, please see 
+//! `Collections` and `Items`. For more specifics and exact method names, please see
 //! each struct's documentation.
 //!
 //! In addition, `set` and `get` actions are available for secrets contained in an `Item`.
@@ -138,19 +138,16 @@ mod ss_crypto;
 mod util;
 
 pub use collection::Collection;
-pub use error::{Result, Error};
+pub use error::{Error, Result};
 pub use item::Item;
 use proxy::service::ServiceProxy;
-use util::exec_prompt;
-use session::Session;
 pub use session::EncryptionType;
+use session::Session;
 use ss::SS_ITEM_LABEL;
+use util::exec_prompt;
 
-use std::{
-    collections::HashMap,
-    convert::TryInto,
-};
-use zvariant::{ObjectPath,Value};
+use std::{collections::HashMap, convert::TryInto};
+use zvariant::{ObjectPath, Value};
 
 /// Secret Service Struct.
 ///
@@ -170,7 +167,7 @@ impl<'a> SecretService<'a> {
     /// Create a new `SecretService` instance
     ///
     /// # Example
-    /// 
+    ///
     /// ```
     /// # use secret_service::SecretService;
     /// # use secret_service::EncryptionType;
@@ -191,21 +188,24 @@ impl<'a> SecretService<'a> {
     /// Get all collections
     pub fn get_all_collections(&self) -> Result<Vec<Collection>> {
         let collections = self.service_proxy.collections()?;
-        collections.into_iter().map(|object_path| {
-            Collection::new(
-                self.conn.clone(),
-                &self.session,
-                &self.service_proxy,
-                object_path.into(),
-            )
-        }).collect()
+        collections
+            .into_iter()
+            .map(|object_path| {
+                Collection::new(
+                    self.conn.clone(),
+                    &self.session,
+                    &self.service_proxy,
+                    object_path.into(),
+                )
+            })
+            .collect()
     }
 
     /// Get collection by alias.
     /// Most common would be the `default` alias, but there
     /// is also a specific method for getting the collection
     /// by default aliasl
-    pub fn get_collection_by_alias(&self, alias: &str) -> Result<Collection>{
+    pub fn get_collection_by_alias(&self, alias: &str) -> Result<Collection> {
         let object_path = self.service_proxy.read_alias(alias)?;
 
         if object_path.as_str() == "/" {
@@ -228,15 +228,14 @@ impl<'a> SecretService<'a> {
 
     /// Get any collection.
     /// First tries `default` collection, then `session`
-    /// collection, then the first collection when it 
+    /// collection, then the first collection when it
     /// gets all collections.
     pub fn get_any_collection(&self) -> Result<Collection> {
         // default first, then session, then first
 
         self.get_default_collection()
+            .or_else(|_| self.get_collection_by_alias("session"))
             .or_else(|_| {
-                self.get_collection_by_alias("session")
-            }).or_else(|_| {
                 let mut collections = self.get_all_collections()?;
                 if collections.is_empty() {
                     Err(Error::NoResult)
@@ -251,10 +250,7 @@ impl<'a> SecretService<'a> {
         let mut properties: HashMap<&str, Value> = HashMap::new();
         properties.insert(SS_ITEM_LABEL, label.into());
 
-        let created_collection = self.service_proxy.create_collection(
-            properties,
-            alias,
-        )?;
+        let created_collection = self.service_proxy.create_collection(properties, alias)?;
 
         // This prompt handling is practically identical to create_collection
         let collection_path: ObjectPath = {
@@ -284,10 +280,15 @@ impl<'a> SecretService<'a> {
 
     /// Searches all items by attributes
     pub fn search_items(&self, attributes: Vec<(&str, &str)>) -> Result<Vec<Item>> {
-        let items = self.service_proxy.search_items(attributes.into_iter().collect())?;
+        let items = self
+            .service_proxy
+            .search_items(attributes.into_iter().collect())?;
 
         // map array of item paths to Item
-        let res = items.locked.into_iter().chain(items.unlocked.into_iter())
+        let res = items
+            .locked
+            .into_iter()
+            .chain(items.unlocked.into_iter())
             .map(|item_path| {
                 Item::new(
                     self.conn.clone(),
@@ -370,13 +371,17 @@ mod test {
         let collection = ss.get_default_collection().unwrap();
 
         // Create an item
-        let item = collection.create_item(
-            "test",
-            vec![("test_attribute_in_ss", "test_value")].into_iter().collect(),
-            b"test_secret",
-            false,
-            "text/plain"
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "test",
+                vec![("test_attribute_in_ss", "test_value")]
+                    .into_iter()
+                    .collect(),
+                b"test_secret",
+                false,
+                "text/plain",
+            )
+            .unwrap();
 
         // handle empty vec search
         ss.search_items(Vec::new()).unwrap();
@@ -386,14 +391,11 @@ mod test {
         assert_eq!(bad_search.len(), 0);
 
         // handle correct search for item and compare
-        let search_item = ss.search_items(
-            vec![("test_attribute_in_ss", "test_value")]
-        ).unwrap();
+        let search_item = ss
+            .search_items(vec![("test_attribute_in_ss", "test_value")])
+            .unwrap();
 
-        assert_eq!(
-            item.item_path,
-            search_item[0].item_path
-        );
+        assert_eq!(item.item_path, search_item[0].item_path);
         item.delete().unwrap();
     }
 }
