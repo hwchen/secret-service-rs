@@ -22,4 +22,3 @@ pub struct SecretStruct {
     pub(crate) value: Vec<u8>,
     pub(crate) content_type: String,
 }
-

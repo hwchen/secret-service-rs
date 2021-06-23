@@ -7,8 +7,8 @@
 
 //! A dbus proxy for speaking with secret service's `Service` Interface.
 
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use zbus_macros::dbus_proxy;
 use zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Value};
 use zvariant_derive::Type;
@@ -23,12 +23,16 @@ use super::SecretStruct;
 #[dbus_proxy(
     interface = "org.freedesktop.Secret.Service",
     default_service = "org.freedesktop.secrets",
-    default_path = "/org/freedesktop/secrets",
+    default_path = "/org/freedesktop/secrets"
 )]
-trait Service{
+trait Service {
     fn open_session(&self, algorithm: &str, input: Value) -> zbus::Result<OpenSessionResult>;
 
-    fn create_collection(&self, properties: HashMap<&str, Value>, alias: &str) -> zbus::Result<CreateCollectionResult>;
+    fn create_collection(
+        &self,
+        properties: HashMap<&str, Value>,
+        alias: &str,
+    ) -> zbus::Result<CreateCollectionResult>;
 
     fn search_items(&self, attributes: HashMap<&str, &str>) -> zbus::Result<SearchItemsResult>;
 
@@ -36,7 +40,10 @@ trait Service{
 
     fn lock(&self, objects: Vec<&ObjectPath>) -> zbus::Result<LockActionResult>;
 
-    fn get_secrets(&self, objects: Vec<ObjectPath>) -> zbus::Result<HashMap<OwnedObjectPath, SecretStruct>>;
+    fn get_secrets(
+        &self,
+        objects: Vec<ObjectPath>,
+    ) -> zbus::Result<HashMap<OwnedObjectPath, SecretStruct>>;
 
     fn read_alias(&self, name: &str) -> zbus::Result<OwnedObjectPath>;
 

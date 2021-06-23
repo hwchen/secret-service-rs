@@ -10,17 +10,8 @@ use crate::item::Item;
 use crate::proxy::collection::CollectionProxy;
 use crate::proxy::service::ServiceProxy;
 use crate::session::Session;
-use crate::ss::{
-    SS_DBUS_NAME,
-    SS_ITEM_LABEL,
-    SS_ITEM_ATTRIBUTES,
-};
-use crate::util::{
-    exec_prompt,
-    format_secret,
-    lock_or_unlock,
-    LockAction,
-};
+use crate::ss::{SS_DBUS_NAME, SS_ITEM_ATTRIBUTES, SS_ITEM_LABEL};
+use crate::util::{exec_prompt, format_secret, lock_or_unlock, LockAction};
 
 use std::collections::HashMap;
 use std::convert::TryInto;
@@ -43,13 +34,12 @@ impl<'a> Collection<'a> {
         session: &'a Session,
         service_proxy: &'a ServiceProxy,
         collection_path: OwnedObjectPath,
-        ) -> Result<Self>
-    {
+    ) -> Result<Self> {
         let collection_proxy = CollectionProxy::new_for_owned(
             conn.clone(),
             SS_DBUS_NAME.to_owned(),
             collection_path.to_string(),
-            )?;
+        )?;
         Ok(Collection {
             conn,
             session,
@@ -107,7 +97,8 @@ impl<'a> Collection<'a> {
         let items = self.collection_proxy.items()?;
 
         // map array of item paths to Item
-        let res = items.into_iter()
+        let res = items
+            .into_iter()
             .map(|item_path| {
                 Item::new(
                     self.conn.clone(),
@@ -125,7 +116,8 @@ impl<'a> Collection<'a> {
         let items = self.collection_proxy.search_items(attributes)?;
 
         // map array of item paths to Item
-        let res = items.into_iter()
+        let res = items
+            .into_iter()
             .map(|item_path| {
                 Item::new(
                     self.conn.clone(),
@@ -154,8 +146,7 @@ impl<'a> Collection<'a> {
         secret: &[u8],
         replace: bool,
         content_type: &str,
-        ) -> Result<Item>
-    {
+    ) -> Result<Item> {
         let secret_struct = format_secret(&self.session, secret, content_type)?;
 
         let mut properties: HashMap<&str, Value> = HashMap::new();
@@ -164,11 +155,9 @@ impl<'a> Collection<'a> {
         properties.insert(SS_ITEM_LABEL, label.into());
         properties.insert(SS_ITEM_ATTRIBUTES, attributes.into());
 
-        let created_item = self.collection_proxy.create_item(
-            properties,
-            secret_struct.inner,
-            replace,
-        )?;
+        let created_item =
+            self.collection_proxy
+                .create_item(properties, secret_struct.inner, replace)?;
 
         // This prompt handling is practically identical to create_collection
         let item_path: ObjectPath = {
@@ -198,7 +187,7 @@ impl<'a> Collection<'a> {
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use super::super::*;
 
     #[test]
@@ -270,30 +259,37 @@ mod test{
         let collection = ss.get_default_collection().unwrap();
 
         // Create an item
-        let item = collection.create_item(
-            "test",
-            vec![("test_attributes_in_collection", "test")].into_iter().collect(),
-            b"test_secret",
-            false,
-            "text/plain"
-        ).unwrap();
+        let item = collection
+            .create_item(
+                "test",
+                vec![("test_attributes_in_collection", "test")]
+                    .into_iter()
+                    .collect(),
+                b"test_secret",
+                false,
+                "text/plain",
+            )
+            .unwrap();
 
         // handle empty vec search
         collection.search_items(HashMap::new()).unwrap();
 
         // handle no result
-        let bad_search = collection.search_items(vec![("test_bad", "test")].into_iter().collect()).unwrap();
+        let bad_search = collection
+            .search_items(vec![("test_bad", "test")].into_iter().collect())
+            .unwrap();
         assert_eq!(bad_search.len(), 0);
 
         // handle correct search for item and compare
-        let search_item = collection.search_items(
-            vec![("test_attributes_in_collection", "test")].into_iter().collect()
-        ).unwrap();
+        let search_item = collection
+            .search_items(
+                vec![("test_attributes_in_collection", "test")]
+                    .into_iter()
+                    .collect(),
+            )
+            .unwrap();
 
-        assert_eq!(
-            item.item_path,
-            search_item[0].item_path
-        );
+        assert_eq!(item.item_path, search_item[0].item_path);
         item.delete().unwrap();
     }
 
@@ -324,4 +320,3 @@ mod test{
         //assert!(false);
     }
 }
-

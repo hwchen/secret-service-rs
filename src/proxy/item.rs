@@ -18,10 +18,8 @@ use super::SecretStruct;
 /// A dbus proxy for speaking with secret service's `Item` Interface.
 ///
 /// This will derive ItemProxy
-#[dbus_proxy(
-    interface = "org.freedesktop.Secret.Item",
-)]
-trait Item{
+#[dbus_proxy(interface = "org.freedesktop.Secret.Item")]
+trait Item {
     fn delete(&self) -> zbus::Result<OwnedObjectPath>;
 
     /// returns `Secret`

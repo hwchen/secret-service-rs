@@ -14,23 +14,23 @@
 // 4. As result of session negotition, get server public key.
 // 5. Use server public key, my private key, to set an aes key using HKDF.
 // 6. Format Secret: aes iv is random seed, in secret struct it's the parameter (Array(Byte))
-// 7. Format Secret: encode the secret value for the value field in secret struct. 
+// 7. Format Secret: encode the secret value for the value field in secret struct.
 //      This encoding uses the aes_key from the associated Session.
 
 use crate::error::Result;
 use crate::proxy::service::ServiceProxy;
 use crate::ss::{ALGORITHM_DH, ALGORITHM_PLAIN};
 
-use sha2::Sha256;
 use hkdf::Hkdf;
 use lazy_static::lazy_static;
 use num::{
     bigint::BigUint,
-    traits::{One, Zero},
     integer::Integer,
+    traits::{One, Zero},
     FromPrimitive,
 };
-use rand::{Rng, rngs::OsRng};
+use rand::{rngs::OsRng, Rng};
+use sha2::Sha256;
 use std::convert::TryInto;
 use zvariant::OwnedObjectPath;
 
@@ -40,14 +40,15 @@ use std::ops::{Mul, Rem, Shr};
 lazy_static! {
     pub static ref DH_GENERATOR: BigUint = BigUint::from_u64(0x2).unwrap();
     pub static ref DH_PRIME: BigUint = BigUint::from_bytes_be(&[
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC9, 0x0F, 0xDA, 0xA2, 0x21, 0x68, 0xC2, 0x34,
-        0xC4, 0xC6, 0x62, 0x8B, 0x80, 0xDC, 0x1C, 0xD1, 0x29, 0x02, 0x4E, 0x08, 0x8A, 0x67, 0xCC, 0x74,
-        0x02, 0x0B, 0xBE, 0xA6, 0x3B, 0x13, 0x9B, 0x22, 0x51, 0x4A, 0x08, 0x79, 0x8E, 0x34, 0x04, 0xDD,
-        0xEF, 0x95, 0x19, 0xB3, 0xCD, 0x3A, 0x43, 0x1B, 0x30, 0x2B, 0x0A, 0x6D, 0xF2, 0x5F, 0x14, 0x37,
-        0x4F, 0xE1, 0x35, 0x6D, 0x6D, 0x51, 0xC2, 0x45, 0xE4, 0x85, 0xB5, 0x76, 0x62, 0x5E, 0x7E, 0xC6,
-        0xF4, 0x4C, 0x42, 0xE9, 0xA6, 0x37, 0xED, 0x6B, 0x0B, 0xFF, 0x5C, 0xB6, 0xF4, 0x06, 0xB7, 0xED,
-        0xEE, 0x38, 0x6B, 0xFB, 0x5A, 0x89, 0x9F, 0xA5, 0xAE, 0x9F, 0x24, 0x11, 0x7C, 0x4B, 0x1F, 0xE6,
-        0x49, 0x28, 0x66, 0x51, 0xEC, 0xE6, 0x53, 0x81, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC9, 0x0F, 0xDA, 0xA2, 0x21, 0x68, 0xC2,
+        0x34, 0xC4, 0xC6, 0x62, 0x8B, 0x80, 0xDC, 0x1C, 0xD1, 0x29, 0x02, 0x4E, 0x08, 0x8A, 0x67,
+        0xCC, 0x74, 0x02, 0x0B, 0xBE, 0xA6, 0x3B, 0x13, 0x9B, 0x22, 0x51, 0x4A, 0x08, 0x79, 0x8E,
+        0x34, 0x04, 0xDD, 0xEF, 0x95, 0x19, 0xB3, 0xCD, 0x3A, 0x43, 0x1B, 0x30, 0x2B, 0x0A, 0x6D,
+        0xF2, 0x5F, 0x14, 0x37, 0x4F, 0xE1, 0x35, 0x6D, 0x6D, 0x51, 0xC2, 0x45, 0xE4, 0x85, 0xB5,
+        0x76, 0x62, 0x5E, 0x7E, 0xC6, 0xF4, 0x4C, 0x42, 0xE9, 0xA6, 0x37, 0xED, 0x6B, 0x0B, 0xFF,
+        0x5C, 0xB6, 0xF4, 0x06, 0xB7, 0xED, 0xEE, 0x38, 0x6B, 0xFB, 0x5A, 0x89, 0x9F, 0xA5, 0xAE,
+        0x9F, 0x24, 0x11, 0x7C, 0x4B, 0x1F, 0xE6, 0x49, 0x28, 0x66, 0x51, 0xEC, 0xE6, 0x53, 0x81,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
     ]);
 }
 
@@ -71,10 +72,7 @@ impl Session {
     pub fn new(service_proxy: &ServiceProxy, encryption: EncryptionType) -> Result<Self> {
         match encryption {
             EncryptionType::Plain => {
-                let session= service_proxy.open_session(
-                    ALGORITHM_PLAIN,
-                    "".into(),
-                )?;
+                let session = service_proxy.open_session(ALGORITHM_PLAIN, "".into())?;
                 let session_path = session.result;
 
                 Ok(Session {
@@ -85,12 +83,12 @@ impl Session {
                     my_private_key: None,
                     my_public_key: None,
                 })
-            },
+            }
             EncryptionType::Dh => {
                 // crypto: create private and public key, send public key
                 // requires some finagling to get pow() for bigints
                 let mut rng = OsRng {};
-                let mut private_key_bytes = [0;128];
+                let mut private_key_bytes = [0; 128];
                 rng.fill(&mut private_key_bytes);
 
                 let private_key = BigUint::from_bytes_be(&private_key_bytes);
@@ -98,10 +96,8 @@ impl Session {
 
                 let public_key_bytes = public_key.to_bytes_be();
 
-                let session= service_proxy.open_session(
-                    ALGORITHM_DH,
-                    public_key_bytes.as_slice().into(),
-                )?;
+                let session =
+                    service_proxy.open_session(ALGORITHM_DH, public_key_bytes.as_slice().into())?;
                 let server_public_key: Vec<_> = session.output.try_into()?;
                 let session_path = session.result;
 
@@ -123,10 +119,11 @@ impl Session {
                 let info = [];
 
                 // output keying material
-                let mut okm = [0;16];
+                let mut okm = [0; 16];
 
                 let (_, hk) = Hkdf::<Sha256>::extract(salt, &ikm);
-                hk.expand(&info, &mut okm).expect("hkdf expand should never fail");
+                hk.expand(&info, &mut okm)
+                    .expect("hkdf expand should never fail");
 
                 let aes_key = okm.to_vec();
 
@@ -138,9 +135,8 @@ impl Session {
                     my_private_key: Some(private_key_bytes.to_vec()),
                     my_public_key: Some(public_key_bytes.to_vec()),
                 })
-            },
+            }
         }
-
     }
 
     pub fn is_encrypted(&self) -> bool {
