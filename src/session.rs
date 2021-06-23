@@ -172,7 +172,6 @@ fn powm(base: &BigUint, exp: &BigUint, modulus: &BigUint) -> BigUint {
 #[cfg(test)]
 mod test {
     use super::*;
-    use zbus;
 
     #[test]
     fn should_create_plain_session() {

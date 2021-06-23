@@ -188,12 +188,12 @@ impl<'a> Collection<'a> {
             }
         };
 
-        Ok(Item::new(
+        Item::new(
             self.conn.clone(),
             &self.session,
             &self.service_proxy,
             item_path.into(),
-        )?)
+        )
     }
 }
 
@@ -241,8 +241,8 @@ mod test{
     fn should_delete_collection() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collections = ss.get_all_collections().unwrap();
-        //println!("collections before delete {:?}", collections);
-        println!("# collections before delete {:?}", collections.len());
+        let count_before = collections.len();
+        println!("# collections before delete {:?}", count_before);
         for collection in collections {
             let collection_path = &*collection.collection_path;
             if collection_path.contains("Test") {
@@ -253,9 +253,7 @@ mod test{
         }
         //double check after
         let collections = ss.get_all_collections().unwrap();
-        //println!("collections after delete {:?}", collections);
-        println!("# collections after delete {:?}", collections.len());
-        assert!(false);
+        assert!(collections.len() < count_before)
     }
 
     #[test]
@@ -325,13 +323,5 @@ mod test{
         collection.lock().unwrap();
         //assert!(false);
     }
-
-    #[test]
-    fn should_create_item() {
-        ()
-        // See item module
-        // for creation of new item
-    }
-
 }
 

@@ -191,14 +191,14 @@ impl<'a> SecretService<'a> {
     /// Get all collections
     pub fn get_all_collections(&self) -> Result<Vec<Collection>> {
         let collections = self.service_proxy.collections()?;
-        Ok(collections.into_iter().map(|object_path| {
+        collections.into_iter().map(|object_path| {
             Collection::new(
                 self.conn.clone(),
                 &self.session,
                 &self.service_proxy,
                 object_path.into(),
             )
-        }).collect::<Result<Vec<_>>>()?)
+        }).collect()
     }
 
     /// Get collection by alias.
@@ -274,12 +274,12 @@ impl<'a> SecretService<'a> {
             }
         };
 
-        Ok(Collection::new(
+        Collection::new(
             self.conn.clone(),
             &self.session,
             &self.service_proxy,
             collection_path.into(),
-        )?)
+        )
     }
 
     /// Searches all items by attributes
@@ -319,10 +319,8 @@ mod test {
         // collection
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let collections = ss.get_all_collections().unwrap();
-        assert!(collections.len() >= 1);
-        //println!("{:?}", collections);
+        assert!(!collections.is_empty());
         println!("# of collections {:?}", collections.len());
-        //assert!(false);
     }
 
     #[test]
@@ -384,7 +382,7 @@ mod test {
         ss.search_items(Vec::new()).unwrap();
 
         // handle no result
-        let bad_search = ss.search_items(vec![("test".into(), "test".into())]).unwrap();
+        let bad_search = ss.search_items(vec![("test", "test")]).unwrap();
         assert_eq!(bad_search.len(), 0);
 
         // handle correct search for item and compare

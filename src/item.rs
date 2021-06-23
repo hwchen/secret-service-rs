@@ -172,12 +172,10 @@ mod test{
             false, // replace
             "text/plain" // content_type
         ).unwrap();
-        let _ = item.item_path.clone(); // to prepare for future drop for delete?
         item.delete().unwrap();
         // Random operation to prove that path no longer exists
-        match item.get_label() {
-            Ok(_) => panic!(),
-            Err(_) => (),
+        if item.get_label().is_ok() {
+            panic!("item still existed");
         }
     }
 
@@ -422,7 +420,7 @@ mod test{
             let search_item = collection.search_items(
                 vec![("test_attributes_in_item_encrypt", "test")].into_iter().collect()
             ).unwrap();
-            let item = search_item.get(0).unwrap().clone();
+            let item = search_item.get(0).unwrap();
             assert_eq!(item.get_secret().unwrap(), b"test_encrypted");
             item.delete().unwrap();
         }
