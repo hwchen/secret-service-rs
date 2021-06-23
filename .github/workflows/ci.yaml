@@ -1,0 +1,68 @@
+name: CI
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+    - master
+
+env:
+  CARGO_NET_RETRY: 3
+
+jobs:
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        rust:
+          - stable
+          # XXX: What is the MSRV?
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        profile: minimal
+        override: true
+        components: clippy
+
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: $clippy-cache-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+
+    - uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all-features --all-targets --all -- -D clippy::dbg_macro -D warnings -F unused_must_use
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: rustfmt
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
