@@ -20,7 +20,8 @@ jobs:
       matrix:
         rust:
           - stable
-          # XXX: What is the MSRV?
+          # MSRV
+          - 1.46.0
 
     steps:
     - uses: actions/checkout@v2
