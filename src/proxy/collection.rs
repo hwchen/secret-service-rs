@@ -29,13 +29,13 @@ trait Collection {
 
     fn create_item(
         &self,
-        properties: HashMap<&str, Value>,
+        properties: HashMap<&str, Value<'_>>,
         secret: SecretStruct,
         replace: bool,
     ) -> zbus::Result<CreateItemResult>;
 
     #[dbus_proxy(property)]
-    fn items(&self) -> zbus::fdo::Result<Vec<ObjectPath>>;
+    fn items(&self) -> zbus::fdo::Result<Vec<ObjectPath<'_>>>;
 
     #[dbus_proxy(property)]
     fn label(&self) -> zbus::fdo::Result<String>;

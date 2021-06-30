@@ -32,7 +32,7 @@ pub type Result<T> = ::std::result::Result<T, Error>;
 pub enum Error {
     Crypto(String),
     Zbus(zbus::Error),
-    ZbusMsg(zbus::MessageError),
+    ZbusMsg(zbus::Error),
     ZbusFdo(zbus::fdo::Error),
     Zvariant(zvariant::Error),
     Locked,
@@ -97,11 +97,5 @@ impl From<zbus::fdo::Error> for Error {
 impl From<zvariant::Error> for Error {
     fn from(err: zvariant::Error) -> Error {
         Error::Zvariant(err)
-    }
-}
-
-impl From<zbus::MessageError> for Error {
-    fn from(err: zbus::MessageError) -> Error {
-        Error::ZbusMsg(err)
     }
 }

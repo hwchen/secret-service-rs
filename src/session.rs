@@ -18,7 +18,7 @@
 //      This encoding uses the aes_key from the associated Session.
 
 use crate::error::Result;
-use crate::proxy::service::ServiceProxy;
+use crate::proxy::service::ServiceProxyBlocking;
 use crate::ss::{ALGORITHM_DH, ALGORITHM_PLAIN};
 
 use hkdf::Hkdf;
@@ -72,7 +72,7 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(service_proxy: &ServiceProxy, encryption: EncryptionType) -> Result<Self> {
+    pub fn new(service_proxy: &ServiceProxyBlocking, encryption: EncryptionType) -> Result<Self> {
         match encryption {
             EncryptionType::Plain => {
                 let session = service_proxy.open_session(ALGORITHM_PLAIN, "".into())?;
@@ -174,16 +174,16 @@ mod test {
 
     #[test]
     fn should_create_plain_session() {
-        let conn = zbus::Connection::new_session().unwrap();
-        let service_proxy = ServiceProxy::new(&conn).unwrap();
+        let conn = zbus::blocking::Connection::session().unwrap();
+        let service_proxy = ServiceProxyBlocking::new(&conn).unwrap();
         let session = Session::new(&service_proxy, EncryptionType::Plain).unwrap();
         assert!(!session.is_encrypted());
     }
 
     #[test]
     fn should_create_encrypted_session() {
-        let conn = zbus::Connection::new_session().unwrap();
-        let service_proxy = ServiceProxy::new(&conn).unwrap();
+        let conn = zbus::blocking::Connection::session().unwrap();
+        let service_proxy = ServiceProxyBlocking::new(&conn).unwrap();
         let session = Session::new(&service_proxy, EncryptionType::Dh).unwrap();
         assert!(session.is_encrypted());
     }

@@ -140,7 +140,7 @@ mod util;
 pub use collection::Collection;
 pub use error::{Error, Result};
 pub use item::Item;
-use proxy::service::ServiceProxy;
+use proxy::service::ServiceProxyBlocking;
 pub use session::EncryptionType;
 use session::Session;
 use ss::SS_ITEM_LABEL;
@@ -158,9 +158,9 @@ use zvariant::{ObjectPath, Value};
 /// (`EncryptionType::Plain` or `EncryptionType::Dh`)
 ///
 pub struct SecretService<'a> {
-    conn: zbus::Connection,
+    conn: zbus::blocking::Connection,
     session: Session,
-    service_proxy: ServiceProxy<'a>,
+    service_proxy: ServiceProxyBlocking<'a>,
 }
 
 impl<'a> SecretService<'a> {
@@ -174,8 +174,8 @@ impl<'a> SecretService<'a> {
     /// let ss = SecretService::new(EncryptionType::Dh).unwrap();
     /// ```
     pub fn new(encryption: EncryptionType) -> Result<Self> {
-        let conn = zbus::Connection::new_session()?;
-        let service_proxy = ServiceProxy::new(&conn)?;
+        let conn = zbus::blocking::Connection::session()?;
+        let service_proxy = ServiceProxyBlocking::new(&conn)?;
         let session = Session::new(&service_proxy, encryption)?;
 
         Ok(SecretService {
