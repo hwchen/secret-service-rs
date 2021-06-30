@@ -7,11 +7,9 @@
 
 //! A dbus proxy for speaking with secret service's `Item` Interface.
 
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use zbus_macros::dbus_proxy;
 use zvariant::{ObjectPath, OwnedObjectPath};
-use zvariant_derive::Type;
 
 use super::SecretStruct;
 
@@ -23,9 +21,9 @@ trait Item {
     fn delete(&self) -> zbus::Result<OwnedObjectPath>;
 
     /// returns `Secret`
-    fn get_secret(&self, session: &ObjectPath) -> zbus::Result<SecretStruct>;
+    fn get_secret(&self, session: &ObjectPath<'_>) -> zbus::Result<SecretStruct>;
 
-    fn set_secret(&self, secret: SecretStructInput) -> zbus::Result<()>;
+    fn set_secret(&self, secret: SecretStruct) -> zbus::Result<()>;
 
     #[dbus_proxy(property)]
     fn locked(&self) -> zbus::fdo::Result<bool>;
@@ -47,9 +45,4 @@ trait Item {
 
     #[dbus_proxy(property)]
     fn modified(&self) -> zbus::fdo::Result<u64>;
-}
-
-#[derive(Debug, Serialize, Deserialize, Type)]
-pub struct SecretStructInput {
-    pub(crate) inner: SecretStruct,
 }

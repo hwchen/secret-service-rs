@@ -6,8 +6,8 @@
 // copied, modified, or distributed except according to those terms.
 
 use crate::error::{Error, Result};
-use crate::proxy::item::ItemProxy;
-use crate::proxy::service::ServiceProxy;
+use crate::proxy::item::ItemProxyBlocking;
+use crate::proxy::service::ServiceProxyBlocking;
 use crate::session::Session;
 use crate::ss::SS_DBUS_NAME;
 use crate::ss_crypto::decrypt;
@@ -17,22 +17,24 @@ use std::collections::HashMap;
 use zvariant::OwnedObjectPath;
 
 pub struct Item<'a> {
-    conn: zbus::Connection,
+    conn: zbus::blocking::Connection,
     session: &'a Session,
     pub item_path: OwnedObjectPath,
-    item_proxy: ItemProxy<'a>,
-    service_proxy: &'a ServiceProxy<'a>,
+    item_proxy: ItemProxyBlocking<'a>,
+    service_proxy: &'a ServiceProxyBlocking<'a>,
 }
 
 impl<'a> Item<'a> {
     pub(crate) fn new(
-        conn: zbus::Connection,
+        conn: zbus::blocking::Connection,
         session: &'a Session,
-        service_proxy: &'a ServiceProxy<'a>,
+        service_proxy: &'a ServiceProxyBlocking<'a>,
         item_path: OwnedObjectPath,
     ) -> Result<Self> {
-        let item_proxy =
-            ItemProxy::new_for_owned(conn.clone(), SS_DBUS_NAME.to_owned(), item_path.to_string())?;
+        let item_proxy = ItemProxyBlocking::builder(&conn)
+            .destination(SS_DBUS_NAME)?
+            .path(item_path.clone())?
+            .build()?;
         Ok(Item {
             conn,
             session,

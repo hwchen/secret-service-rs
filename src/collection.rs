@@ -7,8 +7,8 @@
 
 use crate::error::{Error, Result};
 use crate::item::Item;
-use crate::proxy::collection::CollectionProxy;
-use crate::proxy::service::ServiceProxy;
+use crate::proxy::collection::CollectionProxyBlocking;
+use crate::proxy::service::ServiceProxyBlocking;
 use crate::session::Session;
 use crate::ss::{SS_DBUS_NAME, SS_ITEM_ATTRIBUTES, SS_ITEM_LABEL};
 use crate::util::{exec_prompt, format_secret, lock_or_unlock, LockAction};
@@ -21,25 +21,24 @@ use zvariant::{Dict, ObjectPath, OwnedObjectPath, Value};
 // Should always be created from the SecretService entry point,
 // whether through a new collection or a collection search
 pub struct Collection<'a> {
-    conn: zbus::Connection,
+    conn: zbus::blocking::Connection,
     session: &'a Session,
     pub collection_path: OwnedObjectPath,
-    collection_proxy: CollectionProxy<'a>,
-    service_proxy: &'a ServiceProxy<'a>,
+    collection_proxy: CollectionProxyBlocking<'a>,
+    service_proxy: &'a ServiceProxyBlocking<'a>,
 }
 
 impl<'a> Collection<'a> {
     pub(crate) fn new(
-        conn: zbus::Connection,
+        conn: zbus::blocking::Connection,
         session: &'a Session,
-        service_proxy: &'a ServiceProxy,
+        service_proxy: &'a ServiceProxyBlocking,
         collection_path: OwnedObjectPath,
     ) -> Result<Self> {
-        let collection_proxy = CollectionProxy::new_for_owned(
-            conn.clone(),
-            SS_DBUS_NAME.to_owned(),
-            collection_path.to_string(),
-        )?;
+        let collection_proxy = CollectionProxyBlocking::builder(&conn)
+            .destination(SS_DBUS_NAME)?
+            .path(collection_path.clone())?
+            .build()?;
         Ok(Collection {
             conn,
             session,
@@ -155,9 +154,9 @@ impl<'a> Collection<'a> {
         properties.insert(SS_ITEM_LABEL, label.into());
         properties.insert(SS_ITEM_ATTRIBUTES, attributes.into());
 
-        let created_item =
-            self.collection_proxy
-                .create_item(properties, secret_struct.inner, replace)?;
+        let created_item = self
+            .collection_proxy
+            .create_item(properties, secret_struct, replace)?;
 
         // This prompt handling is practically identical to create_collection
         let item_path: ObjectPath = {
