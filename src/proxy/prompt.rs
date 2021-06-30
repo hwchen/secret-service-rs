@@ -22,5 +22,5 @@ trait Prompt {
     fn dismiss(&self) -> zbus::Result<()>;
 
     #[dbus_proxy(signal)]
-    fn completed(&self, dismissed: bool, result: Value) -> zbus::Result<()>;
+    fn completed(&self, dismissed: bool, result: Value<'_>) -> zbus::Result<()>;
 }
