@@ -35,11 +35,10 @@ impl<'a> Collection<'a> {
         service_proxy: &'a ServiceProxy,
         collection_path: OwnedObjectPath,
     ) -> Result<Self> {
-        let collection_proxy = CollectionProxy::new_for_owned(
-            conn.clone(),
-            SS_DBUS_NAME.to_owned(),
-            collection_path.to_string(),
-        )?;
+        let collection_proxy = CollectionProxy::builder(&conn)
+            .destination(SS_DBUS_NAME.to_owned())
+            .path(collection_path.to_string())?
+            .build()?;
         Ok(Collection {
             conn,
             session,

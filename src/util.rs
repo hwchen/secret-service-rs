@@ -94,7 +94,10 @@ pub(crate) fn exec_prompt(
     conn: zbus::Connection,
     prompt: &ObjectPath,
 ) -> Result<zvariant::OwnedValue> {
-    let prompt_proxy = PromptProxy::new_for(&conn, SS_DBUS_NAME, prompt)?;
+    let prompt_proxy = PromptProxy::builder(&conn)
+        .destination(SS_DBUS_NAME)
+        .path(prompt)?
+        .build()?;
 
     let (tx, rx) = channel();
 

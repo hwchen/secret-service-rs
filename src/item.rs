@@ -31,8 +31,10 @@ impl<'a> Item<'a> {
         service_proxy: &'a ServiceProxy<'a>,
         item_path: OwnedObjectPath,
     ) -> Result<Self> {
-        let item_proxy =
-            ItemProxy::new_for_owned(conn.clone(), SS_DBUS_NAME.to_owned(), item_path.to_string())?;
+        let item_proxy = ItemProxy::builder(&conn)
+            .destination(SS_DBUS_NAME.to_owned())
+            .path(item_path.to_string())?
+            .build()?;
         Ok(Item {
             conn,
             session,
