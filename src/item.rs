@@ -57,7 +57,7 @@ impl<'a> Item<'a> {
     pub fn unlock(&self) -> Result<()> {
         lock_or_unlock(
             self.conn.clone(),
-            &self.service_proxy,
+            self.service_proxy,
             &self.item_path,
             LockAction::Unlock,
         )
@@ -66,7 +66,7 @@ impl<'a> Item<'a> {
     pub fn lock(&self) -> Result<()> {
         lock_or_unlock(
             self.conn.clone(),
-            &self.service_proxy,
+            self.service_proxy,
             &self.item_path,
             LockAction::Lock,
         )
@@ -128,7 +128,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn set_secret(&self, secret: &[u8], content_type: &str) -> Result<()> {
-        let secret_struct = format_secret(&self.session, secret, content_type)?;
+        let secret_struct = format_secret(self.session, secret, content_type)?;
         Ok(self.item_proxy.set_secret(secret_struct)?)
     }
 

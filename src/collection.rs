@@ -64,7 +64,7 @@ impl<'a> Collection<'a> {
     pub fn unlock(&self) -> Result<()> {
         lock_or_unlock(
             self.conn.clone(),
-            &self.service_proxy,
+            self.service_proxy,
             &self.collection_path,
             LockAction::Unlock,
         )
@@ -73,7 +73,7 @@ impl<'a> Collection<'a> {
     pub fn lock(&self) -> Result<()> {
         lock_or_unlock(
             self.conn.clone(),
-            &self.service_proxy,
+            self.service_proxy,
             &self.collection_path,
             LockAction::Lock,
         )
@@ -102,8 +102,8 @@ impl<'a> Collection<'a> {
             .map(|item_path| {
                 Item::new(
                     self.conn.clone(),
-                    &self.session,
-                    &self.service_proxy,
+                    self.session,
+                    self.service_proxy,
                     item_path.into(),
                 )
             })
@@ -121,8 +121,8 @@ impl<'a> Collection<'a> {
             .map(|item_path| {
                 Item::new(
                     self.conn.clone(),
-                    &self.session,
-                    &self.service_proxy,
+                    self.session,
+                    self.service_proxy,
                     item_path,
                 )
             })
@@ -147,7 +147,7 @@ impl<'a> Collection<'a> {
         replace: bool,
         content_type: &str,
     ) -> Result<Item> {
-        let secret_struct = format_secret(&self.session, secret, content_type)?;
+        let secret_struct = format_secret(self.session, secret, content_type)?;
 
         let mut properties: HashMap<&str, Value> = HashMap::new();
         let attributes: Dict = attributes.into();
@@ -179,8 +179,8 @@ impl<'a> Collection<'a> {
 
         Item::new(
             self.conn.clone(),
-            &self.session,
-            &self.service_proxy,
+            self.session,
+            self.service_proxy,
             item_path.into(),
         )
     }
