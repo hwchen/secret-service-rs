@@ -62,9 +62,12 @@ pub enum EncryptionType {
 pub struct Session {
     pub object_path: OwnedObjectPath,
     encrypted: bool,
+    #[allow(dead_code)]
     server_public_key: Option<Vec<u8>>,
     aes_key: Option<Vec<u8>>,
+    #[allow(dead_code)]
     my_private_key: Option<Vec<u8>>,
+    #[allow(dead_code)]
     my_public_key: Option<Vec<u8>>,
 }
 
