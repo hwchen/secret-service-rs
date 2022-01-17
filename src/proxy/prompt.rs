@@ -7,8 +7,7 @@
 
 //! A dbus proxy for speaking with secret service's `Prompt` Interface.
 
-use zbus::dbus_proxy;
-use zvariant::Value;
+use zbus::{dbus_proxy, zvariant::Value};
 
 /// A dbus proxy for speaking with secret service's `Prompt` Interface.
 ///
