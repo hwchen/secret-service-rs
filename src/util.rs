@@ -19,6 +19,7 @@ use crate::ss::SS_DBUS_NAME;
 use crate::ss_crypto::encrypt;
 
 use rand::{rngs::OsRng, Rng};
+use zbus::CacheProperties;
 use zvariant::ObjectPath;
 
 // Helper enum for locking
@@ -91,6 +92,7 @@ pub(crate) fn exec_prompt(
     let prompt_proxy = PromptProxyBlocking::builder(&conn)
         .destination(SS_DBUS_NAME)?
         .path(prompt)?
+        .cache_properties(CacheProperties::No)
         .build()?;
 
     let mut receive_completed_iter = prompt_proxy.receive_completed()?;

@@ -15,6 +15,7 @@ use crate::util::{exec_prompt, format_secret, lock_or_unlock, LockAction};
 
 use std::collections::HashMap;
 use std::convert::TryInto;
+use zbus::CacheProperties;
 use zvariant::{Dict, ObjectPath, OwnedObjectPath, Value};
 
 // Collection struct.
@@ -38,6 +39,7 @@ impl<'a> Collection<'a> {
         let collection_proxy = CollectionProxyBlocking::builder(&conn)
             .destination(SS_DBUS_NAME)?
             .path(collection_path.clone())?
+            .cache_properties(CacheProperties::No)
             .build()?;
         Ok(Collection {
             conn,
