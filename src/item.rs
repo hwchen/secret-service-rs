@@ -14,6 +14,7 @@ use crate::ss_crypto::decrypt;
 use crate::util::{exec_prompt, format_secret, lock_or_unlock, LockAction};
 
 use std::collections::HashMap;
+use zbus::CacheProperties;
 use zvariant::OwnedObjectPath;
 
 pub struct Item<'a> {
@@ -34,6 +35,7 @@ impl<'a> Item<'a> {
         let item_proxy = ItemProxyBlocking::builder(&conn)
             .destination(SS_DBUS_NAME)?
             .path(item_path.clone())?
+            .cache_properties(CacheProperties::No)
             .build()?;
         Ok(Item {
             conn,
