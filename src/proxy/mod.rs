@@ -12,8 +12,7 @@ pub mod service;
 pub mod session;
 
 use serde::{Deserialize, Serialize};
-use zvariant::OwnedObjectPath;
-use zvariant_derive::Type;
+use zvariant::{OwnedObjectPath, Type};
 
 #[derive(Debug, Serialize, Deserialize, Type)]
 pub struct SecretStruct {
