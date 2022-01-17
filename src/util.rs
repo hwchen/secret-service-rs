@@ -19,8 +19,10 @@ use crate::ss::SS_DBUS_NAME;
 use crate::ss_crypto::encrypt;
 
 use rand::{rngs::OsRng, Rng};
-use zbus::CacheProperties;
-use zvariant::ObjectPath;
+use zbus::{
+    zvariant::{self, ObjectPath},
+    CacheProperties,
+};
 
 // Helper enum for locking
 pub(crate) enum LockAction {

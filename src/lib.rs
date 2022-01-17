@@ -147,7 +147,7 @@ use ss::SS_ITEM_LABEL;
 use util::exec_prompt;
 
 use std::{collections::HashMap, convert::TryInto};
-use zvariant::{ObjectPath, Value};
+use zbus::zvariant::{ObjectPath, Value};
 
 /// Secret Service Struct.
 ///
@@ -307,7 +307,7 @@ impl<'a> SecretService<'a> {
 mod test {
     use super::*;
     use std::convert::TryFrom;
-    use zvariant::ObjectPath;
+    use zbus::zvariant::ObjectPath;
 
     #[test]
     fn should_create_secret_service() {

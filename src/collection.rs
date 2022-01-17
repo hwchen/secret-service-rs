@@ -13,10 +13,11 @@ use crate::session::Session;
 use crate::ss::{SS_DBUS_NAME, SS_ITEM_ATTRIBUTES, SS_ITEM_LABEL};
 use crate::util::{exec_prompt, format_secret, lock_or_unlock, LockAction};
 
-use std::collections::HashMap;
-use std::convert::TryInto;
-use zbus::CacheProperties;
-use zvariant::{Dict, ObjectPath, OwnedObjectPath, Value};
+use std::{collections::HashMap, convert::TryInto};
+use zbus::{
+    zvariant::{Dict, ObjectPath, OwnedObjectPath, Value},
+    CacheProperties,
+};
 
 // Collection struct.
 // Should always be created from the SecretService entry point,

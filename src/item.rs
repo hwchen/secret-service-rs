@@ -14,8 +14,7 @@ use crate::ss_crypto::decrypt;
 use crate::util::{exec_prompt, format_secret, lock_or_unlock, LockAction};
 
 use std::collections::HashMap;
-use zbus::CacheProperties;
-use zvariant::OwnedObjectPath;
+use zbus::{zvariant::OwnedObjectPath, CacheProperties};
 
 pub struct Item<'a> {
     conn: zbus::blocking::Connection,

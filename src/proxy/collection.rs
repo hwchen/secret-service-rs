@@ -9,8 +9,10 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use zbus::dbus_proxy;
-use zvariant::{ObjectPath, OwnedObjectPath, Type, Value};
+use zbus::{
+    dbus_proxy,
+    zvariant::{ObjectPath, OwnedObjectPath, Type, Value},
+};
 
 use super::SecretStruct;
 
