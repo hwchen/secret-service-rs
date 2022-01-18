@@ -20,8 +20,8 @@ jobs:
       matrix:
         rust:
           - stable
-          # MSRV
-          - 1.51.0
+          # MSRV, influenced by zbus.
+          - 1.54.0
 
     steps:
     - uses: actions/checkout@v2
