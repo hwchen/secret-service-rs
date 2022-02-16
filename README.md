@@ -4,7 +4,10 @@ Secret Service Rust library.
 
 Interfaces with the Linux Secret Service API through dbus.
 
-This library is feature complete, has stabilized its API, and has removed extraneous dependencies, so I've made it 1.0.
+### Versioning
+This library is feature complete, has stabilized its API for the most part. However, as this
+crate is almost soley reliable on the `zbus` crate, we try and match major version releases
+with theirs to handle breaking changes and move with the wider `zbus` ecosystem.
 
 ### Documentation
 
