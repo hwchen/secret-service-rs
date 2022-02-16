@@ -31,7 +31,6 @@ $ cargo add secret-service
 In source code (below example is for --bin, not --lib)
 
 ```rust
-extern crate secret_service;
 use secret_service::SecretService;
 use secret_service::EncryptionType;
 use std::error::Error;
@@ -77,42 +76,7 @@ fn main() -> Result<(), Box<Error>> {
 
 
 ### Changelog
-_0.1.0_
-- dependency on gmp is removed.
-- rust-crypto replaced by RustCrypto.
-- as a result of above, error on encrypting and decrypting blank input is fixed.
-
-...
-
-_0.4.0_
-- gmp is now optional dependency.
-- gmp upgraded to 0.3 to fix "private-in-public" warnings which will be hard errors soon.
-
-_1.0.0_
-- switch from rust-crypto to RustCrypto
-- remove gmp dep for powm
-- update rand and num
-
-_1.1.0_
-- Fix, get_collection_* returns Error::NoResult when doesn't exist
-- udpate hkdf to 0.8
-
-_1.1.1_
-- update deps
-
-_1.1.2_
-- update rand
-
-_1.1.3_
-- update deps
-
-_2.0.0_
-- dbus replaced by zbus, PURE RUST!
-- update to 2018 edition
-- BREAKING: `SsError` renamed to `Error`
-- BREAKING: variants added to `Error`
-- BREAKING: attributes are now `HashMap<&str, &str>` or `HashMap<String, String>` instead of `Vec<(&str, &str)>`. Not sure why I decided this way back when, but it could cause unexpected behavior for user: when the `Vec` was transformed to `HashMap` internally, tuples could be lost if the keys were the same.
-- BREAKING: `Collection::new` and `Item::new` are now private (although I don't think it was possible to use them anyways)
+See [the changelog file](./CHANGELOG.md)
 
 ## License
 
