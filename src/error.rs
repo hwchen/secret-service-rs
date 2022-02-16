@@ -31,7 +31,7 @@ pub type Result<T> = ::std::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
-    Crypto(String),
+    Crypto(&'static str),
     Zbus(zbus::Error),
     ZbusMsg(zbus::Error),
     ZbusFdo(zbus::fdo::Error),
@@ -44,13 +44,12 @@ pub enum Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            // crypto error does not implement Display
-            Error::Crypto(_) => write!(f, "Crypto error: Invalid Length or Padding"),
-            Error::Zbus(ref err) => write!(f, "zbus error: {}", err),
-            Error::ZbusMsg(ref err) => write!(f, "zbus message error: {}", err),
-            Error::ZbusFdo(ref err) => write!(f, "zbus fdo error: {}", err),
-            Error::Zvariant(ref err) => write!(f, "zbus fdo error: {}", err),
+        match self {
+            Error::Crypto(err) => write!(f, "Crypto error: {}", err),
+            Error::Zbus(err) => write!(f, "zbus error: {}", err),
+            Error::ZbusMsg(err) => write!(f, "zbus message error: {}", err),
+            Error::ZbusFdo(err) => write!(f, "zbus fdo error: {}", err),
+            Error::Zvariant(err) => write!(f, "zbus fdo error: {}", err),
             Error::Locked => write!(f, "SS Error: object locked"),
             Error::NoResult => write!(f, "SS error: result not returned from SS API"),
             Error::Parse => write!(f, "SS error: could not parse Dbus output"),
@@ -73,13 +72,13 @@ impl error::Error for Error {
 
 impl From<block_modes::BlockModeError> for Error {
     fn from(_err: block_modes::BlockModeError) -> Error {
-        Error::Crypto("Block mode error".into())
+        Error::Crypto("Block mode error")
     }
 }
 
 impl From<block_modes::InvalidKeyIvLength> for Error {
     fn from(_err: block_modes::InvalidKeyIvLength) -> Error {
-        Error::Crypto("Invalid Key Iv Lengt".into())
+        Error::Crypto("Invalid Key IV Length")
     }
 }
 
