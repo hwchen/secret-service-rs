@@ -143,7 +143,7 @@ pub use item::Item;
 use proxy::service::ServiceProxyBlocking;
 pub use session::EncryptionType;
 use session::Session;
-use ss::SS_ITEM_LABEL;
+use ss::SS_COLLECTION_LABEL;
 use util::exec_prompt;
 
 use std::{collections::HashMap, convert::TryInto};
@@ -248,7 +248,7 @@ impl<'a> SecretService<'a> {
     /// Creates a new collection with a label and an alias.
     pub fn create_collection(&self, label: &str, alias: &str) -> Result<Collection> {
         let mut properties: HashMap<&str, Value> = HashMap::new();
-        properties.insert(SS_ITEM_LABEL, label.into());
+        properties.insert(SS_COLLECTION_LABEL, label.into());
 
         let created_collection = self.service_proxy.create_collection(properties, alias)?;
 
@@ -353,7 +353,6 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn should_create_and_delete_collection() {
         let ss = SecretService::new(EncryptionType::Plain).unwrap();
         let test_collection = ss.create_collection("Test", "").unwrap();
