@@ -1,7 +1,7 @@
-Unreleased
-- Updated dependencies where reasonable
+[2.1.0]
+- Updated dependency versions: `aes`, `block-modes`, `hkdf`, `num`, `sha2`
 - Bumped MSRV to 1.54
-- BREAKING: Updated to `zbus` 2.0. This changes error types and public path fields.
+- BREAKING: Updated to `zbus` 2.0. This changes error types and public path fields. This also addresses a security advisory in one of `zbus`'s dependencies, the `nix` crate (https://rustsec.org/advisories/RUSTSEC-2021-0119), so users should update as soon as possible.
 - BREAKING: `Error::Crypto` now contains a `&'static str` instead of a `String`.
 
 [2.0.1]
