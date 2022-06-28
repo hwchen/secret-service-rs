@@ -9,6 +9,7 @@ name = "secret-service"
 repository = "https://github.com/hwchen/secret-service-rs.git"
 edition = "2018"
 version = "2.0.1"
+rust-version = "1.58.0"
 
 [dependencies]
 # TODO: Update these when Rust 1.56 isn't so new.

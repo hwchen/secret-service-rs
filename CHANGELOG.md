@@ -1,6 +1,6 @@
 Unreleased
 - Updated dependencies where reasonable
-- Bumped MSRV to 1.54
+- Bumped MSRV to 1.58
 - BREAKING: Updated to `zbus` 2.0. This changes error types and public path fields.
 - BREAKING: `Error::Crypto` now contains a `&'static str` instead of a `String`.
 
