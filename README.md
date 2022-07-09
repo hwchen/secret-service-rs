@@ -36,21 +36,21 @@ In source code (below example is for --bin, not --lib)
 ```rust
 use secret_service::SecretService;
 use secret_service::EncryptionType;
+use std::collections::HashMap;
 use std::error::Error;
 
-fn main() -> Result<(), Box<Error>> {
-
+fn main() -> Result<(), Box<dyn Error>> {
     // initialize secret service (dbus connection and encryption session)
     let ss = SecretService::new(EncryptionType::Dh)?;
 
     // get default collection
     let collection = ss.get_default_collection()?;
 
-    //create new item
+    // create new item
     collection.create_item(
         "test_label", // label
-        vec![("test", "test_value")], // properties
-        b"test_secret", //secret
+        HashMap::from([("test", "test_value")]), // properties
+        b"test_secret", // secret
         false, // replace item with same attributes
         "text/plain" // secret content type
     )?;
@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<Error>> {
         vec![("test", "test_value")]
     )?;
 
-    let item = search_items.get(0)?;
+    let item = search_items.get(0).ok_or("Not found!")?;
 
     // retrieve secret from item
     let secret = item.get_secret()?;
@@ -68,6 +68,8 @@ fn main() -> Result<(), Box<Error>> {
 
     // delete item (deletes the dbus object, not the struct instance)
     item.delete()?;
+    
+    Ok(())
 }
 ```
 
