@@ -337,7 +337,7 @@ mod test {
         match ss.get_collection_by_alias("definitely_defintely_does_not_exist") {
             Err(Error::NoResult) => println!("worked"),
             _ => panic!(),
-        }
+        };
     }
 
     #[test]
