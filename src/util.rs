@@ -14,9 +14,9 @@ use crate::error::{Error, Result};
 use crate::proxy::prompt::PromptProxyBlocking;
 use crate::proxy::service::ServiceProxyBlocking;
 use crate::proxy::SecretStruct;
+use crate::session::encrypt;
 use crate::session::Session;
 use crate::ss::SS_DBUS_NAME;
-use crate::ss_crypto::encrypt;
 
 use rand::{rngs::OsRng, Rng};
 use zbus::{

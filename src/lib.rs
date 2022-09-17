@@ -114,10 +114,7 @@
 //! http://standards.freedesktop.org/secret-service/
 //!
 //! In this library, the encryption negotiation and key exchange is carried
-//! out in the `session` module, and encryption/decryption is done in the
-//! `ss_crypto` module.
-//
-// The other modules: util, error, ss_crypto, ss, provide supporting functions.
+//! out in the `session` module,.
 //
 // Util currently has interfaces (dbus method namespace) to make it easier to call methods.
 // Util contains function to execute prompts (used in many collection and item methods, like
@@ -126,7 +123,6 @@
 // error is for custom SS errors.
 // ss_crypto handles encryption and decryption (along with, to some extent, Session)
 // ss provides some constants which are paths for dbus interaction, and some other strings.
-//
 
 mod collection;
 mod error;
@@ -134,7 +130,6 @@ mod item;
 mod proxy;
 mod session;
 mod ss;
-mod ss_crypto;
 mod util;
 
 pub use collection::Collection;
