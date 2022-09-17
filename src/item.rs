@@ -8,9 +8,9 @@
 use crate::error::{Error, Result};
 use crate::proxy::item::ItemProxyBlocking;
 use crate::proxy::service::ServiceProxyBlocking;
+use crate::session::decrypt;
 use crate::session::Session;
 use crate::ss::SS_DBUS_NAME;
-use crate::ss_crypto::decrypt;
 use crate::util::{exec_prompt, format_secret, lock_or_unlock, LockAction};
 
 use std::collections::HashMap;

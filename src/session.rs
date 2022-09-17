@@ -21,6 +21,9 @@ use crate::error::Result;
 use crate::proxy::service::ServiceProxyBlocking;
 use crate::ss::{ALGORITHM_DH, ALGORITHM_PLAIN};
 
+use aes::Aes128;
+use block_modes::block_padding::Pkcs7;
+use block_modes::{BlockMode, Cbc};
 use hkdf::Hkdf;
 use lazy_static::lazy_static;
 use num::{
@@ -52,7 +55,7 @@ lazy_static! {
     ]);
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum EncryptionType {
     Plain,
     Dh,
@@ -166,6 +169,22 @@ fn powm(base: &BigUint, exp: &BigUint, modulus: &BigUint) -> BigUint {
     }
 
     result
+}
+
+type Aes128Cbc = Cbc<Aes128, Pkcs7>;
+
+pub fn encrypt(data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>> {
+    let cipher = Aes128Cbc::new_from_slices(key, iv)?;
+    let cipher_text = cipher.encrypt_vec(data);
+
+    Ok(cipher_text)
+}
+
+pub fn decrypt(encrypted_data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>> {
+    let cipher = Aes128Cbc::new_from_slices(key, iv)?;
+    let decrypted = cipher.decrypt_vec(encrypted_data)?;
+
+    Ok(decrypted)
 }
 
 #[cfg(test)]
