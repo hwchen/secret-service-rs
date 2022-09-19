@@ -109,17 +109,16 @@ impl<'a> Item<'a> {
         let secret_struct = self.item_proxy.get_secret(&self.session.object_path)?;
         let secret = secret_struct.value;
 
-        if !self.session.is_encrypted() {
-            Ok(secret)
-        } else {
+        if let Some(session_key) = self.session.get_aes_key() {
             // get "param" (aes_iv) field out of secret struct
             let aes_iv = secret_struct.parameters;
 
             // decrypt
-            let decrypted_secret =
-                decrypt(&secret[..], &self.session.get_aes_key()[..], &aes_iv[..]).unwrap();
+            let decrypted_secret = decrypt(&secret, session_key, &aes_iv).unwrap();
 
             Ok(decrypted_secret)
+        } else {
+            Ok(secret)
         }
     }
 
