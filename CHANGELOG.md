@@ -1,8 +1,11 @@
 Unreleased
 - Updated dependencies where reasonable
-- Bumped MSRV to 1.58
-- BREAKING: Updated to `zbus` 2.0. This changes error types and public path fields.
+- Bumped MSRV to 1.60
+- BREAKING: Updated to `zbus` 3.0. This changes error types and public path fields.
+- BREAKING: The types exported from the crate root are now entirely async. Blocking functions have been moved into the `blocking` module.
 - BREAKING: `Error::Crypto` now contains a `&'static str` instead of a `String`.
+- BREAKING: `SecretService::search_items` now takes a `HashMap<&str, &str>` instead of `Vec<(&str, &str)>` for the attributes.
+- BREAKING: The `SecretService::new()` method was renamed to `SecretService::connect()` to be more accurate.
 
 [2.0.2]
 - Increased minimum `zbus` version to 1.9.2, in order to increase the minimum version of the transitive dependency `nix` to at least 0.20.2, which is the first `nix` release to contain the fix for the security vulnerability described at https://rustsec.org/advisories/RUSTSEC-2021-0119 . A known issue with this version of `nix` is that it places an upper bound on the version of the `bitflags` dependency; if you are depending on `bitflags`, you may need to downgrade your `bitflags` version in order to upgrade to this version of `secret-service`, which you are encouraged to do in order to ensure that you are not exposed to the aforementioned `nix` vulnerability. In the long term, this will be fixed by upgrading `secret-service` to use a newer version of `zbus`, which itself depends on versions of `nix` which no longer have this restriction on `bitflags`.
