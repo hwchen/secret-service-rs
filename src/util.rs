@@ -76,12 +76,12 @@ pub(crate) fn format_secret(
 ) -> Result<SecretStruct, Error> {
     let content_type = content_type.to_owned();
 
-    if session.is_encrypted() {
+    if let Some(session_key) = session.get_aes_key() {
         let mut rng = OsRng {};
         let mut aes_iv = [0; 16];
         rng.fill(&mut aes_iv);
 
-        let encrypted_secret = encrypt(secret, &session.get_aes_key()[..], &aes_iv)?;
+        let encrypted_secret = encrypt(secret, session_key, &aes_iv);
 
         // Construct secret struct
         let parameters = aes_iv.to_vec();

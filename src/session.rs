@@ -21,6 +21,8 @@ use crate::proxy::service::{OpenSessionResult, ServiceProxy, ServiceProxyBlockin
 use crate::ss::{ALGORITHM_DH, ALGORITHM_PLAIN};
 use crate::Error;
 
+use aes::cipher::consts::U16;
+use aes::cipher::generic_array::GenericArray;
 use aes::Aes128;
 use block_modes::block_padding::Pkcs7;
 use block_modes::{BlockMode, Cbc};
@@ -55,6 +57,8 @@ static DH_PRIME: Lazy<BigUint> = Lazy::new(|| {
     ])
 });
 
+type AesKey = GenericArray<u8, U16>;
+
 #[derive(Debug, Eq, PartialEq)]
 pub enum EncryptionType {
     Plain,
@@ -81,7 +85,7 @@ impl Keypair {
         }
     }
 
-    fn derive_shared(&self, server_public_key: &BigUint) -> Vec<u8> {
+    fn derive_shared(&self, server_public_key: &BigUint) -> AesKey {
         // Derive the shared secret the server and us.
         let common_secret = powm(server_public_key, &self.private, &DH_PRIME);
 
@@ -103,15 +107,15 @@ impl Keypair {
         hk.expand(&info, &mut okm)
             .expect("hkdf expand should never fail");
 
-        okm.to_vec()
+        GenericArray::clone_from_slice(okm.as_slice())
     }
 }
 
-#[derive(Debug)]
+type Aes128Cbc = Cbc<Aes128, Pkcs7>;
+
 pub struct Session {
     pub object_path: OwnedObjectPath,
-    encrypted: bool,
-    aes_key: Option<Vec<u8>>,
+    aes_key: Option<AesKey>,
 }
 
 impl Session {
@@ -125,7 +129,6 @@ impl Session {
 
         Ok(Session {
             object_path: session.result,
-            encrypted: true,
             aes_key: Some(aes_key),
         })
     }
@@ -141,7 +144,6 @@ impl Session {
 
                 Ok(Session {
                     object_path: session_path,
-                    encrypted: false,
                     aes_key: None,
                 })
             }
@@ -169,7 +171,6 @@ impl Session {
 
                 Ok(Session {
                     object_path: session_path,
-                    encrypted: false,
                     aes_key: None,
                 })
             }
@@ -185,12 +186,8 @@ impl Session {
         }
     }
 
-    pub fn is_encrypted(&self) -> bool {
-        self.encrypted
-    }
-
-    pub fn get_aes_key(&self) -> Vec<u8> {
-        self.aes_key.clone().unwrap()
+    pub fn get_aes_key(&self) -> Option<&AesKey> {
+        self.aes_key.as_ref()
     }
 }
 
@@ -211,17 +208,15 @@ fn powm(base: &BigUint, exp: &BigUint, modulus: &BigUint) -> BigUint {
     result
 }
 
-type Aes128Cbc = Cbc<Aes128, Pkcs7>;
-
-pub fn encrypt(data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>, Error> {
-    let cipher = Aes128Cbc::new_from_slices(key, iv)?;
-    let cipher_text = cipher.encrypt_vec(data);
-
-    Ok(cipher_text)
+pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
+    let iv = GenericArray::from_slice(iv);
+    let cipher = Aes128Cbc::new_fix(key, iv);
+    cipher.encrypt_vec(data)
 }
 
-pub fn decrypt(encrypted_data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>, Error> {
-    let cipher = Aes128Cbc::new_from_slices(key, iv)?;
+pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>, Error> {
+    let iv = GenericArray::from_slice(iv);
+    let cipher = Aes128Cbc::new_fix(key, iv);
     let decrypted = cipher.decrypt_vec(encrypted_data)?;
 
     Ok(decrypted)
@@ -238,7 +233,7 @@ mod test {
         let conn = zbus::blocking::Connection::session().unwrap();
         let service_proxy = ServiceProxyBlocking::new(&conn).unwrap();
         let session = Session::new_blocking(&service_proxy, EncryptionType::Plain).unwrap();
-        assert!(!session.is_encrypted());
+        assert!(session.get_aes_key().is_none());
     }
 
     #[test]
@@ -246,6 +241,6 @@ mod test {
         let conn = zbus::blocking::Connection::session().unwrap();
         let service_proxy = ServiceProxyBlocking::new(&conn).unwrap();
         let session = Session::new_blocking(&service_proxy, EncryptionType::Dh).unwrap();
-        assert!(session.is_encrypted());
+        assert!(session.get_aes_key().is_some());
     }
 }
