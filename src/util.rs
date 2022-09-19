@@ -10,15 +10,16 @@
 //!   exec_prompt
 //!   formatting secrets
 
-use crate::error::{Error, Result};
-use crate::proxy::prompt::PromptProxyBlocking;
-use crate::proxy::service::ServiceProxyBlocking;
+use crate::error::Error;
+use crate::proxy::prompt::{Completed, PromptProxy, PromptProxyBlocking};
+use crate::proxy::service::{ServiceProxy, ServiceProxyBlocking};
 use crate::proxy::SecretStruct;
 use crate::session::encrypt;
 use crate::session::Session;
 use crate::ss::SS_DBUS_NAME;
 
 use rand::{rngs::OsRng, Rng};
+use zbus::export::ordered_stream::OrderedStreamExt;
 use zbus::{
     zvariant::{self, ObjectPath},
     CacheProperties,
@@ -30,12 +31,31 @@ pub(crate) enum LockAction {
     Unlock,
 }
 
-pub(crate) fn lock_or_unlock(
+pub(crate) async fn lock_or_unlock(
+    conn: zbus::Connection,
+    service_proxy: &ServiceProxy<'_>,
+    object_path: &ObjectPath<'_>,
+    lock_action: LockAction,
+) -> Result<(), Error> {
+    let objects = vec![object_path];
+
+    let lock_action_res = match lock_action {
+        LockAction::Lock => service_proxy.lock(objects).await?,
+        LockAction::Unlock => service_proxy.unlock(objects).await?,
+    };
+
+    if lock_action_res.object_paths.is_empty() {
+        exec_prompt(conn, &lock_action_res.prompt).await?;
+    }
+    Ok(())
+}
+
+pub(crate) fn lock_or_unlock_blocking(
     conn: zbus::blocking::Connection,
     service_proxy: &ServiceProxyBlocking,
     object_path: &ObjectPath,
     lock_action: LockAction,
-) -> Result<()> {
+) -> Result<(), Error> {
     let objects = vec![object_path];
 
     let lock_action_res = match lock_action {
@@ -44,7 +64,7 @@ pub(crate) fn lock_or_unlock(
     };
 
     if lock_action_res.object_paths.is_empty() {
-        exec_prompt(conn, &lock_action_res.prompt)?;
+        exec_prompt_blocking(conn, &lock_action_res.prompt)?;
     }
     Ok(())
 }
@@ -53,7 +73,7 @@ pub(crate) fn format_secret(
     session: &Session,
     secret: &[u8],
     content_type: &str,
-) -> Result<SecretStruct> {
+) -> Result<SecretStruct, Error> {
     let content_type = content_type.to_owned();
 
     if session.is_encrypted() {
@@ -87,10 +107,30 @@ pub(crate) fn format_secret(
     }
 }
 
-pub(crate) fn exec_prompt(
+// TODO: Users could pass their own window ID in.
+const NO_WINDOW_ID: &str = "";
+
+pub(crate) async fn exec_prompt(
+    conn: zbus::Connection,
+    prompt: &ObjectPath<'_>,
+) -> Result<zvariant::OwnedValue, Error> {
+    let prompt_proxy = PromptProxy::builder(&conn)
+        .destination(SS_DBUS_NAME)?
+        .path(prompt)?
+        .cache_properties(CacheProperties::No)
+        .build()
+        .await?;
+
+    let mut receive_completed_iter = prompt_proxy.receive_completed().await?;
+    prompt_proxy.prompt(NO_WINDOW_ID).await?;
+
+    handle_signal(receive_completed_iter.next().await.unwrap())
+}
+
+pub(crate) fn exec_prompt_blocking(
     conn: zbus::blocking::Connection,
     prompt: &ObjectPath,
-) -> Result<zvariant::OwnedValue> {
+) -> Result<zvariant::OwnedValue, Error> {
     let prompt_proxy = PromptProxyBlocking::builder(&conn)
         .destination(SS_DBUS_NAME)?
         .path(prompt)?
@@ -98,12 +138,12 @@ pub(crate) fn exec_prompt(
         .build()?;
 
     let mut receive_completed_iter = prompt_proxy.receive_completed()?;
+    prompt_proxy.prompt(NO_WINDOW_ID)?;
 
-    // TODO figure out window_id
-    let window_id = "";
-    prompt_proxy.prompt(window_id)?;
+    handle_signal(receive_completed_iter.next().unwrap())
+}
 
-    let signal = receive_completed_iter.next().unwrap();
+fn handle_signal(signal: Completed) -> Result<zvariant::OwnedValue, Error> {
     let args = signal.args()?;
     if args.dismissed {
         Err(Error::Prompt)

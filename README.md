@@ -31,20 +31,21 @@ If you have `cargo-extras` installed, can replace above step with the command at
 $ cargo add secret-service
 ```
 
-In source code (below example is for --bin, not --lib)
+In source code (below example is for --bin, not --lib). This example uses `tokio` as
+the async runtime.
 
 ```rust
 use secret_service::SecretService;
 use secret_service::EncryptionType;
-use std::collections::HashMap;
-use std::error::Error;
+use std::{collections::HashMap, error::Error};
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     // initialize secret service (dbus connection and encryption session)
-    let ss = SecretService::new(EncryptionType::Dh)?;
+    let ss = SecretService::connect(EncryptionType::Dh).await?;
 
     // get default collection
-    let collection = ss.get_default_collection()?;
+    let collection = ss.get_default_collection().await?;
 
     // create new item
     collection.create_item(
@@ -53,22 +54,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         b"test_secret", // secret
         false, // replace item with same attributes
         "text/plain" // secret content type
-    )?;
+    ).await?;
 
     // search items by properties
     let search_items = ss.search_items(
-        vec![("test", "test_value")]
-    )?;
+        HashMap::from([("test", "test_value")])
+    ).await?;
 
     let item = search_items.get(0).ok_or("Not found!")?;
 
     // retrieve secret from item
-    let secret = item.get_secret()?;
+    let secret = item.get_secret().await?;
     assert_eq!(secret, b"test_secret");
 
     // delete item (deletes the dbus object, not the struct instance)
-    item.delete()?;
-    
+    item.delete().await?;
     Ok(())
 }
 ```
