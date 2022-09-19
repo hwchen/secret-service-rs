@@ -1,4 +1,4 @@
-//Copyright 2016 secret-service-rs Developers
+//Copyright 2022 secret-service-rs Developers
 //
 // Licensed under the Apache License, Version 2.0, <LICENSE-APACHE or
 // http://apache.org/licenses/LICENSE-2.0> or the MIT license <LICENSE-MIT or
@@ -24,10 +24,6 @@
 
 use std::{error, fmt};
 use zbus::zvariant;
-
-/// Result type often returned from methods that have Error.
-/// Fns in this library return ::Result<T> when using this alias.
-pub type Result<T> = ::std::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
