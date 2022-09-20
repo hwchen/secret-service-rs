@@ -7,7 +7,7 @@ keywords = ["secret-service", "password", "linux", "keychain"]
 license = "MIT OR Apache-2.0"
 name = "secret-service"
 repository = "https://github.com/hwchen/secret-service-rs.git"
-edition = "2018"
+edition = "2021"
 version = "2.0.1"
 rust-version = "1.60.0"
 

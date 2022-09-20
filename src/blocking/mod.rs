@@ -23,7 +23,6 @@ use crate::ss::SS_COLLECTION_LABEL;
 use crate::util::exec_prompt_blocking;
 use crate::{EncryptionType, Error};
 use std::collections::HashMap;
-use std::convert::TryInto;
 use zbus::zvariant::{ObjectPath, Value};
 
 mod collection;
