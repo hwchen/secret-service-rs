@@ -13,7 +13,7 @@ use crate::session::Session;
 use crate::ss::{SS_DBUS_NAME, SS_ITEM_ATTRIBUTES, SS_ITEM_LABEL};
 use crate::util::{exec_prompt_blocking, format_secret, lock_or_unlock_blocking, LockAction};
 
-use std::{collections::HashMap, convert::TryInto};
+use std::collections::HashMap;
 use zbus::{
     zvariant::{Dict, ObjectPath, OwnedObjectPath, Value},
     CacheProperties,

@@ -13,7 +13,7 @@ use crate::util::{exec_prompt, format_secret, lock_or_unlock, LockAction};
 use crate::Error;
 use crate::Item;
 
-use std::{collections::HashMap, convert::TryInto};
+use std::collections::HashMap;
 use zbus::{
     zvariant::{Dict, ObjectPath, OwnedObjectPath, Value},
     CacheProperties,
