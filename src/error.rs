@@ -1,41 +1,31 @@
-//Copyright 2022 secret-service-rs Developers
+// Copyright 2022 secret-service-rs Developers
 //
 // Licensed under the Apache License, Version 2.0, <LICENSE-APACHE or
 // http://apache.org/licenses/LICENSE-2.0> or the MIT license <LICENSE-MIT or
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-// implement custom errors
-//
-// Classes of errors:
-// - Dbus (IO, validation)
-// - crypto
-// - parsing dbus output (dbus returns unrecognizable output). Sometimes it's
-//     for if the index exists in the results vector, sometimes it's for whether
-//     the value being parsed at that index is the right type. Along these lines
-//     I'm currently using unwrap() for converting types, should these also return
-//     Result?
-//
-//     Almost all custom errors are of this type. It's mostly an internal error,
-//     unexpected behavior indicates something very wrong, so should it panic? Or
-//     is it still better to bubble up?
-// - locked (currently custom dbus error)
-// - prompt dismissed (not an error?) (currently custom dbus error)
-
 use std::{error, fmt};
 use zbus::zvariant;
 
+/// An error that could occur interacting with the secret service dbus interface.
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {
+    /// An error occured decrypting a response message.
     Crypto(&'static str),
+    /// A call into the secret service provider failed.
     Zbus(zbus::Error),
-    ZbusMsg(zbus::Error),
+    /// A call into a standard dbus interface failed.
     ZbusFdo(zbus::fdo::Error),
+    /// Serializing or deserializing a dbus message failed.
     Zvariant(zvariant::Error),
+    /// A secret service interface was locked and can't return any
+    /// information about its contents.
     Locked,
+    /// No object was found in the object for the request.
     NoResult,
-    Parse,
+    /// An authorization prompt was dismissed, but is required to continue.
     Prompt,
 }
 
@@ -44,13 +34,11 @@ impl fmt::Display for Error {
         match self {
             Error::Crypto(err) => write!(f, "Crypto error: {}", err),
             Error::Zbus(err) => write!(f, "zbus error: {}", err),
-            Error::ZbusMsg(err) => write!(f, "zbus message error: {}", err),
             Error::ZbusFdo(err) => write!(f, "zbus fdo error: {}", err),
-            Error::Zvariant(err) => write!(f, "zbus fdo error: {}", err),
-            Error::Locked => write!(f, "SS Error: object locked"),
-            Error::NoResult => write!(f, "SS error: result not returned from SS API"),
-            Error::Parse => write!(f, "SS error: could not parse Dbus output"),
-            Error::Prompt => write!(f, "SS error: prompt dismissed"),
+            Error::Zvariant(err) => write!(f, "zbus serde error: {}", err),
+            Error::Locked => f.write_str("SS Error: object locked"),
+            Error::NoResult => f.write_str("SS error: result not returned from SS API"),
+            Error::Prompt => f.write_str("SS error: prompt dismissed"),
         }
     }
 }
@@ -59,23 +47,10 @@ impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match *self {
             Error::Zbus(ref err) => Some(err),
-            Error::ZbusMsg(ref err) => Some(err),
             Error::ZbusFdo(ref err) => Some(err),
             Error::Zvariant(ref err) => Some(err),
             _ => None,
         }
-    }
-}
-
-impl From<block_modes::BlockModeError> for Error {
-    fn from(_err: block_modes::BlockModeError) -> Error {
-        Error::Crypto("Block mode error")
-    }
-}
-
-impl From<block_modes::InvalidKeyIvLength> for Error {
-    fn from(_err: block_modes::InvalidKeyIvLength) -> Error {
-        Error::Crypto("Invalid Key IV Length")
     }
 }
 
