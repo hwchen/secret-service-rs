@@ -216,9 +216,9 @@ pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
 pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>, Error> {
     let iv = GenericArray::from_slice(iv);
     let cipher = Aes128Cbc::new_fix(key, iv);
-    let decrypted = cipher.decrypt_vec(encrypted_data)?;
-
-    Ok(decrypted)
+    cipher
+        .decrypt_vec(encrypted_data)
+        .map_err(|_| Error::Crypto("message decryption failed"))
 }
 
 #[cfg(test)]
