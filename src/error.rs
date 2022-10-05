@@ -27,6 +27,9 @@ pub enum Error {
     NoResult,
     /// An authorization prompt was dismissed, but is required to continue.
     Prompt,
+    /// A secret service provider, or a session to connect to one, was found
+    /// on the system.
+    Unavailable,
 }
 
 impl fmt::Display for Error {
@@ -39,6 +42,7 @@ impl fmt::Display for Error {
             Error::Locked => f.write_str("SS Error: object locked"),
             Error::NoResult => f.write_str("SS error: result not returned from SS API"),
             Error::Prompt => f.write_str("SS error: prompt dismissed"),
+            Error::Unavailable => f.write_str("no secret service provider or dbus session found"),
         }
     }
 }
