@@ -20,7 +20,7 @@
 use crate::proxy::service::ServiceProxyBlocking;
 use crate::session::Session;
 use crate::ss::SS_COLLECTION_LABEL;
-use crate::util::exec_prompt_blocking;
+use crate::util;
 use crate::{EncryptionType, Error};
 use std::collections::HashMap;
 use zbus::zvariant::{ObjectPath, Value};
@@ -46,8 +46,9 @@ pub struct SecretService<'a> {
 impl<'a> SecretService<'a> {
     /// Create a new `SecretService` instance
     pub fn connect(encryption: EncryptionType) -> Result<Self, Error> {
-        let conn = zbus::blocking::Connection::session()?;
-        let service_proxy = ServiceProxyBlocking::new(&conn)?;
+        let conn = zbus::blocking::Connection::session().map_err(util::handle_conn_error)?;
+        let service_proxy = ServiceProxyBlocking::new(&conn).map_err(util::handle_conn_error)?;
+
         let session = Session::new_blocking(&service_proxy, encryption)?;
 
         Ok(SecretService {
@@ -135,7 +136,7 @@ impl<'a> SecretService<'a> {
                 let prompt_path = created_collection.prompt;
 
                 // Exec prompt and parse result
-                let prompt_res = exec_prompt_blocking(self.conn.clone(), &prompt_path)?;
+                let prompt_res = util::exec_prompt_blocking(self.conn.clone(), &prompt_path)?;
                 prompt_res.try_into()?
             } else {
                 // if not, just return created path

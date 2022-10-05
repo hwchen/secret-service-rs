@@ -155,8 +155,14 @@ pub struct SecretService<'a> {
 impl<'a> SecretService<'a> {
     /// Create a new `SecretService` instance.
     pub async fn connect(encryption: EncryptionType) -> Result<SecretService<'a>, Error> {
-        let conn = zbus::Connection::session().await?;
-        let service_proxy = ServiceProxy::new(&conn).await?;
+        let conn = zbus::Connection::session()
+            .await
+            .map_err(util::handle_conn_error)?;
+
+        let service_proxy = ServiceProxy::new(&conn)
+            .await
+            .map_err(util::handle_conn_error)?;
+
         let session = Session::new(&service_proxy, encryption).await?;
 
         Ok(SecretService {
