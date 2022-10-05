@@ -26,6 +26,7 @@ use std::{error, fmt};
 use zbus::zvariant;
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum Error {
     Crypto(&'static str),
     Zbus(zbus::Error),
