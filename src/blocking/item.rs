@@ -114,7 +114,7 @@ impl<'a> Item<'a> {
             let aes_iv = secret_struct.parameters;
 
             // decrypt
-            let decrypted_secret = decrypt(&secret, session_key, &aes_iv).unwrap();
+            let decrypted_secret = decrypt(&secret, session_key, &aes_iv)?;
 
             Ok(decrypted_secret)
         } else {
