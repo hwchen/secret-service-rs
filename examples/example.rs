@@ -41,7 +41,19 @@ async fn main() {
 
     //println!("Searched Item: {:?}", search_items);
 
-    let item = search_items.get(0).unwrap();
+    // retrieve one item, first by checking the unlocked items
+    let item = match search_items.unlocked.first() {
+        Some(item) => item,
+        None => {
+            // if there aren't any, check the locked items and unlock the first one
+            let locked_item = search_items
+                .locked
+                .first()
+                .expect("Search didn't return any items!");
+            locked_item.unlock().await.unwrap();
+            locked_item
+        }
+    };
 
     // retrieve secret from item
     let secret = item.get_secret().await.unwrap();

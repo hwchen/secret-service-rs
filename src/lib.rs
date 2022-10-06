@@ -152,6 +152,14 @@ pub struct SecretService<'a> {
     service_proxy: ServiceProxy<'a>,
 }
 
+/// Used to indicate locked and unlocked items in the
+/// return value of [SecretService::search_items]
+/// and [blocking::SecretService::search_items].
+pub struct SearchItemsResult<T> {
+    pub unlocked: Vec<T>,
+    pub locked: Vec<T>,
+}
+
 impl<'a> SecretService<'a> {
     /// Create a new `SecretService` instance.
     pub async fn connect(encryption: EncryptionType) -> Result<SecretService<'a>, Error> {
@@ -281,29 +289,30 @@ impl<'a> SecretService<'a> {
     pub async fn search_items(
         &self,
         attributes: HashMap<&str, &str>,
-    ) -> Result<Vec<Item<'_>>, Error> {
+    ) -> Result<SearchItemsResult<Item<'_>>, Error> {
         let items = self.service_proxy.search_items(attributes).await?;
 
-        // map array of item paths to Item
-        let res = futures_util::future::join_all(
-            items
-                .locked
-                .into_iter()
-                .chain(items.unlocked.into_iter())
-                .map(|item_path| {
-                    Item::new(
-                        self.conn.clone(),
-                        &self.session,
-                        &self.service_proxy,
-                        item_path,
-                    )
-                }),
-        )
-        .await
-        .into_iter()
-        .collect::<Result<_, _>>()?;
+        let object_paths_to_items = |items: Vec<_>| {
+            futures_util::future::join_all(items.into_iter().map(|item_path| {
+                Item::new(
+                    self.conn.clone(),
+                    &self.session,
+                    &self.service_proxy,
+                    item_path,
+                )
+            }))
+        };
 
-        Ok(res)
+        Ok(SearchItemsResult {
+            unlocked: object_paths_to_items(items.unlocked)
+                .await
+                .into_iter()
+                .collect::<Result<_, _>>()?,
+            locked: object_paths_to_items(items.locked)
+                .await
+                .into_iter()
+                .collect::<Result<_, _>>()?,
+        })
     }
 }
 
@@ -393,7 +402,8 @@ mod test {
             .search_items(HashMap::from([("test", "test")]))
             .await
             .unwrap();
-        assert_eq!(bad_search.len(), 0);
+        assert_eq!(bad_search.unlocked.len(), 0);
+        assert_eq!(bad_search.locked.len(), 0);
 
         // handle correct search for item and compare
         let search_item = ss
@@ -401,7 +411,8 @@ mod test {
             .await
             .unwrap();
 
-        assert_eq!(item.item_path, search_item[0].item_path);
+        assert_eq!(item.item_path, search_item.unlocked[0].item_path);
+        assert_eq!(search_item.locked.len(), 0);
         item.delete().await.unwrap();
     }
 }
