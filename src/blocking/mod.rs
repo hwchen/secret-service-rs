@@ -21,7 +21,7 @@ use crate::proxy::service::ServiceProxyBlocking;
 use crate::session::Session;
 use crate::ss::SS_COLLECTION_LABEL;
 use crate::util;
-use crate::{EncryptionType, Error};
+use crate::{EncryptionType, Error, SearchItemsResult};
 use std::collections::HashMap;
 use zbus::zvariant::{ObjectPath, Value};
 
@@ -153,25 +153,30 @@ impl<'a> SecretService<'a> {
     }
 
     /// Searches all items by attributes
-    pub fn search_items(&self, attributes: HashMap<&str, &str>) -> Result<Vec<Item>, Error> {
+    pub fn search_items(
+        &self,
+        attributes: HashMap<&str, &str>,
+    ) -> Result<SearchItemsResult<Item>, Error> {
         let items = self.service_proxy.search_items(attributes)?;
 
-        // map array of item paths to Item
-        let res = items
-            .locked
-            .into_iter()
-            .chain(items.unlocked.into_iter())
-            .map(|item_path| {
-                Item::new(
-                    self.conn.clone(),
-                    &self.session,
-                    &self.service_proxy,
-                    item_path,
-                )
-            })
-            .collect::<Result<_, _>>()?;
+        let object_paths_to_items = |items: Vec<_>| {
+            items
+                .into_iter()
+                .map(|item_path| {
+                    Item::new(
+                        self.conn.clone(),
+                        &self.session,
+                        &self.service_proxy,
+                        item_path,
+                    )
+                })
+                .collect::<Result<_, _>>()
+        };
 
-        Ok(res)
+        Ok(SearchItemsResult {
+            unlocked: object_paths_to_items(items.unlocked)?,
+            locked: object_paths_to_items(items.locked)?,
+        })
     }
 }
 
@@ -255,14 +260,16 @@ mod test {
 
         // handle no result
         let bad_search = ss.search_items(HashMap::from([("test", "test")])).unwrap();
-        assert_eq!(bad_search.len(), 0);
+        assert_eq!(bad_search.unlocked.len(), 0);
+        assert_eq!(bad_search.locked.len(), 0);
 
         // handle correct search for item and compare
         let search_item = ss
             .search_items(HashMap::from([("test_attribute_in_ss", "test_value")]))
             .unwrap();
 
-        assert_eq!(item.item_path, search_item[0].item_path);
+        assert_eq!(item.item_path, search_item.unlocked[0].item_path);
+        assert_eq!(search_item.locked.len(), 0);
         item.delete().unwrap();
     }
 }
