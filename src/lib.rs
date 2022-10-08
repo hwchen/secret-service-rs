@@ -11,7 +11,7 @@
 //! in Linux.
 //!
 //! ## About Secret Service API
-//! http://standards.freedesktop.org/secret-service/
+//! <https://standards.freedesktop.org/secret-service/>
 //!
 //! Secret Service provides a secure place to store secrets.
 //! Gnome keyring and KWallet implement the Secret Service API.
@@ -47,7 +47,19 @@
 //!        HashMap::from([("test", "test_value")])
 //!    ).await.unwrap();
 //!
-//!    let item = search_items.get(0).unwrap();
+//!    // retrieve one item, first by checking the unlocked items
+//!    let item = match search_items.unlocked.first() {
+//!        Some(item) => item,
+//!        None => {
+//!            // if there aren't any, check the locked items and unlock the first one
+//!            let locked_item = search_items
+//!                .locked
+//!                .first()
+//!                .expect("Search didn't return any items!");
+//!            locked_item.unlock().await.unwrap();
+//!            locked_item
+//!        }
+//!    };
 //!
 //!    // retrieve secret from item
 //!    let secret = item.get_secret().await.unwrap();
@@ -103,7 +115,7 @@
 //!
 //! ### Crypto
 //! Specifics in SecretService API Draft Proposal:
-//! http://standards.freedesktop.org/secret-service/
+//! <https://standards.freedesktop.org/secret-service/>
 //!
 //! ### Async
 //!
