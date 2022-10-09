@@ -25,7 +25,7 @@ In Cargo.toml:
 secret-service = "2.0.0"
 ```
 
-If you have `cargo-extras` installed, can replace above step with the command at the prompt in your project directory:
+Or, you can add this project with `cargo add`:
 
 ```
 $ cargo add secret-service
@@ -61,7 +61,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         HashMap::from([("test", "test_value")])
     ).await?;
 
-    let item = search_items.get(0).ok_or("Not found!")?;
+    let item = search_items.unlocked.get(0).ok_or("Not found!")?;
 
     // retrieve secret from item
     let secret = item.get_secret().await?;
@@ -78,7 +78,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 - SecretService: initialize dbus, create plain/encrypted session.
 - Collections: create, delete, search.
 - Items: create, delete, search, get/set secret.
-
 
 ### Changelog
 See [the changelog file](./CHANGELOG.md)
