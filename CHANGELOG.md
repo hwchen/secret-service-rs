@@ -8,6 +8,8 @@ Unreleased
 - BREAKING: The `SecretService::new()` method was renamed to `SecretService::connect()` to be more accurate.
 - BREAKING: `Error` is now marked as `#[non_exhaustive]` to allow for additions to be made more easily in the future.
 - BREAKING: Several dead error variants were pruned.
+- BREAKING: `search_items` now returns both locked and unlocked items. If an unlocked item isn't present in the list, it must be unlocked
+manually.
 
 [2.0.2]
 - Increased minimum `zbus` version to 1.9.2, in order to increase the minimum version of the transitive dependency `nix` to at least 0.20.2, which is the first `nix` release to contain the fix for the security vulnerability described at https://rustsec.org/advisories/RUSTSEC-2021-0119 . A known issue with this version of `nix` is that it places an upper bound on the version of the `bitflags` dependency; if you are depending on `bitflags`, you may need to downgrade your `bitflags` version in order to upgrade to this version of `secret-service`, which you are encouraged to do in order to ensure that you are not exposed to the aforementioned `nix` vulnerability. In the long term, this will be fixed by upgrading `secret-service` to use a newer version of `zbus`, which itself depends on versions of `nix` which no longer have this restriction on `bitflags`.
