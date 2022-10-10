@@ -67,3 +67,46 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        rust:
+          - stable
+          # MSRV, influenced by zbus.
+          - 1.60.0
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          profile: minimal
+
+      - name: Install gnome-keyring
+        run: sudo apt-get install -y gnome-keyring
+
+      - name: Start gnome-keyring
+        # run gnome-keyring with 'foobar' as password for the login keyring
+        # this will create a new login keyring and unlock it
+        # the login password doesn't matter, but the keyring must be unlocked for the tests to work
+        run: gnome-keyring-daemon --components=secrets --daemonize --unlock <<< 'foobar'
+
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          # run tests single-threaded to avoid race conditions
+          args: -- --test-threads=1
+
+      - name: Run example
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: --example example

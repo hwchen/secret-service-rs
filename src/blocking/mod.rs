@@ -228,6 +228,7 @@ mod test {
         let _ = ss.get_any_collection().unwrap();
     }
 
+    #[test_with::no_env(GITHUB_ACTIONS)]
     #[test]
     fn should_create_and_delete_collection() {
         let ss = SecretService::connect(EncryptionType::Plain).unwrap();

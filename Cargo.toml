@@ -32,3 +32,4 @@ zbus = { version = "3", default-features = false }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt", "macros"] }
+test-with = { version = "0.8", default-features = false }
