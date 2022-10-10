@@ -378,6 +378,7 @@ mod test {
         let _ = ss.get_any_collection().await.unwrap();
     }
 
+    #[test_with::no_env(GITHUB_ACTIONS)]
     #[tokio::test]
     async fn should_create_and_delete_collection() {
         let ss = SecretService::connect(EncryptionType::Plain).await.unwrap();
