@@ -50,6 +50,13 @@ static DH_PRIME: Lazy<BigUint> = Lazy::new(|| {
     ])
 });
 
+#[allow(unused_macros)]
+macro_rules! feature_needed {
+    () => {
+        compile_error!("Please enable a feature to pick a runtime (such as rt-async-io-crypto-rust or rt-tokio-crypto-rust) for the secret-service crate")
+    }
+}
+
 type AesKey = GenericArray<u8, U16>;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -100,7 +107,7 @@ impl Keypair {
     }
 }
 
-#[cfg(feature = "openssl")]
+#[cfg(feature = "crypto-openssl")]
 fn hkdf(ikm: Vec<u8>, salt: Option<&[u8]>, okm: &mut [u8]) {
     let mut ctx = openssl::pkey_ctx::PkeyCtx::new_id(openssl::pkey::Id::HKDF)
         .expect("hkdf context should not fail");
@@ -120,7 +127,7 @@ fn hkdf(ikm: Vec<u8>, salt: Option<&[u8]>, okm: &mut [u8]) {
         .expect("hkdf expand should never fail");
 }
 
-#[cfg(not(feature = "openssl"))]
+#[cfg(feature = "crypto-rust")]
 fn hkdf(ikm: Vec<u8>, salt: Option<&[u8]>, okm: &mut [u8]) {
     use hkdf::Hkdf;
     use sha2::Sha256;
@@ -129,6 +136,11 @@ fn hkdf(ikm: Vec<u8>, salt: Option<&[u8]>, okm: &mut [u8]) {
     let (_, hk) = Hkdf::<Sha256>::extract(salt, &ikm);
     hk.expand(&info, okm)
         .expect("hkdf expand should never fail");
+}
+
+#[cfg(all(not(feature = "crypto-rust"), not(feature = "crypto-openssl")))]
+fn hkdf(ikm: Vec<u8>, salt: Option<&[u8]>, okm: &mut [u8]) {
+    feature_needed!()
 }
 
 pub struct Session {
@@ -226,7 +238,7 @@ fn powm(base: &BigUint, exp: &BigUint, modulus: &BigUint) -> BigUint {
     result
 }
 
-#[cfg(not(feature = "openssl"))]
+#[cfg(feature = "crypto-rust")]
 pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
     use aes::Aes128;
     use block_modes::block_padding::Pkcs7;
@@ -237,7 +249,7 @@ pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
     cipher.encrypt_vec(data)
 }
 
-#[cfg(not(feature = "openssl"))]
+#[cfg(feature = "crypto-rust")]
 pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>, Error> {
     use aes::Aes128;
     use block_modes::block_padding::Pkcs7;
@@ -250,7 +262,7 @@ pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>
         .map_err(|_| Error::Crypto("message decryption failed"))
 }
 
-#[cfg(feature = "openssl")]
+#[cfg(feature = "crypto-openssl")]
 pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
     use openssl::cipher::Cipher;
     use openssl::cipher_ctx::CipherCtx;
@@ -267,7 +279,7 @@ pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
     output
 }
 
-#[cfg(feature = "openssl")]
+#[cfg(feature = "crypto-openssl")]
 pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>, Error> {
     use openssl::cipher::Cipher;
     use openssl::cipher_ctx::CipherCtx;
@@ -282,6 +294,16 @@ pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>
     ctx.cipher_final_vec(&mut output)
         .map_err(|_| Error::Crypto("message decryption failed"))?;
     Ok(output)
+}
+
+#[cfg(all(not(feature = "crypto-rust"), not(feature = "crypto-openssl")))]
+pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
+    feature_needed!()
+}
+
+#[cfg(all(not(feature = "crypto-rust"), not(feature = "crypto-openssl")))]
+pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>, Error> {
+    feature_needed!()
 }
 
 #[cfg(test)]
