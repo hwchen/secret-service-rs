@@ -46,7 +46,7 @@ jobs:
     - uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --all-features --all-targets --all -- -D clippy::dbg_macro -D warnings -F unused_must_use
+        args: --feature=rt-async-io-crypto-rust --all-targets --all -- -D clippy::dbg_macro -D warnings -F unused_must_use
 
   fmt:
     name: Rustfmt
