@@ -21,12 +21,7 @@ use crate::proxy::service::{OpenSessionResult, ServiceProxy, ServiceProxyBlockin
 use crate::ss::{ALGORITHM_DH, ALGORITHM_PLAIN};
 use crate::Error;
 
-use aes::cipher::consts::U16;
-use aes::cipher::generic_array::GenericArray;
-use aes::Aes128;
-use block_modes::block_padding::Pkcs7;
-use block_modes::{BlockMode, Cbc};
-use hkdf::Hkdf;
+use generic_array::{typenum::U16, GenericArray};
 use num::{
     bigint::BigUint,
     integer::Integer,
@@ -35,7 +30,6 @@ use num::{
 };
 use once_cell::sync::Lazy;
 use rand::{rngs::OsRng, Rng};
-use sha2::Sha256;
 use zbus::zvariant::OwnedObjectPath;
 
 use std::ops::{Mul, Rem, Shr};
@@ -55,6 +49,13 @@ static DH_PRIME: Lazy<BigUint> = Lazy::new(|| {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     ])
 });
+
+#[allow(unused_macros)]
+macro_rules! feature_needed {
+    () => {
+        compile_error!("Please enable a feature to pick a runtime (such as rt-async-io-crypto-rust or rt-tokio-crypto-rust) for the secret-service crate")
+    }
+}
 
 type AesKey = GenericArray<u8, U16>;
 
@@ -97,20 +98,50 @@ impl Keypair {
         // input keying material
         let ikm = common_secret_padded;
         let salt = None;
-        let info = [];
 
         // output keying material
         let mut okm = [0; 16];
+        hkdf(ikm, salt, &mut okm);
 
-        let (_, hk) = Hkdf::<Sha256>::extract(salt, &ikm);
-        hk.expand(&info, &mut okm)
-            .expect("hkdf expand should never fail");
-
-        GenericArray::clone_from_slice(okm.as_slice())
+        GenericArray::clone_from_slice(&okm)
     }
 }
 
-type Aes128Cbc = Cbc<Aes128, Pkcs7>;
+#[cfg(feature = "crypto-openssl")]
+fn hkdf(ikm: Vec<u8>, salt: Option<&[u8]>, okm: &mut [u8]) {
+    let mut ctx = openssl::pkey_ctx::PkeyCtx::new_id(openssl::pkey::Id::HKDF)
+        .expect("hkdf context should not fail");
+    ctx.derive_init().expect("hkdf derive init should not fail");
+    ctx.set_hkdf_md(openssl::md::Md::sha256())
+        .expect("hkdf set md should not fail");
+
+    ctx.set_hkdf_key(&ikm)
+        .expect("hkdf set key should not fail");
+    if let Some(salt) = salt {
+        ctx.set_hkdf_salt(salt)
+            .expect("hkdf set salt should not fail");
+    }
+
+    ctx.add_hkdf_info(&[]).unwrap();
+    ctx.derive(Some(okm))
+        .expect("hkdf expand should never fail");
+}
+
+#[cfg(feature = "crypto-rust")]
+fn hkdf(ikm: Vec<u8>, salt: Option<&[u8]>, okm: &mut [u8]) {
+    use hkdf::Hkdf;
+    use sha2::Sha256;
+
+    let info = [];
+    let (_, hk) = Hkdf::<Sha256>::extract(salt, &ikm);
+    hk.expand(&info, okm)
+        .expect("hkdf expand should never fail");
+}
+
+#[cfg(all(not(feature = "crypto-rust"), not(feature = "crypto-openssl")))]
+fn hkdf(ikm: Vec<u8>, salt: Option<&[u8]>, okm: &mut [u8]) {
+    feature_needed!()
+}
 
 pub struct Session {
     pub object_path: OwnedObjectPath,
@@ -207,18 +238,72 @@ fn powm(base: &BigUint, exp: &BigUint, modulus: &BigUint) -> BigUint {
     result
 }
 
+#[cfg(feature = "crypto-rust")]
 pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
+    use aes::Aes128;
+    use block_modes::block_padding::Pkcs7;
+    use block_modes::{BlockMode, Cbc};
+
     let iv = GenericArray::from_slice(iv);
-    let cipher = Aes128Cbc::new_fix(key, iv);
+    let cipher = Cbc::<Aes128, Pkcs7>::new_fix(key, iv);
     cipher.encrypt_vec(data)
 }
 
+#[cfg(feature = "crypto-rust")]
 pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>, Error> {
+    use aes::Aes128;
+    use block_modes::block_padding::Pkcs7;
+    use block_modes::{BlockMode, Cbc};
+
     let iv = GenericArray::from_slice(iv);
-    let cipher = Aes128Cbc::new_fix(key, iv);
+    let cipher = Cbc::<Aes128, Pkcs7>::new_fix(key, iv);
     cipher
         .decrypt_vec(encrypted_data)
         .map_err(|_| Error::Crypto("message decryption failed"))
+}
+
+#[cfg(feature = "crypto-openssl")]
+pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
+    use openssl::cipher::Cipher;
+    use openssl::cipher_ctx::CipherCtx;
+
+    let mut ctx = CipherCtx::new().expect("cipher creation should not fail");
+    ctx.encrypt_init(Some(Cipher::aes_128_cbc()), Some(key), Some(iv))
+        .expect("cipher init should not fail");
+
+    let mut output = vec![];
+    ctx.cipher_update_vec(data, &mut output)
+        .expect("cipher update should not fail");
+    ctx.cipher_final_vec(&mut output)
+        .expect("cipher final should not fail");
+    output
+}
+
+#[cfg(feature = "crypto-openssl")]
+pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>, Error> {
+    use openssl::cipher::Cipher;
+    use openssl::cipher_ctx::CipherCtx;
+
+    let mut ctx = CipherCtx::new().expect("cipher creation should not fail");
+    ctx.decrypt_init(Some(Cipher::aes_128_cbc()), Some(key), Some(iv))
+        .expect("cipher init should not fail");
+
+    let mut output = vec![];
+    ctx.cipher_update_vec(encrypted_data, &mut output)
+        .map_err(|_| Error::Crypto("message decryption failed"))?;
+    ctx.cipher_final_vec(&mut output)
+        .map_err(|_| Error::Crypto("message decryption failed"))?;
+    Ok(output)
+}
+
+#[cfg(all(not(feature = "crypto-rust"), not(feature = "crypto-openssl")))]
+pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
+    feature_needed!()
+}
+
+#[cfg(all(not(feature = "crypto-rust"), not(feature = "crypto-openssl")))]
+pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>, Error> {
+    feature_needed!()
 }
 
 #[cfg(test)]

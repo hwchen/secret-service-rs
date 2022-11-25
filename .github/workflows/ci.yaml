@@ -46,7 +46,7 @@ jobs:
     - uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --all-features --all-targets --all -- -D clippy::dbg_macro -D warnings -F unused_must_use
+        args: --features=rt-tokio-crypto-rust --all-targets --all -- -D clippy::dbg_macro -D warnings -F unused_must_use
 
   fmt:
     name: Rustfmt
@@ -98,12 +98,19 @@ jobs:
         # the login password doesn't matter, but the keyring must be unlocked for the tests to work
         run: gnome-keyring-daemon --components=secrets --daemonize --unlock <<< 'foobar'
 
-      - name: Run tests
+      - name: Run tests with rust crypto
         uses: actions-rs/cargo@v1
         with:
           command: test
           # run tests single-threaded to avoid race conditions
-          args: -- --test-threads=1
+          args: --features=rt-tokio-crypto-rust -- --test-threads=1
+
+      - name: Run tests with openssl crypto
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          # run tests single-threaded to avoid race conditions
+          args: --features=rt-tokio-crypto-openssl -- --test-threads=1
 
       - name: Run example
         uses: actions-rs/cargo@v1
