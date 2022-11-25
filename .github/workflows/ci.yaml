@@ -116,4 +116,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: run
-          args: --example example
+          args: --features=rt-tokio-crypto-rust --example example
