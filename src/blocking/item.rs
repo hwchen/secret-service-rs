@@ -234,14 +234,18 @@ mod test {
                 "text/plain",
             )
             .unwrap();
+
         let attributes = item.get_attributes().unwrap();
+
+        // We do not compare exact attributes, since the secret service provider could add its own
+        // at any time. Instead, we only check that the ones we provided are returned back.
         assert_eq!(
-            attributes,
-            HashMap::from([(
-                String::from("test_attributes_in_item"),
-                String::from("test")
-            )])
+            attributes
+                .get("test_attributes_in_item")
+                .map(String::as_str),
+            Some("test")
         );
+
         item.delete().unwrap();
     }
 
@@ -255,14 +259,18 @@ mod test {
         item.set_attributes(HashMap::new()).unwrap();
         item.set_attributes(HashMap::from([("test_attributes_in_item_get", "test")]))
             .unwrap();
+
         let attributes = item.get_attributes().unwrap();
+
+        // We do not compare exact attributes, since the secret service provider could add its own
+        // at any time. Instead, we only check that the ones we provided are returned back.
         assert_eq!(
-            attributes,
-            HashMap::from([(
-                String::from("test_attributes_in_item_get"),
-                String::from("test")
-            )])
+            attributes
+                .get("test_attributes_in_item_get")
+                .map(String::as_str),
+            Some("test")
         );
+
         item.delete().unwrap();
     }
 
