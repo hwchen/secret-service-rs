@@ -35,10 +35,10 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::Crypto(err) => write!(f, "Crypto error: {}", err),
-            Error::Zbus(err) => write!(f, "zbus error: {}", err),
-            Error::ZbusFdo(err) => write!(f, "zbus fdo error: {}", err),
-            Error::Zvariant(err) => write!(f, "zbus serde error: {}", err),
+            Error::Crypto(err) => write!(f, "Crypto error: {err}"),
+            Error::Zbus(err) => write!(f, "zbus error: {err}"),
+            Error::ZbusFdo(err) => write!(f, "zbus fdo error: {err}"),
+            Error::Zvariant(err) => write!(f, "zbus serde error: {err}"),
             Error::Locked => f.write_str("SS Error: object locked"),
             Error::NoResult => f.write_str("SS error: result not returned from SS API"),
             Error::Prompt => f.write_str("SS error: prompt dismissed"),
