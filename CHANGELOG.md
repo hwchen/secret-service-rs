@@ -1,4 +1,6 @@
 Unreleased
+
+[3.0.0]
 - Updated dependencies where reasonable
 - Bumped MSRV to 1.60
 - BREAKING: Updated to `zbus` 3.0. This changes error types and public path fields.
@@ -61,3 +63,4 @@ _0.1.0_
 [2.0.0]: https://github.com/hwchen/secret-service-rs/releases/tag/v2.0.0
 [2.0.1]: https://github.com/hwchen/secret-service-rs/releases/tag/v2.0.1
 [2.0.2]: https://github.com/hwchen/secret-service-rs/releases/tag/v2.0.2
+[3.0.0]: https://github.com/hwchen/secret-service-rs/releases/tag/v3.0.0
