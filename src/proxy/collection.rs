@@ -21,7 +21,10 @@ use super::SecretStruct;
 /// This will derive CollectionProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
-#[dbus_proxy(interface = "org.freedesktop.Secret.Collection")]
+#[dbus_proxy(
+    interface = "org.freedesktop.Secret.Collection",
+    default_service = "org.freedesktop.Secret.Collection"
+)]
 trait Collection {
     /// Returns prompt: ObjectPath
     fn delete(&self) -> zbus::Result<OwnedObjectPath>;

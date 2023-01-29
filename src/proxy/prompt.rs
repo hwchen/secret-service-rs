@@ -14,7 +14,10 @@ use zbus::{dbus_proxy, zvariant::Value};
 /// This will derive PromptProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
-#[dbus_proxy(interface = "org.freedesktop.Secret.Prompt")]
+#[dbus_proxy(
+    interface = "org.freedesktop.Secret.Prompt",
+    default_service = "org.freedesktop.Secret.Prompt"
+)]
 trait Prompt {
     fn prompt(&self, window_id: &str) -> zbus::Result<()>;
 
