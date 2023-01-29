@@ -249,8 +249,7 @@ mod test {
         let collections = ss.get_all_collections().await.unwrap();
         assert!(
             collections.len() < count_before,
-            "collections before delete {}",
-            count_before
+            "collections before delete {count_before}"
         );
     }
 
