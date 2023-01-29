@@ -155,7 +155,9 @@ fn handle_signal(signal: Completed) -> Result<zvariant::OwnedValue, Error> {
 pub(crate) fn handle_conn_error(e: zbus::Error) -> Error {
     match e {
         zbus::Error::InterfaceNotFound | zbus::Error::Address(_) => Error::Unavailable,
-        zbus::Error::Io(e) if e.kind() == std::io::ErrorKind::NotFound => Error::Unavailable,
+        zbus::Error::InputOutput(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            Error::Unavailable
+        }
         e => e.into(),
     }
 }
