@@ -40,3 +40,6 @@ openssl = { version = "^0.10.40", optional = true }
 [dev-dependencies]
 tokio = { version = "1", features = ["rt", "macros"] }
 test-with = { version = "0.8", default-features = false }
+
+[package.metadata.docs.rs]
+features = ["rt-tokio-crypto-rust"]
