@@ -1,5 +1,8 @@
 Unreleased
 
+[3.0.1]
+- Fix docs.rs builds
+
 [3.0.0]
 - Updated dependencies where reasonable
 - Bumped MSRV to 1.60
@@ -64,3 +67,4 @@ _0.1.0_
 [2.0.1]: https://github.com/hwchen/secret-service-rs/releases/tag/v2.0.1
 [2.0.2]: https://github.com/hwchen/secret-service-rs/releases/tag/v2.0.2
 [3.0.0]: https://github.com/hwchen/secret-service-rs/releases/tag/v3.0.0
+[3.0.1]: https://github.com/hwchen/secret-service-rs/releases/tag/v3.0.1
