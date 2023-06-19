@@ -85,6 +85,14 @@ jobs:
           toolchain: ${{ matrix.rust }}
           profile: minimal
 
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: $test-cache-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Install gnome-keyring
         run: sudo apt-get install -y gnome-keyring
 
@@ -128,6 +136,14 @@ jobs:
         with:
           toolchain: "1.60.0"
           profile: minimal
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: $clippy-cache-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Generate lockfile
       # XXX: `0.6.1` of `toml_datetime` is the last version with a MSRV that matches
