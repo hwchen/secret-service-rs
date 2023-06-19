@@ -20,8 +20,6 @@ jobs:
       matrix:
         rust:
           - stable
-          # MSRV, influenced by zbus.
-          - 1.60.0
 
     steps:
     - uses: actions/checkout@v2
@@ -76,8 +74,6 @@ jobs:
       matrix:
         rust:
           - stable
-          # MSRV, influenced by zbus.
-          - 1.60.0
 
     steps:
       - uses: actions/checkout@v2
@@ -117,3 +113,31 @@ jobs:
         with:
           command: run
           args: --features=rt-tokio-crypto-rust --example example
+
+  # MSRV, influenced by zbus.
+  check_msrv:
+    name: Check MSRV
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.60.0"
+          profile: minimal
+
+      - name: Generate lockfile
+      # XXX: `0.6.1` of `toml_datetime` is the last version with a MSRV that matches
+      # our current one. 
+        run: |
+          cargo generate-lockfile
+          cargo update -p toml_datetime --precise "0.6.1"
+
+      - uses: actions-rs/cargo@v1
+        name: Clippy MSRV
+        with:
+          command: clippy
+          args: --features=rt-tokio-crypto-rust --all-targets --all -- -D clippy::dbg_macro -D warnings -F unused_must_use
