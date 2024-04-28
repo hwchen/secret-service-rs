@@ -326,6 +326,18 @@ impl<'a> SecretService<'a> {
                 .collect::<Result<_, _>>()?,
         })
     }
+
+    /// Unlock all items in a batch
+    pub async fn unlock_all(&self, items: &[&Item<'_>]) -> Result<(), Error> {
+        let objects = items.iter().map(|i| &*i.item_path).collect();
+        let lock_action_res = self.service_proxy.unlock(objects).await?;
+
+        if lock_action_res.object_paths.is_empty() {
+            exec_prompt(self.conn.clone(), &lock_action_res.prompt).await?;
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
