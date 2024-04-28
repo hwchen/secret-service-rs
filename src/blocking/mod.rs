@@ -17,10 +17,10 @@
 //! [zbus's blocking documentation]: https://docs.rs/zbus/latest/zbus/blocking/index.html
 //! [async `SecretService`]: crate::SecretService
 
-use crate::proxy::service::ServiceProxyBlocking;
 use crate::session::Session;
 use crate::ss::SS_COLLECTION_LABEL;
 use crate::util;
+use crate::{proxy::service::ServiceProxyBlocking, util::exec_prompt_blocking};
 use crate::{EncryptionType, Error, SearchItemsResult};
 use std::collections::HashMap;
 use zbus::zvariant::{ObjectPath, Value};
@@ -177,6 +177,18 @@ impl<'a> SecretService<'a> {
             unlocked: object_paths_to_items(items.unlocked)?,
             locked: object_paths_to_items(items.locked)?,
         })
+    }
+
+    /// Unlock all items in a batch
+    pub fn unlock_all(&self, items: &[&Item<'_>]) -> Result<(), Error> {
+        let objects = items.iter().map(|i| &*i.item_path).collect();
+        let lock_action_res = self.service_proxy.unlock(objects)?;
+
+        if lock_action_res.object_paths.is_empty() {
+            exec_prompt_blocking(self.conn.clone(), &lock_action_res.prompt)?;
+        }
+
+        Ok(())
     }
 }
 
