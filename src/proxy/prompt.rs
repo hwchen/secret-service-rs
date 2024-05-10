@@ -7,14 +7,14 @@
 
 //! A dbus proxy for speaking with secret service's `Prompt` Interface.
 
-use zbus::{dbus_proxy, zvariant::Value};
+use zbus::zvariant::Value;
 
 /// A dbus proxy for speaking with secret service's `Prompt` Interface.
 ///
 /// This will derive PromptProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
-#[dbus_proxy(
+#[zbus::proxy(
     interface = "org.freedesktop.Secret.Prompt",
     default_service = "org.freedesktop.Secret.Prompt"
 )]
@@ -23,6 +23,6 @@ trait Prompt {
 
     fn dismiss(&self) -> zbus::Result<()>;
 
-    #[dbus_proxy(signal)]
+    #[zbus(signal)]
     fn completed(&self, dismissed: bool, result: Value<'_>) -> zbus::Result<()>;
 }

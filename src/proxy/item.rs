@@ -8,17 +8,14 @@
 //! A dbus proxy for speaking with secret service's `Item` Interface.
 
 use std::collections::HashMap;
-use zbus::{
-    dbus_proxy,
-    zvariant::{ObjectPath, OwnedObjectPath},
-};
+use zbus::zvariant::{ObjectPath, OwnedObjectPath};
 
 use super::SecretStruct;
 
 /// A dbus proxy for speaking with secret service's `Item` Interface.
 ///
 /// This will derive ItemProxy
-#[dbus_proxy(
+#[zbus::proxy(
     interface = "org.freedesktop.Secret.Item",
     default_service = "org.freedesktop.Secret.Item"
 )]
@@ -30,24 +27,24 @@ trait Item {
 
     fn set_secret(&self, secret: SecretStruct) -> zbus::Result<()>;
 
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn locked(&self) -> zbus::fdo::Result<bool>;
 
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn attributes(&self) -> zbus::fdo::Result<HashMap<String, String>>;
 
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn set_attributes(&self, attributes: HashMap<&str, &str>) -> zbus::fdo::Result<()>;
 
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn label(&self) -> zbus::fdo::Result<String>;
 
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn set_label(&self, new_label: &str) -> zbus::fdo::Result<()>;
 
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn created(&self) -> zbus::fdo::Result<u64>;
 
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn modified(&self) -> zbus::fdo::Result<u64>;
 }

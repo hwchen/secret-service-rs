@@ -10,17 +10,14 @@
 use super::SecretStruct;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use zbus::{
-    dbus_proxy,
-    zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Type, Value},
-};
+use zbus::zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Type, Value};
 
 /// A dbus proxy for speaking with secret service's `Service` Interface.
 ///
 /// This will derive ServiceProxy
 ///
 /// Note that `Value` in the method signatures corresponds to `VARIANT` dbus type.
-#[dbus_proxy(
+#[zbus::proxy(
     interface = "org.freedesktop.Secret.Service",
     default_service = "org.freedesktop.secrets",
     default_path = "/org/freedesktop/secrets"
@@ -49,7 +46,7 @@ trait Service {
 
     fn set_alias(&self, name: &str, collection: ObjectPath<'_>) -> zbus::Result<()>;
 
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn collections(&self) -> zbus::fdo::Result<Vec<ObjectPath<'_>>>;
 }
 
