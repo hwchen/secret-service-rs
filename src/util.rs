@@ -148,7 +148,7 @@ fn handle_signal(signal: Completed) -> Result<zvariant::OwnedValue, Error> {
     if args.dismissed {
         Err(Error::Prompt)
     } else {
-        Ok(args.result.into())
+        zvariant::OwnedValue::try_from(args.result).map_err(From::from)
     }
 }
 
