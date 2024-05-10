@@ -240,25 +240,26 @@ fn powm(base: &BigUint, exp: &BigUint, modulus: &BigUint) -> BigUint {
 
 #[cfg(feature = "crypto-rust")]
 pub fn encrypt(data: &[u8], key: &AesKey, iv: &[u8]) -> Vec<u8> {
-    use aes::Aes128;
-    use block_modes::block_padding::Pkcs7;
-    use block_modes::{BlockMode, Cbc};
+    use aes::cipher::block_padding::Pkcs7;
+    use aes::cipher::{BlockEncryptMut, KeyIvInit};
+
+    type Aes128CbcEnc = cbc::Encryptor<aes::Aes128>;
 
     let iv = GenericArray::from_slice(iv);
-    let cipher = Cbc::<Aes128, Pkcs7>::new_fix(key, iv);
-    cipher.encrypt_vec(data)
+
+    Aes128CbcEnc::new(key, iv).encrypt_padded_vec_mut::<Pkcs7>(data)
 }
 
 #[cfg(feature = "crypto-rust")]
 pub fn decrypt(encrypted_data: &[u8], key: &AesKey, iv: &[u8]) -> Result<Vec<u8>, Error> {
-    use aes::Aes128;
-    use block_modes::block_padding::Pkcs7;
-    use block_modes::{BlockMode, Cbc};
+    use aes::cipher::block_padding::Pkcs7;
+    use aes::cipher::{BlockDecryptMut, KeyIvInit};
+
+    type Aes128CbcDec = cbc::Decryptor<aes::Aes128>;
 
     let iv = GenericArray::from_slice(iv);
-    let cipher = Cbc::<Aes128, Pkcs7>::new_fix(key, iv);
-    cipher
-        .decrypt_vec(encrypted_data)
+    Aes128CbcDec::new(key, iv)
+        .decrypt_padded_vec_mut::<Pkcs7>(encrypted_data)
         .map_err(|_| Error::Crypto("message decryption failed"))
 }
 
