@@ -1,4 +1,5 @@
 Unreleased
+- Bumped MSRV to 1.64
 
 [3.0.1]
 - Fix docs.rs builds

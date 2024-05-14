@@ -9,7 +9,7 @@ name = "secret-service"
 repository = "https://github.com/hwchen/secret-service-rs.git"
 edition = "2021"
 version = "3.0.1"
-rust-version = "1.60.0"
+rust-version = "1.64.0"
 
 # The async runtime features mirror those of `zbus` for compatibility.
 [features]
