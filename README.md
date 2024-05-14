@@ -62,7 +62,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         HashMap::from([("test", "test_value")])
     ).await?;
 
-    let item = search_items.unlocked.get(0).ok_or("Not found!")?;
+    let item = search_items.unlocked.first().ok_or("Not found!")?;
 
     // retrieve secret from item
     let secret = item.get_secret().await?;

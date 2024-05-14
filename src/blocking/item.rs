@@ -384,7 +384,7 @@ mod test {
             let search_item = collection
                 .search_items(HashMap::from([("test_attributes_in_item_encrypt", "test")]))
                 .unwrap();
-            let item = search_item.get(0).unwrap();
+            let item = search_item.first().unwrap();
             assert_eq!(item.get_secret().unwrap(), b"test_encrypted");
             item.delete().unwrap();
         }
