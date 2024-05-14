@@ -22,18 +22,16 @@ jobs:
           - stable
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         persist-credentials: false
-
-    - uses: actions-rs/toolchain@v1
+    
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
         toolchain: ${{ matrix.rust }}
-        profile: minimal
-        override: true
         components: clippy
 
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       with:
         path: |
           ~/.cargo/registry
@@ -41,30 +39,25 @@ jobs:
           target
         key: $clippy-cache-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
 
-    - uses: actions-rs/cargo@v1
-      with:
-        command: clippy
-        args: --features=rt-tokio-crypto-rust --all-targets --all -- -D clippy::dbg_macro -D warnings -F unused_must_use
+    - name: "Clippy ${{ matrix.rust }}"
+      run: cargo clippy --features=rt-tokio-crypto-rust --all-targets --all -- -D clippy::dbg_macro -D warnings -F unused_must_use
 
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
           components: rustfmt
 
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+      - name: "Check formatting"
+        run: cargo fmt --all -- --check
 
   test:
     name: Tests
@@ -76,16 +69,15 @@ jobs:
           - stable
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          profile: minimal
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
@@ -102,25 +94,16 @@ jobs:
         # the login password doesn't matter, but the keyring must be unlocked for the tests to work
         run: gnome-keyring-daemon --components=secrets --daemonize --unlock <<< 'foobar'
 
-      - name: Run tests with rust crypto
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          # run tests single-threaded to avoid race conditions
-          args: --features=rt-tokio-crypto-rust -- --test-threads=1
+      - name: Run tests with RustCrypto
+        # run tests single-threaded to avoid race conditions
+        run: cargo test --features=rt-tokio-crypto-rust -- --test-threads=1
 
-      - name: Run tests with openssl crypto
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          # run tests single-threaded to avoid race conditions
-          args: --features=rt-tokio-crypto-openssl -- --test-threads=1
+      - name: Run tests with OpenSSL crypto
+        # run tests single-threaded to avoid race conditions
+        run: cargo test --features=rt-tokio-crypto-openssl -- --test-threads=1
 
       - name: Run example
-        uses: actions-rs/cargo@v1
-        with:
-          command: run
-          args: --features=rt-tokio-crypto-rust --example example
+        run: cargo run --features=rt-tokio-crypto-rust --example example
 
   # MSRV, influenced by zbus.
   check_msrv:
@@ -128,16 +111,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: "1.60.0"
-          profile: minimal
+          components: clippy
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
@@ -152,8 +135,5 @@ jobs:
           cargo generate-lockfile
           cargo update -p toml_datetime --precise "0.6.1"
 
-      - uses: actions-rs/cargo@v1
-        name: Clippy MSRV
-        with:
-          command: clippy
-          args: --features=rt-tokio-crypto-rust --all-targets --all -- -D clippy::dbg_macro -D warnings -F unused_must_use
+      - name: Clippy MSRV
+        run: cargo clippy --features=rt-tokio-crypto-rust --all-targets --all -- -D clippy::dbg_macro -D warnings -F unused_must_use
