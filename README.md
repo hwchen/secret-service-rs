@@ -81,7 +81,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 - Items: create, delete, search, get/set secret.
 
 ### Changelog
-See [the changelog file](./CHANGELOG.md)
+See [the list of GitHub releases and their release notes](https://github.com/hwchen/secret-service-rs/releases)
 
 ### Versioning
 This library is feature complete, has stabilized its API for the most part. However, as this
