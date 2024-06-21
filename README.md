@@ -1,12 +1,12 @@
 # Secret Service
 
-Secret Service Rust library.
+[![crates.io version](https://img.shields.io/crates/v/secret-service.svg)](https://crates.io/crates/secret-service)
+[![crate documentation](https://docs.rs/secret-service/badge.svg)](https://docs.rs/secret-service)
+![MSRV](https://img.shields.io/badge/rustc-1.75+-blue.svg)
+[![crates.io downloads](https://img.shields.io/crates/d/secret-service.svg)](https://crates.io/crates/secret-service)
+![CI](https://github.com/hwchen/secret-service-rs/workflows/CI/badge.svg)
 
-Interfaces with the Linux Secret Service API through dbus.
-
-### Documentation
-
-[Get Docs!](https://docs.rs/secret-service/)
+A rust library for interacting with the FreeDesktop Secret Service API through DBus.
 
 ### Basic Usage
 
