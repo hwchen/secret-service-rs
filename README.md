@@ -20,7 +20,7 @@ For example:
 
 ```toml
 [dependencies]
-secret-service = { version = "3.0.0", features = ["rt-tokio-crypto-rust"] }
+secret-service = { version = "4.0.0", features = ["rt-tokio-crypto-rust"] }
 ```
 
 Available feature flags:
