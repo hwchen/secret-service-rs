@@ -21,8 +21,8 @@ use crate::ss::SS_DBUS_NAME;
 use futures_util::StreamExt;
 use rand::{rngs::OsRng, Rng};
 use zbus::{
+    proxy::CacheProperties,
     zvariant::{self, ObjectPath},
-    CacheProperties,
 };
 
 // Helper enum for locking

@@ -14,7 +14,7 @@ use crate::ss::SS_DBUS_NAME;
 use crate::util::{exec_prompt, format_secret, lock_or_unlock, LockAction};
 
 use std::collections::HashMap;
-use zbus::{zvariant::OwnedObjectPath, CacheProperties};
+use zbus::{proxy::CacheProperties, zvariant::OwnedObjectPath};
 
 pub struct Item<'a> {
     conn: zbus::Connection,

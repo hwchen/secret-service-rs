@@ -22,7 +22,7 @@ use super::SecretStruct;
     interface = "org.freedesktop.Secret.Collection",
     default_service = "org.freedesktop.Secret.Collection"
 )]
-trait Collection {
+pub trait Collection {
     /// Returns prompt: ObjectPath
     fn delete(&self) -> zbus::Result<OwnedObjectPath>;
 

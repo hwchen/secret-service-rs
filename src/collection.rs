@@ -15,8 +15,8 @@ use crate::Item;
 
 use std::collections::HashMap;
 use zbus::{
+    proxy::CacheProperties,
     zvariant::{Dict, ObjectPath, OwnedObjectPath, Value},
-    CacheProperties,
 };
 
 // Collection struct.
