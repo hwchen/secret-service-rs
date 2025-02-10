@@ -43,7 +43,7 @@ pub struct SecretService<'a> {
     service_proxy: ServiceProxyBlocking<'a>,
 }
 
-impl<'a> SecretService<'a> {
+impl SecretService<'_> {
     /// Create a new `SecretService` instance
     pub fn connect(encryption: EncryptionType) -> Result<Self, Error> {
         let conn = zbus::blocking::Connection::session().map_err(util::handle_conn_error)?;

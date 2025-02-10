@@ -143,8 +143,8 @@ impl<'a> Item<'a> {
     }
 }
 
-impl<'a> Eq for Item<'a> {}
-impl<'a> PartialEq for Item<'a> {
+impl Eq for Item<'_> {}
+impl PartialEq for Item<'_> {
     fn eq(&self, other: &Item) -> bool {
         self.item_path == other.item_path
             && self.get_attributes().unwrap() == other.get_attributes().unwrap()
