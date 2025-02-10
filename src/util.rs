@@ -18,8 +18,8 @@ use crate::session::encrypt;
 use crate::session::Session;
 use crate::ss::SS_DBUS_NAME;
 
+use futures_util::StreamExt;
 use rand::{rngs::OsRng, Rng};
-use zbus::export::ordered_stream::OrderedStreamExt;
 use zbus::{
     zvariant::{self, ObjectPath},
     CacheProperties,
