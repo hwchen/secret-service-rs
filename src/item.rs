@@ -151,15 +151,12 @@ impl<'a> Item<'a> {
     pub async fn get_modified(&self) -> Result<u64, Error> {
         Ok(self.item_proxy.modified().await?)
     }
+}
 
-    /// Returns if an item is equal to `other`.
-    ///
-    /// This is the equivalent of the `PartialEq` trait, but `async`.
-    pub async fn equal_to(&self, other: &Item<'_>) -> Result<bool, Error> {
-        let this_attrs = self.get_attributes().await?;
-        let other_attrs = other.get_attributes().await?;
-
-        Ok(self.item_path == other.item_path && this_attrs == other_attrs)
+impl Eq for Item<'_> {}
+impl PartialEq for Item<'_> {
+    fn eq(&self, other: &Item) -> bool {
+        self.item_path == other.item_path
     }
 }
 
