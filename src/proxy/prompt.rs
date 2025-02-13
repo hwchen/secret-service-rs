@@ -18,7 +18,7 @@ use zbus::zvariant::Value;
     interface = "org.freedesktop.Secret.Prompt",
     default_service = "org.freedesktop.Secret.Prompt"
 )]
-trait Prompt {
+pub trait Prompt {
     fn prompt(&self, window_id: &str) -> zbus::Result<()>;
 
     fn dismiss(&self) -> zbus::Result<()>;

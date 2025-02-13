@@ -15,8 +15,8 @@ use crate::util::{exec_prompt_blocking, format_secret, lock_or_unlock_blocking, 
 
 use std::collections::HashMap;
 use zbus::{
+    proxy::CacheProperties,
     zvariant::{Dict, ObjectPath, OwnedObjectPath, Value},
-    CacheProperties,
 };
 
 // Collection struct.

@@ -19,7 +19,7 @@ use super::SecretStruct;
     interface = "org.freedesktop.Secret.Item",
     default_service = "org.freedesktop.Secret.Item"
 )]
-trait Item {
+pub trait Item {
     fn delete(&self) -> zbus::Result<OwnedObjectPath>;
 
     /// returns `Secret`

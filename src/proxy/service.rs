@@ -22,7 +22,7 @@ use zbus::zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Type, Value};
     default_service = "org.freedesktop.secrets",
     default_path = "/org/freedesktop/secrets"
 )]
-trait Service {
+pub trait Service {
     fn open_session(&self, algorithm: &str, input: Value<'_>) -> zbus::Result<OpenSessionResult>;
 
     fn create_collection(
