@@ -19,7 +19,6 @@ use crate::session::Session;
 use crate::ss::SS_DBUS_NAME;
 
 use futures_util::StreamExt;
-use rand::{rngs::OsRng, Rng};
 use zbus::{
     proxy::CacheProperties,
     zvariant::{self, ObjectPath},
@@ -77,9 +76,8 @@ pub(crate) fn format_secret(
     let content_type = content_type.to_owned();
 
     if let Some(session_key) = session.get_aes_key() {
-        let mut rng = OsRng {};
         let mut aes_iv = [0; 16];
-        rng.fill(&mut aes_iv);
+        getrandom::getrandom(&mut aes_iv).expect("platform RNG failed");
 
         let encrypted_secret = encrypt(secret, session_key, &aes_iv);
 
