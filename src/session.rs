@@ -22,7 +22,6 @@ use num::{
     FromPrimitive,
 };
 use once_cell::sync::Lazy;
-use rand::{rngs::OsRng, Rng};
 use zbus::zvariant::OwnedObjectPath;
 
 use std::ops::{Mul, Rem, Shr};
@@ -65,9 +64,8 @@ struct Keypair {
 
 impl Keypair {
     fn generate() -> Self {
-        let mut rng = OsRng {};
         let mut private_key_bytes = [0; 128];
-        rng.fill(&mut private_key_bytes);
+        getrandom::getrandom(&mut private_key_bytes).expect("platform RNG failed");
 
         let private_key = BigUint::from_bytes_be(&private_key_bytes);
         let public_key = powm(&DH_GENERATOR, &private_key, &DH_PRIME);
