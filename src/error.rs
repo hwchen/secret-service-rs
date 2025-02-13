@@ -1,4 +1,3 @@
-use std::{error, fmt};
 use zbus::zvariant;
 
 /// An error that could occur interacting with the secret service dbus interface.
@@ -25,8 +24,8 @@ pub enum Error {
     Unavailable,
 }
 
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Error::Crypto(err) => write!(f, "Crypto error: {err}"),
             Error::Zbus(err) => write!(f, "zbus error: {err}"),
@@ -40,8 +39,8 @@ impl fmt::Display for Error {
     }
 }
 
-impl error::Error for Error {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
             Error::Zbus(ref err) => Some(err),
             Error::ZbusFdo(ref err) => Some(err),
