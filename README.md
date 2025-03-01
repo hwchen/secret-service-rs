@@ -2,7 +2,7 @@
 
 [![crates.io version](https://img.shields.io/crates/v/secret-service.svg)](https://crates.io/crates/secret-service)
 [![crate documentation](https://docs.rs/secret-service/badge.svg)](https://docs.rs/secret-service)
-![MSRV](https://img.shields.io/badge/rustc-1.75+-blue.svg)
+![MSRV](https://img.shields.io/badge/rustc-1.77+-blue.svg)
 [![crates.io downloads](https://img.shields.io/crates/d/secret-service.svg)](https://crates.io/crates/secret-service)
 ![CI](https://github.com/hwchen/secret-service-rs/workflows/CI/badge.svg)
 
@@ -20,7 +20,7 @@ For example:
 
 ```toml
 [dependencies]
-secret-service = { version = "4.0.0", features = ["rt-tokio-crypto-rust"] }
+secret-service = { version = "5.0.0", features = ["rt-tokio-crypto-rust"] }
 ```
 
 Available feature flags:
